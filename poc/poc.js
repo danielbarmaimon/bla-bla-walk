@@ -204,7 +204,9 @@ function renderNearbyDetails() {
   sensors.forEach(({ feature, distance }) => {
     const item = document.createElement('li');
     const reading = feature.value == null ? 'no reading' : `${feature.value.toFixed(1)}°C`;
-    item.textContent = `Sensor · ${feature.label} · ${Math.round(distance)} m from route · ${reading} · ${feature.availability}`;
+    const observed = feature.provenance.observed_at ?
+      new Date(feature.provenance.observed_at).toLocaleString('en-GB', { timeZone: 'Europe/Zurich' }) : 'time unknown';
+    item.textContent = `Sensor · ${feature.label} · ${Math.round(distance)} m from route · ${reading} · ${feature.availability} · observed ${observed}`;
     list.append(item);
   });
 }
