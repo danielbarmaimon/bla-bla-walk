@@ -112,7 +112,7 @@
 .route-app .intro,
 .route-app .helper,
 .route-app .prototype-note,
-.route-app .quick-heading > p,
+.route-app .quick-heading>p,
 .route-app #origin-status {
   color: var(--poc-muted);
 }
@@ -126,7 +126,7 @@
   position: relative;
 }
 
-.route-app .field-block > label,
+.route-app .field-block>label,
 .route-app .route-mode legend {
   display: block;
   margin-bottom: var(--space-2);
@@ -286,7 +286,7 @@
   letter-spacing: -0.035em;
 }
 
-.route-app .quick-heading > p {
+.route-app .quick-heading>p {
   margin: 0;
   white-space: nowrap;
   font-size: 0.875rem;
@@ -392,7 +392,7 @@
   border-top: 1px solid var(--poc-line);
 }
 
-.route-app .inspector > p,
+.route-app .inspector>p,
 .route-app #details {
   color: var(--poc-label);
   font-size: 0.875rem;
@@ -456,6 +456,10 @@
   background: var(--poc-canvas);
 }
 
+.route-app .map-navigation {
+  display: none;
+}
+
 .route-app .map-topline {
   display: flex;
   justify-content: space-between;
@@ -507,7 +511,7 @@
   color: var(--poc-ink);
 }
 
-.route-app .map-view-switch button + button {
+.route-app .map-view-switch button+button {
   border-left: 1px solid var(--poc-line);
 }
 
@@ -676,11 +680,26 @@
   outline: 1px solid var(--poc-ink);
 }
 
-.route-app .fountain-dot { background: var(--poc-teal); }
-.route-app .sensor-dot { background: var(--poc-white); }
-.route-app .landmark-dot { background: var(--poc-landmark); }
-.route-app .cool-dot { background: var(--poc-cool-place); }
-.route-app .shadow-dot { background: var(--poc-shadow-example-fill); outline-color: var(--poc-shadow-example-stroke); }
+.route-app .fountain-dot {
+  background: var(--poc-teal);
+}
+
+.route-app .sensor-dot {
+  background: var(--poc-white);
+}
+
+.route-app .landmark-dot {
+  background: var(--poc-landmark);
+}
+
+.route-app .cool-dot {
+  background: var(--poc-cool-place);
+}
+
+.route-app .shadow-dot {
+  background: var(--poc-shadow-example-fill);
+  outline-color: var(--poc-shadow-example-stroke);
+}
 
 .route-app .map-pick-banner {
   bottom: auto;
@@ -708,7 +727,7 @@
   font-size: 1.35rem;
 }
 
-.route-app .steps-head > p:last-child {
+.route-app .steps-head>p:last-child {
   color: var(--poc-muted);
   font-size: 0.875rem;
 }
@@ -907,11 +926,364 @@
     font-size: 1.9rem;
   }
 
-  .route-app .quick-heading > p {
+  .route-app .quick-heading>p {
     display: none;
   }
 
   .route-app .quick-tile {
     min-height: 6.8rem;
+  }
+}
+
+/* Map mode behaves like a dedicated app screen on phones and larger displays. */
+.route-app[data-view="map"] {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.route-app[data-view="map"] .app-shell {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
+}
+
+.route-app[data-view="map"] .site-header {
+  display: none;
+}
+
+.route-app[data-view="map"] .route-layout {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.route-app[data-view="map"] .map-screen {
+  height: 100%;
+  min-height: 0;
+}
+
+.route-app[data-view="map"] .map-topline {
+  flex: none;
+  min-height: var(--poc-map-topline-height);
+  padding: var(--space-2) var(--space-4);
+}
+
+.route-app[data-view="map"] .map-topline .kicker {
+  margin: 0;
+}
+
+.route-app[data-view="map"] .map-topline h2 {
+  max-width: min(60vw, 38rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.route-app[data-view="map"] .back-button {
+  flex: none;
+  min-height: 3rem;
+  padding-inline: var(--space-3);
+}
+
+.route-app[data-view="map"] .map-controls {
+  z-index: 4;
+  flex: none;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--poc-line);
+}
+
+.route-app[data-view="map"] .map-details>summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--poc-map-details-summary-height);
+  color: var(--poc-ink);
+  cursor: pointer;
+  font-weight: 750;
+  list-style-position: inside;
+}
+
+.route-app[data-view="map"] #active-layer-summary {
+  color: var(--poc-label);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.route-app[data-view="map"] .map-details-content {
+  max-height: min(var(--poc-map-details-height), var(--poc-map-details-max-height));
+  overflow: auto;
+  padding: 0 0 var(--space-3);
+  overscroll-behavior: contain;
+}
+
+.route-app[data-view="map"] .map-details-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.route-app[data-view="map"] .map-details-footer p {
+  margin: 0;
+}
+
+.route-app[data-view="map"] #reset-map-details {
+  flex: none;
+  min-height: 3rem;
+  font-weight: 700;
+}
+
+.route-app[data-view="map"] .map-and-steps {
+  position: relative;
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.route-app[data-view="map"] .map-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.route-app[data-view="map"] #map {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.route-app[data-view="map"] .map-navigation {
+  position: absolute;
+  z-index: 3;
+  top: var(--space-4);
+  right: var(--space-4);
+  display: grid;
+  gap: var(--space-2);
+  width: min(var(--poc-map-control-width), calc(100% - 2 * var(--space-4)));
+}
+
+.route-app[data-view="map"] .map-navigation button {
+  min-height: var(--poc-map-control-height);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--poc-line);
+  background: var(--poc-map-white);
+  color: var(--poc-ink);
+  box-shadow: 0 2px 8px var(--poc-shadow);
+  font-weight: 700;
+  text-align: left;
+}
+
+.route-app[data-view="map"] .map-navigation button:hover {
+  border-color: var(--poc-teal);
+  background: var(--poc-white);
+}
+
+.route-app[data-view="map"] .map-overlay {
+  left: var(--space-4);
+  right: auto;
+  top: var(--space-4);
+  bottom: auto;
+  max-width: min(18rem, calc(100% - 15rem));
+}
+
+.route-app[data-view="map"] .map-pick-banner {
+  left: var(--space-4);
+  right: auto;
+  top: 4.5rem;
+  bottom: auto;
+}
+
+.route-app[data-view="map"] .steps {
+  position: absolute;
+  z-index: 3;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  width: min(var(--poc-map-route-panel-width), calc(100% - 2 * var(--space-4)));
+  max-height: calc(100% - 2 * var(--space-4));
+  padding: 0;
+  border: 1px solid var(--poc-line);
+  background: var(--poc-map-white);
+  box-shadow: 0 3px 14px var(--poc-shadow);
+}
+
+.route-app[data-view="map"] .steps>summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  color: var(--poc-ink);
+  font-weight: 750;
+}
+
+.route-app[data-view="map"] #steps-panel-status {
+  color: var(--poc-label);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.route-app[data-view="map"] .steps[open] {
+  display: flex;
+  flex-direction: column;
+  max-height: min(var(--poc-map-route-panel-height), var(--poc-map-route-panel-max-height));
+}
+
+.route-app[data-view="map"] .steps-content {
+  min-height: 0;
+  overflow: auto;
+  padding: 0 var(--space-4) var(--space-4);
+  overscroll-behavior: contain;
+}
+
+.route-app[data-view="map"] #features {
+  max-height: none;
+  overflow: visible;
+}
+
+.route-app[data-view="map"] .steps-head h2 {
+  font-size: 1.2rem;
+}
+
+.route-app[data-view="map"] .steps-head .kicker {
+  margin-top: var(--space-2);
+}
+
+.route-app[data-view="map"] .ol-zoom {
+  display: none;
+}
+
+.route-app[data-view="map"] .ol-attribution {
+  right: var(--space-2);
+  bottom: var(--space-2);
+  max-width: calc(100% - 14rem);
+}
+
+.route-app[data-view="map"] :focus-visible {
+  outline: 3px solid var(--poc-teal-dark);
+  outline-offset: 2px;
+}
+
+@media (max-width: 540px) {
+  .route-app[data-view="map"] .map-topline {
+    padding-inline: var(--space-3);
+  }
+
+  .route-app[data-view="map"] .map-topline h2 {
+    max-width: 48vw;
+  }
+
+  .route-app[data-view="map"] .map-navigation {
+    top: var(--space-3);
+    right: var(--space-3);
+    width: var(--poc-map-control-width-small);
+  }
+
+  .route-app[data-view="map"] .map-navigation button {
+    min-height: var(--poc-map-control-height-small);
+  }
+
+  .route-app[data-view="map"] .steps {
+    left: var(--space-3);
+    bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    width: calc(100% - 2 * var(--space-3));
+  }
+
+  .route-app[data-view="map"] .steps>summary {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .route-app[data-view="map"] #steps-panel-status {
+    text-align: left;
+  }
+
+  .route-app[data-view="map"] .steps[open] {
+    max-height: min(var(--poc-map-route-panel-height), var(--poc-map-route-panel-max-height));
+  }
+
+  .route-app[data-view="map"] .map-overlay {
+    left: var(--space-3);
+    max-width: calc(100% - 11rem);
+  }
+
+  .route-app[data-view="map"] .ol-attribution {
+    max-width: calc(100% - 11rem);
+  }
+}
+
+@media (max-height: 520px) {
+  .route-app[data-view="map"] .map-topline {
+    min-height: 2.75rem;
+  }
+
+  .route-app[data-view="map"] .map-details>summary {
+    min-height: 2.75rem;
+  }
+
+  .route-app[data-view="map"] .map-navigation {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 16rem;
+  }
+
+  .route-app[data-view="map"] .steps[open] {
+    max-height: 65dvh;
+  }
+}
+
+@media (min-width: 921px) {
+  .route-app[data-view="plan"] {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .route-app[data-view="plan"] .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+
+  .route-app[data-view="plan"] .site-header {
+    flex: none;
+  }
+
+  .route-app[data-view="plan"] .route-layout {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .route-app[data-view="plan"] .planner {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .route-app[data-view="plan"] .map-screen {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .route-app[data-view="plan"] .map-and-steps {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .route-app[data-view="plan"] .map-wrap,
+  .route-app[data-view="plan"] #map {
+    height: 100%;
+    min-height: 0;
   }
 }

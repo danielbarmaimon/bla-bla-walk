@@ -26,7 +26,6 @@
   --marker-outline: var(--surface-raised);
   --marker-radius: 9;
   --marker-stroke: 2;
-  --map-focus-padding: 60;
   --font: system-ui, sans-serif;
   --space-1: 0.25rem;
   --space-2: 0.5rem;
@@ -84,6 +83,17 @@
   --poc-planner-width: 29rem;
   --poc-steps-width: 20rem;
   --poc-map-height: 41rem;
+  --poc-map-topline-height: 3.5rem;
+  --poc-map-details-summary-height: 3.25rem;
+  --poc-map-control-width: 11rem;
+  --poc-map-control-width-small: 9.5rem;
+  --poc-map-control-height: 3.25rem;
+  --poc-map-control-height-small: 3rem;
+  --poc-map-route-panel-width: 31rem;
+  --poc-map-route-panel-height: 58dvh;
+  --poc-map-route-panel-max-height: 32rem;
+  --poc-map-details-height: 52dvh;
+  --poc-map-details-max-height: 28rem;
 }
 
 * {

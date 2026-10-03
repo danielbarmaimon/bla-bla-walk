@@ -6,28 +6,20 @@
 ## Screen at a glance
 
 ```text
-┌ Basel walk                                      [Now ▾] [Layers ▾] ┐
-│ Depart now · shade calculated for 14:32 · Updated 14:31           │
-├───────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  MAP                                                              │
-│  [temperature] [fountains] [shade]     Legend: shade / unknown     │
-│                                                                   │
-│  ┄ ┄ Basel coverage boundary ┄ ┄                                 │
-│  Route A ─────────────── Route B ══════════════                    │
-│                                                                   │
-├───────────────────────────────────────────────────────────────────┤
-│ Destination [Migros search]  [Fastest overall] [More shade]       │
-│ ┌ Walk · [door-to-door time] ┐ ┌ Transit + walk · [time] ───────┐ │
-│ │ Shade · exposed · unknown  │ │ Walk · wait · ride · transfer │ │
-│ │ Bench · fountain · works   │ │ Stops · alerts · evidence     │ │
-│ │ [Show on map] [Choose]     │ │ [Show on map] [Choose]        │ │
-│ └────────────────────────────┘  └────────────────────────────┘      │
-│ Data status: shade incomplete near boundary · fountain data current│
-└───────────────────────────────────────────────────────────────────┘
+┌ Destination name                             [Plan trip]         ┐
+│ Map details · 2 layers on ▾                                      │
+│                                                                  │
+│ MAP                                   [Zoom in]                  │
+│                                       [Zoom out]                 │
+│ Start ─────────────── Route ──────── [Center trip]               │
+│                                       [Show route]                │
+│ ┌ Route steps and details · 12 min ┐                             │
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-On narrow screens, keep destination search and the map visible first. Stack route cards below; keep Fastest overall and More shade controls easy to reach. Map labels and controls must not cover route endpoints or the coverage edge. Show a transit card only when its source passes admission.
+Map mode uses the full viewport on phone and desktop/tablet; neither size leads. The page itself does not scroll in this mode. Keep the map as the main view, with zoom, recenter and route-focus buttons and a collapsed route-details panel. Expanding route details scrolls inside the panel while the map stays visible. Keep the trip planner available through “Plan trip”.
+
+On desktop in trip-planning mode, keep the map column within the viewport below the header. The planner on the left scrolls independently; scrolling it does not move or resize the map. Narrow layouts retain normal page scrolling.
 
 ## Three visual directions
 
@@ -73,7 +65,9 @@ mistaken for measured heat or calculated shade.
 
 ## Components and behaviour
 
-- **Layer controls:** labelled toggles for temperature, fountains, and calculated shade. Each toggle exposes its state to assistive technology. A control has a visible focus ring.
+- **Layer controls:** keep optional layers inside the collapsed “Map details” disclosure. Its summary shows how many layers are on. Provide a reset action; toggles have plain labels and expose their state to assistive technology. Keep the source status and legend with each layer.
+- **Map navigation:** provide large, visible “Zoom in”, “Zoom out”, “Center trip” and “Show route” buttons. Wheel/trackpad zoom and drag panning work when the pointer is over the map without requiring prior focus; keyboard map shortcuts remain available after focusing the map.
+- **Route details:** keep step-by-step directions, nearby evidence, and map-feature provenance in a collapsed panel over the map. Selecting a map feature opens its information in this panel. When expanded, scroll within the panel rather than moving the page or map.
 - **Legend:** labels every line, fill, and symbol, including `Unknown / not calculated` and the dashed Basel coverage boundary. Route A and Route B differ by both colour and line pattern/label.
 - **Time control:** `Now` is a direct action and the default. A departure date/time control states the selected local time and the effective shade calculation time; stale saved calculations retain their original time.
 - **Route choices:** offer `Fastest overall` and `More shade`; retain manual selection. Show the extra-time cap, including the proposed five-minute choice.
@@ -87,7 +81,7 @@ mistaken for measured heat or calculated shade.
 
 - Meet WCAG AA contrast: at least 4.5:1 for normal text and 3:1 for large text and meaningful graphical controls. Check the actual token pairs in `src/theme.css` as created by T1.
 - Never use colour alone: pair shade/exposure with text or patterns; pair freshness colours with labels and icons; distinguish routes with names and line styles.
-- All actions work with Tab, Shift+Tab, Enter/Space, and arrow keys where the control pattern calls for them. Keep focus visible and in a predictable order: time, layers, map controls, then route cards. The map must have equivalent keyboard-accessible layer and route controls outside the map canvas.
+- All actions work with Tab, Shift+Tab, Enter/Space, and arrow keys where the control pattern calls for them. Keep focus visible and in a predictable order: “Plan trip”, map details, map navigation, then route details. Test both phone and desktop/tablet layouts at 200% zoom. The map must have equivalent keyboard-accessible layer and route controls outside the map canvas.
 - Use short, factual labels: “Shade calculated 14:32”, “Stale · 13:50”, “Unknown · no coverage”, “Outside Basel coverage”. Avoid “safe”, “cool”, or “best” unless the data and agreed rules support that claim.
 
 ## Reference images

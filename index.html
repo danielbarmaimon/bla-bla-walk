@@ -23,7 +23,7 @@
         <section class="planner" aria-labelledby="planner-title">
           <div class="section-heading">
             <p class="kicker">BASEL, SWITZERLAND</p>
-            <h1 id="planner-title">Where are you going?</h1>
+            <h1 id="planner-title" tabindex="-1">Where are you going?</h1>
             <p class="intro">Compare checked walking options and the information available along them.</p>
             <p class="mode-notice" id="mode-notice" role="status">Loading selected data mode…</p>
           </div>
@@ -74,12 +74,6 @@
           <div class="quick-grid" id="quick-grid"></div>
           <p class="prototype-note">The quick places are a small interaction sample, not a complete or verified Basel place directory. Checked walking geometry is available only for the SBB → Marktplatz pair.</p>
 
-          <section class="inspector" aria-labelledby="features-title">
-            <h2 id="features-title">Inspect a map feature</h2>
-            <p>Choose a marker or route to see its source, freshness and unknowns.</p>
-            <div id="features"></div>
-            <div id="details" aria-live="polite"><p>Select a feature to see its source and timestamps.</p></div>
-          </section>
         </section>
 
         <section class="map-screen" aria-label="Route map and directions">
@@ -88,30 +82,50 @@
             <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
           </div>
           <div class="map-controls">
-            <div class="map-view-row">
-              <label class="pet-toggle"><input id="pet-layer-toggle" type="checkbox"><span><strong>Historical PET map</strong><small>Fixed 14:00 summer scenario</small></span></label>
-              <details class="pet-legend"><summary>PET class legend</summary><ul id="pet-legend-list"></ul></details>
-            </div>
-            <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
-            <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
-            <div class="layer-switches" aria-label="Show route context">
-              <label><input id="landmark-toggle" type="checkbox" checked> Wayfinding cues · visibility unverified</label>
-              <label><input id="cool-place-toggle" type="checkbox"> Indoor rest candidate · hours and AC unknown</label>
-            </div>
-            <p id="layer-note">Source layers retain their own provenance and freshness.</p>
+            <details id="map-details" class="map-details">
+              <summary><span>Map details</span><span id="active-layer-summary" aria-live="polite">Map layers</span></summary>
+              <div id="map-details-content" class="map-details-content">
+                <div class="map-view-row">
+                  <label class="pet-toggle"><input id="pet-layer-toggle" type="checkbox"><span><strong>Historical PET map</strong><small>Fixed 14:00 summer scenario</small></span></label>
+                  <details class="pet-legend"><summary>PET class legend</summary><ul id="pet-legend-list"></ul></details>
+                </div>
+                <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
+                <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
+                <div class="layer-switches" aria-label="Show route context">
+                  <label><input id="landmark-toggle" type="checkbox"> Wayfinding cues · visibility unverified</label>
+                  <label><input id="cool-place-toggle" type="checkbox"> Indoor rest candidate · hours and AC unknown</label>
+                </div>
+                <div class="map-details-footer"><p id="layer-note">Source layers retain their own provenance and freshness.</p><button id="reset-map-details" type="button">Reset map details</button></div>
+              </div>
+            </details>
           </div>
           <div class="map-and-steps">
             <div class="map-wrap">
               <div id="map" tabindex="0" role="region" aria-label="Interactive Basel map. Arrow keys pan; plus and minus zoom."></div>
+              <nav class="map-navigation" aria-label="Map navigation">
+                <button id="zoom-in" type="button" aria-label="Zoom in on the map">＋ <span>Zoom in</span></button>
+                <button id="zoom-out" type="button" aria-label="Zoom out on the map">− <span>Zoom out</span></button>
+                <button id="center-trip" type="button" aria-label="Show the starting point and destination">Center trip</button>
+                <button id="focus-route" type="button" aria-label="Show the selected route">Show route</button>
+              </nav>
               <p class="map-overlay" id="basemap-status" role="status">Loading Basel basemap…</p>
-              <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
+              <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Choose a point on the map.</div>
             </div>
-            <aside class="steps" aria-labelledby="steps-title">
-              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p><p id="source-status" role="status"></p></div>
-              <ol id="step-list"></ol>
-              <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
-              <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Route geometry: OpenStreetMap via FOSSGIS. Historical PET is a fixed scenario, not current weather. Fountain operation, access, shade and seating remain unknown unless stated by source data.</p></div>
-            </aside>
+            <details class="steps" id="steps-panel">
+              <summary id="steps-panel-summary"><span>Route steps and details</span><span id="steps-panel-status">Choose a destination</span></summary>
+              <div class="steps-content" role="region" aria-labelledby="steps-title">
+                <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p><p id="source-status" role="status"></p></div>
+                <ol id="step-list"></ol>
+                <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
+                <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Route geometry: OpenStreetMap via FOSSGIS. Historical PET is a fixed scenario, not current weather. Fountain operation, access, shade and seating remain unknown unless stated by source data.</p></div>
+                <section class="inspector" aria-labelledby="features-title">
+                  <h2 id="features-title">Map information</h2>
+                  <p>Choose a map feature to see its source, freshness and unknowns.</p>
+                  <div id="features"></div>
+                  <div id="details" aria-live="polite"><p>Select a feature to see its source and timestamps.</p></div>
+                </section>
+              </div>
+            </details>
           </div>
         </section>
       </main>
