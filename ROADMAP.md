@@ -124,7 +124,7 @@ These are suggested role slots for the remaining work, not assigned people. Repl
 ### One repository, parallel work
 
 - Keep one shared GitHub repository. Each contributor uses their own clone and a short-lived task branch named for the work, then opens a pull request. Never have several people edit the same working folder.
-- T0, T1, T2, T3, T4 and T9 are merged. Continue T8 spatial/scene/bridge acceptance using the prepared geometry, then T10, T5, T6 and T7 in dependency order. T18/T19 remain conditional proposals; do not repeat completed preparation tasks.
+- T0, T1, T2, T3, T4, T9, T5 and the approved T10 route approximation are merged. T8/T10 broader spatial/scene/bridge acceptance remains open. T6 screen and journey integration are merged; use its [acceptance record](handoff/t6-integration.md) for the remaining external-server check. Continue T7 using the verified scope and explicit limits. T18/T19 remain conditional proposals; do not repeat merged implementations.
 - Keep file ownership with the proposed slot above and coordinate shared files first. D and F share T6 in sequence: D builds the comparison screen; F connects the calculation and checks the whole journey. E and F share T10 in sequence: E produces shade calculations; F adds caching, API connection, and performance checks. A owns only the optional T18 source follow-up.
 - Before beginning a dependent task, sync with its owner and use the merged branch as the base. If a change needs another slot's files, agree on the handoff first. Keep `main` runnable.
 - Review every pull request with at least one teammate. Run the repository privacy guard before commit and push. Merge only after explicit approval from the user who owns that pull request.

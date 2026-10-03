@@ -57,9 +57,10 @@ route geometry/provenance, speed, source-file stamps, policy and implementation.
 Changed prepared inputs invalidate results; missing inputs return a visible 503.
 All route calculation and rescoring use local inputs in every mode. Online mode
 refreshes provider layers independently; offline mode makes no external requests.
-No transit service is admitted. Local geometry/buildings and actual external-server
-acceptance still need validation on the target machine; see the
-[T6 handoff](handoff/t6-journey-integration.md).
+No transit service is admitted. The prepared local offline journey has been
+validated; the online external-server journey remains unverified. Each target
+machine still needs its own prepared datasets. See the
+[T6 acceptance record](handoff/t6-integration.md) for evidence and the remaining check.
 
 ## Download data before offline use
 
