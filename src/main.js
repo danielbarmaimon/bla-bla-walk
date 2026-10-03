@@ -1,4 +1,7 @@
 import {
+  addressSearch
+} from './address-search.js';
+import {
   parseSnapshot
 } from './api.js';
 import {
@@ -193,25 +196,6 @@ function renderQuickPlaces() {
   });
 }
 
-function renderSuggestions(query) {
-  const list = $('#suggestions');
-  list.replaceChildren();
-  const matches = PLACES.filter((place) => `${place.name} ${place.category}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())).slice(0, 6);
-  if (!query.trim() || !matches.length) {
-    list.hidden = true;
-    return;
-  }
-  matches.forEach((place) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.setAttribute('role', 'option');
-    button.textContent = place.name;
-    button.addEventListener('click', () => selectDestination(place));
-    list.append(button);
-  });
-  list.hidden = false;
-}
-
 function setPins() {
   map.setPins(state.origin, state.destination);
 }
@@ -223,6 +207,10 @@ function selectDestination(place) {
   $('#suggestions').hidden = true;
   renderJourney();
   setPins();
+  map.focusCoordinates([
+    [state.origin.lon, state.origin.lat],
+    [place.lon, place.lat]
+  ]);
 }
 
 function setOrigin(place, message) {
@@ -233,6 +221,11 @@ function setOrigin(place, message) {
   renderQuickPlaces();
   renderJourney();
   setPins();
+  map.focusCoordinates([
+    [place.lon, place.lat], ...state.destination ? [
+      [state.destination.lon, state.destination.lat]
+    ] : []
+  ]);
 }
 
 function selectPreference(preference) {
@@ -581,21 +574,9 @@ function useGps() {
   });
 }
 
-$('#destination-input').addEventListener('input', (event) => renderSuggestions(event.target.value));
-$('#destination-input').addEventListener('keydown', (event) => {
-  if (event.key === 'Enter' && $('#suggestions button')) {
-    event.preventDefault();
-    $('#suggestions button').click();
-  }
-});
-$('#origin-input').addEventListener('change', (event) => {
-  const place = PLACES.find((item) => item.name.toLocaleLowerCase() === event.target.value.trim().toLocaleLowerCase());
-  if (place) setOrigin(place, 'Starting point selected');
-  else {
-    $('#origin-status').textContent = 'Choose a sample place or pin your start.';
-    event.target.value = state.origin.name;
-  }
-});
+const searchSettings = await fetch('/config/address-search.json').then(response => response.json());
+addressSearch($('#destination-input'), $('#suggestions'), $('#destination-status'), mode, selectDestination, PLACES, searchSettings);
+addressSearch($('#origin-input'), $('#origin-suggestions'), $('#origin-status'), mode, place => setOrigin(place, 'Address selected'), PLACES, searchSettings);
 $('#gps-button').addEventListener('click', useGps);
 $('#pick-origin').addEventListener('click', () => pickOnMap('origin'));
 $('#pick-destination').addEventListener('click', () => pickOnMap('destination'));
@@ -610,11 +591,6 @@ $('#try-example').addEventListener('click', () => {
 });
 $('#landmark-toggle').addEventListener('change', renderJourney);
 $('#cool-place-toggle').addEventListener('change', renderJourney);
-PLACES.forEach((place) => {
-  const option = document.createElement('option');
-  option.value = place.name;
-  $('#origin-options').append(option);
-});
 renderQuickPlaces();
 setPins();
 renderPetLegend();

@@ -5,16 +5,20 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
+import httpx
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from rasterio.warp import transform_geom
 
+from .adapters.addresses import search_addresses
 from .adapters.routes import load_demo_routes
 from .basemap import tile_path
 from .comparison_service import ComparisonService
 from .demo_fixture import fixture_snapshot
 from .interfaces import (
+    AddressSearchRequest,
+    AddressSearchResponse,
     ComparisonJob,
     ComparisonPreferences,
     ComparisonRequest,
@@ -84,6 +88,20 @@ def map_snapshot(
                 503, "Saved provider snapshot unavailable; run offline preparation"
             ) from error
     return fixture_snapshot()
+
+
+@app.post("/api/addresses", response_model=AddressSearchResponse)
+def address_search(request: AddressSearchRequest, response: Response):
+    """Keep typed addresses out of access-log URLs and persistent caches."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return search_addresses(request.query, request.mode)
+    except ValueError as error:
+        raise HTTPException(422, "Enter a valid address query") from error
+    except (httpx.HTTPError, OSError, KeyError, TypeError) as error:
+        raise HTTPException(
+            503, "Address search unavailable; try again or pin on map"
+        ) from error
 
 
 @app.post("/api/shade", response_model=ShadeResponse)

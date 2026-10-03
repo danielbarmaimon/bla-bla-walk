@@ -1,5 +1,29 @@
 # Sources
 
+## Official Basel address lookup — checked 2026-10-03
+
+The [GeoAdmin SearchServer](https://docs.geo.admin.ch/access-data/search.html)
+supplies official building addresses (`origins=address`). The online lookup is
+admitted under [FSDI terms](https://www.geo.admin.ch/en/general-terms-of-use-fsdi)
+and [swisstopo open-data terms](https://www.swisstopo.admin.ch/en/faq-free-geodata),
+with **© swisstopo** attribution. No key or registration required. Debounced
+interactive requests follow fair use; this implementation does not scrape or
+download the directory. The provider supports partial/fuzzy matching: a result
+is a suggestion to select, not an exact-match guarantee.
+
+Requests use the pinned Basel-Stadt canton bounding box in LV95; every returned
+point is checked against its exact polygon, including holes, Riehen and Bettingen.
+Only address label and WGS84 coordinates pass to the browser; provider HTML is
+removed. Public venue Dornacherstrasse 394 returned a real Basel match during
+the source check. The live street query also returned partial house-number matches.
+Out-of-canton points are excluded, even when provider fuzzy matching returns them.
+
+Typed queries are sent to geo.admin.ch in online/example mode. The app uses a POST
+body so local access-log URLs omit them, never persists queries or selected
+addresses, and marks replies no-store. Offline mode makes no address-provider
+request; map pins and sample places remain available. Address coordinates do not
+certify pedestrian access or supply arbitrary-endpoint route geometry.
+
 ## Approved building-shadow route model
 
 The user chose a building-cast shadow approximation to finish the T10 continuation.

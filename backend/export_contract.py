@@ -6,6 +6,7 @@ from pathlib import Path
 from bla_bla_walk.contract_types import typescript_contract
 from bla_bla_walk.demo_fixture import fixture_snapshot
 from bla_bla_walk.interfaces import (
+    AddressSearchResponse,
     ComparisonJob,
     ComparisonPreferences,
     ComparisonRequest,
@@ -25,6 +26,10 @@ def write_json(path: Path, value: object) -> None:
 
 
 if __name__ == "__main__":
+    address_schema = AddressSearchResponse.model_json_schema()
+    (ROOT / "src/address-interfaces.ts").write_text(
+        typescript_contract(address_schema), encoding="utf-8"
+    )
     schema = MapSnapshot.model_json_schema()
     write_json(ROOT / ".cache/openapi.json", app.openapi())
     write_json(ROOT / "src/snapshot.schema.json", schema)
