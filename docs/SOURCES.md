@@ -35,8 +35,9 @@ covers both complete route polylines, cold/cache/concurrent requests, a shared
 prepared-tile seam, night and zero external HTTP transport calls. Numerical and
 analytic tests cover model selection, roof failures and shadow direction.
 Raster-cell counts are not route distances or physical shade observations.
-README owns preparation and reproduction commands. T5/T6 integration, observed
-ground/shade accuracy and full-city coverage remain separate work.
+README owns preparation and reproduction commands. T5/T6 integration is merged;
+the [T6 acceptance record](../handoff/t6-integration.md) tracks journey validation.
+Observed ground/shade accuracy and full-city coverage remain separate work.
 
 ## Slot E shade calculation checkpoint
 
@@ -51,7 +52,7 @@ The limits in [config/shade.json](../config/shade.json) reuse T0's 10-degree/150
 
 ## T0 admission audit — 2026-10-03
 
-The source audit is complete. Geometry preparation is feasible **with explicit unknown coverage and scene-validation requirements**, not a promise of known shade everywhere. T4 adapters supply the app's online/saved provider modes; T6 still connects shade and route evaluation to the full journey. [Source manifest](../data/source-manifest.json) records requests, samples, provenance, cost measurements and acceptance budgets. [Tile inventory](../data/tile-inventory.json) pins the boundary, every required tile, asset versions, checksums, grids and missing geometry. Original audit samples remain local under ignored `.hack/t0/`; current compact preparation is documented below.
+The source audit is complete. Geometry preparation is feasible **with explicit unknown coverage and scene-validation requirements**, not a promise of known shade everywhere. T4 adapters supply the app's online/saved provider modes; T6 connects shade and route evaluation to the journey; its [acceptance record](../handoff/t6-integration.md) tracks verified behavior and the remaining deployment check. [Source manifest](../data/source-manifest.json) records requests, samples, provenance, cost measurements and acceptance budgets. [Tile inventory](../data/tile-inventory.json) pins the boundary, every required tile, asset versions, checksums, grids and missing geometry. Original audit samples remain local under ignored `.hack/t0/`; current compact preparation is documented below.
 
 Admission permits the stated use; it does not establish live availability, measured cooling, drinking-water safety or pedestrian access. Preserve source-specific rights and attribution, transformations, observation/scenario time, publication time and retrieval date. The repository's prioritised resources are project references; their inclusion does not independently establish organiser endorsement or reuse permission.
 

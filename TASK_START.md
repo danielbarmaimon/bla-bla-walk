@@ -38,7 +38,7 @@ The hours are original roadmap estimates, not remaining-work estimates or deadli
 
 ## Core task prompts
 
-T3 and T4 have no new-work prompts. Reuse [the accepted screen guide](docs/style-guide.md), [T3 handoff](handoff/T3.md) and [T4 handoff](handoff/t4-observations-fountains.md); provider-mode API wiring is also merged. T6 completes the route/shade journey.
+T3 and T4 have no new-work prompts. Reuse [the accepted screen guide](docs/style-guide.md), [T3 handoff](handoff/T3.md) and [T4 handoff](handoff/t4-observations-fountains.md); provider-mode API wiring is also merged. T6 screen and journey integration are merged; the [acceptance record](handoff/t6-integration.md) tracks the remaining check.
 
 ### E · T8 · City geometry
 
@@ -76,18 +76,18 @@ Start T5 for Slot B. Use $hack-build. Follow TASK_START.md's shared metaprompt. 
 
 ### D · T6 · Comparison screen
 
-**Start:** after T5 passes acceptance and merges; T4 and T3 are complete. T19 is conditional on transit admission. **Suggested model:** GPT-6 Luna. **Effort:** Medium.
+The screen is merged. Reuse its implementation and the [historical screen
+handoff](handoff/t6-screen.md); current acceptance belongs in the
+[T6 acceptance record](handoff/t6-integration.md).
+
+### F · T6 · External-server acceptance
+
+**Start:** screen and local journey integration are merged. A deployment URL and
+prepared datasets on that server are needed. **Suggested model:** GPT-6.1 Sol.
+**Effort:** Medium.
 
 ```text
-Start T6 screen work for Slot D. Use $hack-build. Follow TASK_START.md's shared metaprompt. Read T6 in docs/plan.md. Build the screen portion only, then hand it off to Slot F. Do not mark T6 done until its full acceptance check passes.
-```
-
-### F · T6 · Journey integration
-
-**Start:** after D's screen portion merges. **Suggested model:** GPT-6.1 Sol. **Effort:** Medium.
-
-```text
-Continue T6 integration for Slot F. Use $hack-build. Follow TASK_START.md's shared metaprompt. Read T6 and D's handoff. Reuse the merged provider/offline modes. Connect shade, trip comparison and time controls, then verify all T6 criteria in online and local offline modes. Offline must make zero external requests; missing resources and unavailable transit stay explicit.
+Continue T6 external-server acceptance. Read handoff/t6-integration.md and T6 in docs/plan.md. Reuse the merged comparison API and screen. Obtain the deployment URL and verify the complete online journey with its prepared datasets, including source/calculation failures, polling, departure changes, cached rescoring, eligibility, layers and missing resources. Record evidence in the acceptance handoff. Keep unknown access/water and unavailable transit explicit; mark T6 complete only after its remaining criterion passes.
 ```
 
 ### F · T7 · Demo and fallback
