@@ -65,3 +65,9 @@ Owners remain unassigned until contributors choose tasks by GitHub username. Dom
 
 ## Risks and fallback
 Preflight city-wide tile coverage, border occluders, survey alignment, memory and latency before promising current-time performance. Keep licensed geometry snapshots and dated calculation outputs. If a source/calculation fails, show a labelled saved scenario without a Now claim. Missing data must not become sunlit, cool or passable by default.
+
+## Requested next-session UX (2026-10-04)
+
+The next build prioritizes a concise address-to-journey flow: Start, Destination, Departure time, nearby destination shortcuts and one Calculate action. One calculation prepares Fast and evidence-backed Recommended roles together; users see both distinct available paths, choose with fast-forward/trees icons, and read the selected route’s actual maneuver steps below the map. Progress shows three or four sourced preparation tips and real job status. Main-map badges become smaller, centred and without underlined text; active state and focus remain visible. Remove the successful basemap-status sentence from the main experience, retaining errors, attribution and the collapsed Information sources footer.
+
+Landmarks must follow arbitrary routes rather than one demo ID. Display time-specific shadow areas and use supported traversal-time shade in comparisons. Reuse the building-only approximation; tree/terrain shadows and physical city-wide validation remain distinct future work. Construction-aware comparison requires admitted spatial evidence and confirmed active pedestrian-closure semantics. Worksite cautions cannot become closures, and a router without avoidance support cannot promise a detour. Two roles may share one route; unavailable shade/eligibility must not produce a fake shaded recommendation. The plan’s M6 tasks define four disjoint lanes and staged integration. No external deployment.

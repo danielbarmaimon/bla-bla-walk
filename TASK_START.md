@@ -185,3 +185,31 @@ Start T17 for Slot D. Use $hack-build. Follow TASK_START.md's shared metaprompt.
 ## When a task is blocked
 
 Wait for its named prerequisites. Check whether they are merged into `main` and whether a handoff already exists. Review active pull requests and coordinate with the task owner. After a dependency merges, recheck `main` and start the next task whose `Needs` are all met.
+
+## Next-session four-account launch prompts
+
+These temporary A–D lanes are assigned by the team tomorrow; they are distinct from the older A–F team slots. Follow the shared metaprompt and M6 in docs/plan.md. D completes T20 once before all four accounts start their independent queues. Each account uses its own clone and starts each task in a fresh chat. Do not edit the plan from feature tasks.
+
+```text
+Start T20 for temporary lane D. Use $hack-build and $hack-interface. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Establish the reviewed feature baseline through PR #48 and freeze the common journey contract/fixtures. Do not merge any PR without explicit approval. Record the resulting main commit and component signatures for lanes A–D.
+```
+
+After T20 merges, start these four concurrently:
+
+```text
+Start T21 for temporary lane A. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Own only T21’s listed landmark files; keep shared entry points and contracts with their assigned owners. Export route-wide landmark candidates for integration. Hand off, then start T22 in a fresh chat after T21 merges.
+```
+
+```text
+Start T23 for temporary lane B. Use $hack-build and $hack-unstuck. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Trace real geometry through shadow calculation, route scoring and display; reuse the existing building model and keep unknowns. Own only listed diagnostic/shade files. Hand off, then start T24 after T23 merges.
+```
+
+```text
+Start T25 for temporary lane C. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Verify an authoritative spatial construction/closure source and its pedestrian meaning. Keep caution separate from blockage. Own only listed construction files. Start T26 only after source admission; later own backend integration T29.
+```
+
+```text
+Start T27 for temporary lane D. Use $hack-build and $hack-design. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Build the requested concise trip form in isolated components against T20 fixtures. Keep existing index/main/map untouched until T30. Hand off, then start T28; later own browser integration T30 and acceptance T31.
+```
+
+For the next task in a lane, use: `Start T<number> for temporary lane <letter>. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Respect listed ownership and verify every Needs before beginning.`
