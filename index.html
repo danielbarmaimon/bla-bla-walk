@@ -56,7 +56,7 @@
           <fieldset class="route-mode">
             <legend>What matters most?</legend>
             <div class="segmented">
-              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest</button>
+              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest overall</button>
               <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
             </div>
             <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
@@ -66,6 +66,23 @@
           <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
             <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
             <h2 id="journey-title"></h2><p id="journey-summary"></p>
+            <div class="comparison-controls" aria-label="Trip comparison settings">
+              <div class="departure-control">
+                <label for="departure-time">Departure time</label>
+                <div class="departure-input-row">
+                  <input id="departure-time" type="datetime-local" aria-describedby="comparison-control-status" disabled>
+                  <button id="departure-now" type="button" disabled>Now</button>
+                </div>
+              </div>
+              <div class="detour-control">
+                <label for="shade-detour-limit">More shade extra-time limit</label>
+                <select id="shade-detour-limit" aria-describedby="comparison-control-status" disabled>
+                  <option value="none">No extra limit</option>
+                  <option value="5">Up to 5 minutes</option>
+                </select>
+              </div>
+            </div>
+            <p class="comparison-control-status" id="comparison-control-status" role="status">Departure and detour controls are shown; their calculation connection is pending.</p>
             <div id="route-options" class="route-options"></div>
             <button class="primary-button" id="show-route" type="button">See route and evidence <span data-icon="arrow-right" aria-hidden="true"></span></button>
           </section>

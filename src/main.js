@@ -1,6 +1,7 @@
 import {
   parseSnapshot
 } from './api.js';
+import { renderTripComparison } from './comparison.js';
 import {
   createMap
 } from './map.js';
@@ -273,26 +274,24 @@ function appendStep([type, instruction, note]) {
 
 function renderRouteOptions() {
   const list = $('#route-options');
-  list.replaceChildren();
-  if (!routePairSelected()) return;
-  routes().forEach((route) => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'route-option';
-    button.setAttribute('aria-pressed', String(route.id === state.selectedRouteId));
-    const title = document.createElement('strong');
-    title.textContent = route.label;
-    const metrics = document.createElement('span');
-    metrics.textContent = `${Math.round(route.route.distance_m)} m · ${Math.round(route.route.duration_s / 60)} min walking estimate`;
-    const pet = document.createElement('small');
-    pet.textContent = route.pet ? `Historical PET: ${Math.round(route.pet.known_distance_m)} m classified · ${Math.round(route.pet.unknown_distance_m)} m unknown · ${route.pet.availability}` : 'Historical PET route classes unavailable';
-    button.append(title, metrics, pet);
-    button.addEventListener('click', () => {
+  if (!routePairSelected()) {
+    list.replaceChildren();
+    return;
+  }
+  renderTripComparison(list, {
+    routes: routes(),
+    selectedRouteId: state.selectedRouteId,
+    preference: state.preference === 'fast' ? 'fastest_overall' : 'more_shade',
+    onChoose: (route) => {
+      state.selectedRouteId = route.id;
+      renderJourney();
+      $('#route-options .comparison-primary[aria-pressed="true"]')?.focus();
+    },
+    onShow: (route) => {
       state.selectedRouteId = route.id;
       renderJourney();
       map.focus(route);
-    });
-    list.append(button);
+    }
   });
 }
 
@@ -342,7 +341,7 @@ function renderJourney() {
   $('#selected-journey').hidden = !destination;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
-  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest preference' : 'More shade preference';
+  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : 'More shade';
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : 'No checked street route is available for this selected pair. Use the Basel SBB → Marktplatz example.';
   $('#preference-note').textContent = state.preference === 'fast' ? 'Fastest selects the shorter checked walking estimate. More shade is not ranked until current shade calculations are available.' : 'Current shade is not calculated yet. Historical PET summaries stay available for each route; compare options manually.';
