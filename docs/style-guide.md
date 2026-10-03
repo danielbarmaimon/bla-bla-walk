@@ -37,7 +37,7 @@ On narrow screens, keep destination search and the map visible first. Stack rout
 | **B · Map-first utility** | Neutral panels, compact controls, strong route line patterns | Leaves more room for the map | Denser cards need careful type sizing |
 | **C · Warm outdoor** | Warm neutral surfaces, leaf/sky accents, softer card corners | Feels approachable for a walking tool | Accent colours need strict separation from status meanings |
 
-The structure above works with all three directions. Slot C selected A: use a restrained civic palette, with blue/teal reserved for navigation and route identity, and status colours kept distinct. The actual colour and spacing values belong in `src/theme.css` when T1 creates it.
+The structure above works with all three directions. Slot C selected A: use a restrained civic palette, with blue/teal reserved for navigation and route identity, and status colours kept distinct. The actual colour and spacing values belong in `src/theme.css` as created by T1.
 
 ### Additional visual direction proposed by the user
 
@@ -80,7 +80,7 @@ clearly marked examples until route/shade integration in T6.
 
 ## Accessibility and language
 
-- Meet WCAG AA contrast: at least 4.5:1 for normal text and 3:1 for large text and meaningful graphical controls. Check the actual token pairs in `src/theme.css` when T1 creates it.
+- Meet WCAG AA contrast: at least 4.5:1 for normal text and 3:1 for large text and meaningful graphical controls. Check the actual token pairs in `src/theme.css` as created by T1.
 - Never use colour alone: pair shade/exposure with text or patterns; pair freshness colours with labels and icons; distinguish routes with names and line styles.
 - All actions work with Tab, Shift+Tab, Enter/Space, and arrow keys where the control pattern calls for them. Keep focus visible and in a predictable order: time, layers, map controls, then route cards. The map must have equivalent keyboard-accessible layer and route controls outside the map canvas.
 - Use short, factual labels: “Shade calculated 14:32”, “Stale · 13:50”, “Unknown · no coverage”, “Outside Basel coverage”. Avoid “safe”, “cool”, or “best” unless the data and agreed rules support that claim.

@@ -15,7 +15,7 @@ Prepare 1m horizontal cells and 2m elevation steps, download the Basel geometry 
 - Updating the old branch hit the local identity guard on metadata already published on remote main. Publishing a fresh branch uses the guard's existing new-branch range, which checks only commits absent from remote refs; the only new commits have the repository's GitHub username/noreply identity. Guard rules and shared history are unchanged.
 
 ## Next
-Review and merge the prepared PR only after explicit approval. Continue T8 spatial/scene/bridge acceptance, then T10 shadow accuracy/performance and T5/T6 journey integration. Use README's local offline/external-server instructions; large data must be prepared or copied separately in another clone/server.
+PR #24 is merged into main. Continue T8 spatial/scene/bridge acceptance, then T10 shadow accuracy/performance and T5/T6 journey integration. Use README's local offline/external-server instructions; large data must be prepared or copied separately in another clone/server.
 
 ## Limits
 This is T8 ingestion and operating-mode preparation. T8 scene/bridge validation, T10 shade and T5 route metrics remain unfinished. The original inventory records native 0.5m pins; the preparation manifest records the selected 2m terrain source separately. Missing buffer geometry remains unknown.

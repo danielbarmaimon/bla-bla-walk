@@ -8,14 +8,14 @@ Replace each `TBD` with the contributor's GitHub username after the team chooses
 
 | Slot | GitHub username | Work area |
 |---|---|---|
-| A | TBD | T0, T4 · Source feasibility, temperature and fountains |
-| B | TBD | T2, T5 · Domain rules and route evaluation |
-| C | TBD | T3, T9 · Screen design and checked walking routes |
-| D | TBD | T1, T6 screen · Map foundation and comparison screen |
-| E | TBD | T8, T10 calculation · City geometry and shade calculation |
-| F | TBD | T10 cache/API, T6 integration, T7 · Integration and demo |
+| A | TBD | T18 source follow-up · Transit access, terms and freshness review (conditional) |
+| B | TBD | T5, T12, T15 · Route evaluation, spoken format and report rules |
+| C | TBD | T11 · Landmark and barrier validation |
+| D | TBD | T6 screen, T17 · Comparison screen and report display |
+| E | TBD | T8 validation, T10 calculation, T13 · Geometry, shade and spoken steps |
+| F | TBD | T10 cache/API, T6 integration, T7, T14, T16 · Journey, demo, call and report API |
 
-Demo and end-to-end integration owner: TBD (slot F). Timekeeper: the team can assign one if useful.
+Core implementation tasks T0–T4 and T9 are merged; T8 ingestion and online/offline data modes are also available. Slot suggestions below describe remaining proposals, not assignments. Demo and end-to-end integration owner: TBD (slot F). Timekeeper: the team can assign one if useful.
 
 ## Working rules
 

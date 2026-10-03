@@ -32,8 +32,8 @@ Pull request #19: https://github.com/danielbarmaimon/bla-bla-walk/pull/19
 
 The observation export caps at 5,000 recent records. Stations absent from that window remain missing. Process caches do not survive restarts. The map-bound rectangle can include points outside the canton. Fountain metadata has no structured water or operational fields. Fixture timestamps are historical source samples.
 
-The adapters are not yet called by `main.py`; T6 owns API integration. No model contract changed.
+The T4 adapter change introduced no model contract changes. Subsequent compact/offline preparation connected these adapters through snapshots.py and main.py; online and offline provider modes are merged. T6 still owns the complete shade/comparison journey.
 
 ## Next owner
 
-T6 owns API wiring. Preserve the adapter freshness states.
+T6 reuses merged provider-mode API wiring and completes shade/comparison integration. Preserve adapter freshness states.

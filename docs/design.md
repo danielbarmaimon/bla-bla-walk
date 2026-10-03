@@ -23,7 +23,7 @@ The user scenario proposed for review is an older person travelling to a grocery
 - Investigate public and aggregated data before committing to live integrations.
 - Preserve access for people without smartphones; the phone-access concept and demo direction are captured in [future features](future-features.md), with implementation deferred until the core web-app demo is ready.
 - Treat volunteer accompaniment and community assistance as a later phase, with operating and vetting arrangements still unresolved.
-Coverage includes all Basel, rather than one neighbourhood. Pin the administrative boundary in T0; default interpretation is Basel city. Inventory city-wide geometry plus surrounding shadow-casting objects. Calculate requested map tiles and route corridors on demand. The first demo uses two checked walking alternatives; arbitrary-endpoint route generation is a later decision.
+Coverage includes all Basel, rather than one neighbourhood. The T0 engineering boundary is pinned to Basel-Stadt canton, including Riehen/Bettingen; use the source register and inventory for exact extent and buffer gaps. Inventory city-wide geometry plus surrounding shadow-casting objects. Calculate requested map tiles and route corridors on demand. The first demo uses two checked walking alternatives; arbitrary-endpoint route generation is a later decision.
 
 ## Data
 The [source register](SOURCES.md) is authoritative for endpoints, licensing, attribution, evidence and admission checks.
