@@ -1,12 +1,12 @@
 # T10 · Slot E shade calculation
 
-Status: paused for handoff; PR #30 is open; T10 and Slot E acceptance are not complete · Branch: `feat/t10-compact-validation` · Project Slot E owner in `TEAM.md`: @danielbarmaimon · Current checkpoint contributor: @sergimos
+Status: paused for handoff; PR #30 is merged; T10 and Slot E acceptance are not complete · Branch: `feat/t10-handoff-followup` · Project Slot E owner in `TEAM.md`: @danielbarmaimon · Current checkpoint contributor: @sergimos
 
 ## Start here
 
-Read `AGENTS.md`, `TASK_START.md`, `TEAM.md`, `ROADMAP.md`, and the T8/T10 entries in `docs/plan.md`. Then read this handoff and inspect PR #30 before taking work. The repository's launch guide says a slot should start from merged `main`; PR #30 is not merged. Do not assume the checkpoint is accepted or mark T10 done. The latest Slot E code and evidence are on `feat/t10-compact-validation`.
+Read `AGENTS.md`, `TASK_START.md`, `TEAM.md`, `ROADMAP.md`, and the T8/T10 entries in `docs/plan.md`. Then read this handoff and inspect the merged PR #30 before taking work. The repository's launch guide says a slot should start from merged `main`. PR #30 is merged; the latest handoff-only update is on `feat/t10-handoff-followup`. Do not assume the checkpoint is accepted or mark T10 done. The calculation and evidence code are in `main`.
 
-PR #29, the first shade-calculation checkpoint, is merged into `main`. PR #30 carries the compact-grid validation, pre-encoding evidence model, calculator support, tests and this handoff. The user chose to keep the configured compact geometry while preserving its pre-encoding validity and receiver evidence. That choice does not approve any pedestrian receiver threshold, route-score tolerance or T10 completion.
+PR #29, the first shade-calculation checkpoint, is merged into `main`. PR #30 carries the compact-grid validation, pre-encoding evidence model, calculator support and tests. This follow-up carries the reproducible takeover details. The user chose to keep the configured compact geometry while preserving its pre-encoding validity and receiver evidence. That choice does not approve any pedestrian receiver threshold, route-score tolerance or T10 completion.
 
 ## What is implemented
 
