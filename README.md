@@ -195,6 +195,14 @@ bash scripts/doc-check.sh --strict
 
 Browser checks use an installed Chromium; set `CHROMIUM_PATH` to its executable if it is not on PATH. These checks skip with a visible reason when no browser is available. Offline browser integration checks also need the saved provider snapshot and basemap from offline preparation. Run only the API/model checks with `python -m pytest -c backend/pyproject.toml backend/tests -m 'not browser'`. No Node.js installation is required.
 
+T5's backend comparison and traversal-time sampling are checked by the same test
+command. With local building/geometry preparation available, run
+`python scripts/validate_route_comparison.py` to calculate distance estimates
+for both saved routes without external requests. It checks that rescoring makes
+zero shade calls and unknown route access withholds all recommendations.
+These are building-shadow midpoint approximations, with unknown/night retained;
+see [routing rules](docs/routing-rules.md) for limits and T6's integration boundary.
+
 Format Python with `python -m ruff format backend scripts/fetch_browser_assets.py scripts/format_browser.py` and browser code with `python scripts/format_browser.py`. [backend/bla_bla_walk/interfaces.py](backend/bla_bla_walk/interfaces.py) is canonical; regeneration writes [src/interfaces.ts](src/interfaces.ts) for editor/JSDoc use and the browser validation schema. Include a decision line with model changes and never edit generated files by hand. Consumer ownership is listed in [ROADMAP.md](ROADMAP.md); the map modules now use .js filenames.
 
 ## Data sources
