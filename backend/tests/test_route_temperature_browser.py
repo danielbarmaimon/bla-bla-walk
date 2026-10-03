@@ -83,6 +83,7 @@ def test_real_saved_route_gradient_and_switches(browser_page):
         "document.querySelector('#temperature-legend')"
         ".textContent.includes('sensor-based estimate')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "SAVED / STALE" in page.locator("#temperature-legend").inner_text()
     assert "°C" in page.locator("#temperature-legend").inner_text()
     page.locator("#show-route").click()
@@ -94,7 +95,13 @@ def test_real_saved_route_gradient_and_switches(browser_page):
       const layer=map.getLayers().getArray().find(l=>l.getZIndex()===6);
       const features=layer.getSource().getFeatures();
       const known=features.filter(f=>f.get('temperatureSample'));
-      const point=known[Math.floor(known.length/2)].getGeometry().getCoordinates();
+          const free=known.find(feature=>{
+            const c=feature.getGeometry().getCoordinates();
+            const pixel=map.getPixelFromCoordinate([(c[0][0]+c.at(-1)[0])/2,
+              (c[0][1]+c.at(-1)[1])/2]);
+            return map.getFeaturesAtPixel(pixel)[0]?.get('temperatureSample');
+          });
+          const point=free.getGeometry().getCoordinates();
       return {colours:[...new Set(known.map(f=>f.get('temperatureColour')))],
         pixel:map.getPixelFromCoordinate([(point[0][0]+point.at(-1)[0])/2,
           (point[0][1]+point.at(-1)[1])/2])};
@@ -117,8 +124,11 @@ def test_real_saved_route_gradient_and_switches(browser_page):
     page.locator("#temperature-palette").select_option("winter")
     ramp = page.locator(".temperature-ramp").evaluate("e=>e.style.background")
     assert "165, 243, 252" in ramp and "67, 56, 202" in ramp
-    page.locator("#temperature-route-toggle").uncheck()
-    assert not page.locator("#temperature-route-toggle").is_checked()
+    page.locator("#temperature-route-toggle").click()
+    assert (
+        page.locator("#temperature-route-toggle").get_attribute("aria-pressed")
+        == "false"
+    )
     assert not page.evaluate(
         "window.temperatureTestMap.getLayers().getArray()"
         ".find(l=>l.getZIndex()===6).getVisible()"

@@ -37,7 +37,6 @@ const configResponse = await fetch('/config/basemap.json');
 if (!configResponse.ok) throw new Error('Basemap configuration unavailable.');
 const basemapConfig = await configResponse.json();
 const offline = new URLSearchParams(location.search).get('mode') === 'offline';
-const online = new URLSearchParams(location.search).get('mode') === 'online';
 const BASEMAP_URL = offline ? '/tiles/{z}/{x}/{y}.png' : basemapConfig.url;
 const BASEMAP_EXTENT = basemapConfig.bounds_wgs84;
 const BASEL_CENTRE = [7.5886, 47.5596];
@@ -74,7 +73,7 @@ export function createMap(
   petSource.on('imageloaderror', () => onPetStatus('Historical PET map unavailable · route cells without data stay unknown.'));
   const petLayer = new ImageLayer({
     source: petSource,
-    visible: online,
+    visible: false,
     opacity: 0.68,
     zIndex: 1,
   });
@@ -106,6 +105,7 @@ export function createMap(
     }),
   });
   const layers = new globalThis.Map();
+  let shownRouteIds = null;
   map.getControls().forEach((control) => {
     if (control instanceof window.ol.control.Attribution) {
       control.setCollapsible(false);
@@ -132,6 +132,7 @@ export function createMap(
   const contextFeatures = new VectorSource();
   const contextLayer = new VectorLayer({
     source: contextFeatures,
+    zIndex: 8,
     style: (marker) => new Style({
       image: new CircleStyle({
         radius: marker.get('kind') === 'rest' || marker.get('kind') === 'pause' ? 8 : 6,
@@ -266,6 +267,7 @@ export function createMap(
           }),
         }),
         style: (marker) => {
+          if (layer.kind === 'route' && shownRouteIds && !shownRouteIds.has(String(marker.getId()))) return undefined;
           const routeColor = marker.getId() === layer.features[1]?.id ? '--route-b' : '--route-a';
           return new Style({
             image,
@@ -316,6 +318,10 @@ export function createMap(
     updateSize: () => map.updateSize(),
     setPetVisible: (visible) => petLayer.setVisible(visible && !offline),
     setVisible: (id, visible) => layers.get(id)?.setVisible(visible),
+    setRouteVisibility: ids => {
+      shownRouteIds = new Set(ids);
+      layers.forEach(layer => layer.changed());
+    },
     setPins: (origin, destination) => {
       pinFeatures.clear();
       [origin, destination].filter(Boolean).forEach((place, index) => {

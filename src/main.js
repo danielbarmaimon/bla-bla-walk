@@ -1,7 +1,16 @@
 import {
   routeAmenities,
-  amenityLabel
+  amenityLabel,
+  plannedRestStops
 } from './route-amenities.js';
+import {
+  badgeActive,
+  installLayerBadges,
+  visibleRouteIds
+} from './layer-badges.js';
+import {
+  scheduledOpen
+} from './supermarket-hours.js';
 import {
   routeTemperatureView,
   showRouteTemperature
@@ -30,14 +39,12 @@ import {
 } from './sample-places.js';
 import {
   FOUNTAIN_BUFFER_M,
-  SENSOR_BUFFER_M,
   routeGeometry,
-  nearbyFeatures
+  nearbyFeatures,
+  coordinateAtFraction
 } from './route-planner-data.js';
 import {
-  WAYFINDING_PLACES,
-  COOL_PLACES,
-  routeStops
+  WAYFINDING_PLACES
 } from './wayfinding-places.js';
 
 const FALLBACK_START = {
@@ -67,9 +74,7 @@ let temperatureView = null;
 const routes = () => routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
 const routePairSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
-const sourceFeatures = (kind) => state.snapshot?.layers.find((layer) => layer.kind === kind)?.features ?? [];
 const fountainsNearRoute = () => state.route && state.amenities ? nearbyFeatures(state.route, state.amenities.fountains.features, FOUNTAIN_BUFFER_M) : [];
-const sensorsNearRoute = () => state.route ? nearbyFeatures(state.route, sourceFeatures('observation'), SENSOR_BUFFER_M) : [];
 
 function icon(name) {
   const image = document.createElement('img');
@@ -98,6 +103,7 @@ function showFeature(feature) {
     ['Value', feature.value == null ? 'Unknown / no value' : `${feature.value} ${feature.unit ?? ''}`],
     ['Meaning', feature.explanation],
     ['Drinking water', feature.drinking_water ?? 'Not applicable'],
+    ['Mapped opening hours', feature.opening_hours ?? 'Not applicable'],
     ['Walking estimate', feature.route ? `${Math.round(feature.route.distance_m)} m · ${Math.round(feature.route.duration_s / 60)} min` : 'Not applicable'],
     ['Provider', source.provider],
     ['Attribution', source.attribution],
@@ -166,20 +172,11 @@ function renderFeatures() {
 function renderLayers() {
   const container = $('#layers');
   container.replaceChildren();
-  displayLayers().forEach((layer) => {
-    const label = document.createElement('label');
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = true;
-    const text = document.createElement('span');
-    const name = document.createElement('strong');
-    name.textContent = layer.label;
-    const note = document.createElement('small');
-    note.textContent = `${layer.availability} · ${layer.explanation}`;
-    text.append(name, note);
-    label.append(checkbox, text);
-    container.append(label);
-    checkbox.addEventListener('change', () => map.setVisible(layer.id, checkbox.checked));
+  displayLayers().forEach(layer => {
+    const paragraph = document.createElement('p');
+    paragraph.textContent = `${layer.label} · ${layer.availability} · ${layer.explanation}`;
+    container.append(paragraph);
+    if (layer.kind !== 'route') map.setVisible(layer.id, badgeActive(layer.kind === 'observation' ? '#weather-stations-toggle' : '#fountains-layer-toggle'));
   });
 }
 
@@ -272,10 +269,9 @@ function routeSteps() {
   ];
   if (route.id === 'demo-route-a') {
     steps.push(['Wayfinding', 'Barfüsserplatz is a named point on this route.', 'Nearby landmarks and visibility are unverified.']);
-    steps.push(['Rest', 'Optional rest near Barfüsserplatz.', 'Example cue; seating and access are unverified.']);
+
   }
   if (water) steps.push(['Water', `${water.feature.label} is near the route.`, 'Location only; drinking water and operation are unknown.']);
-  if (route.id === 'demo-route-a') steps.push(['Pause', 'Optional pause before Marktplatz.', 'Example cue; no verified seating information.']);
   steps.push(['Arrive', 'Finish at Marktplatz.', 'Checked route snapshot destination; local access is not verified.']);
   return steps;
 }
@@ -296,7 +292,7 @@ function appendStep([type, instruction, note]) {
   text.textContent = instruction;
   const detail = document.createElement('small');
   detail.textContent = note;
-  item.append(heading, text, detail);
+  item.append(heading, text);
   $('#step-list').append(item);
 }
 
@@ -339,10 +335,10 @@ function renderNearby() {
   const details = $('#nearby-details');
   details.hidden = !state.route;
   if (details.hidden) return;
-  const fountains = fountainsNearRoute();
-  const sensors = sensorsNearRoute();
-  const stopCandidates = currentAmenities().filter(item => item.feature.kind === 'rest');
-  $('#nearby-summary').textContent = `Route stops · ${fountains.length} fountains, ${stopCandidates.filter(item=>item.feature.rest_type==='bench').length} benches, ${stopCandidates.filter(item=>item.feature.rest_type!=='bench').length} rest candidates`;
+  const fountains = visibleAmenities().filter(item => item.feature.kind === 'fountain');
+  const stopCandidates = visibleAmenities().filter(item => item.feature.kind === 'rest');
+  const planned = plannedRestStops(state.route, selectedRoute()?.route.duration_s, stopSettings.rest_interval_minutes);
+  $('#nearby-summary').textContent = `Route stops · ${fountains.length} fountains, ${stopCandidates.filter(item=>item.feature.rest_type==='bench').length} benches · ${planned.length} planned rests`;
   const list = $('#nearby-list');
   list.replaceChildren();
   fountains.forEach(({
@@ -350,7 +346,7 @@ function renderNearby() {
     distance
   }) => {
     const item = document.createElement('li');
-    item.textContent = `Fountain · ${feature.label} · ${Math.round(distance)} m from route · drinking/operation/access unknown · ${feature.explanation}`;
+    item.textContent = `Water · ${Math.round(distance)} m off route`;
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = 'Show fountain';
@@ -367,7 +363,7 @@ function renderNearby() {
     fraction
   }) => {
     const item = document.createElement('li');
-    item.textContent = `${amenityLabel(feature)} · ${Math.round(fraction*state.route.length)} m along route · ${Math.round(distance)} m away · ${feature.explanation}`;
+    item.textContent = `${feature.rest_type === "indoor" ? "Supermarket" : amenityLabel(feature)} · ${Math.round(fraction*state.route.length)} m along route · ${Math.round(distance)} m away`;
     const button = document.createElement('button');
     button.type = 'button';
     button.textContent = `Show ${feature.label}`;
@@ -380,27 +376,9 @@ function renderNearby() {
   });
   const status = document.createElement('li');
   status.textContent = `${state.amenitiesStatus} Distance is geometric proximity, not a verified walking detour.`;
-  list.append(status);
-  sensors.forEach(({
-    feature,
-    distance
-  }) => {
-    const item = document.createElement('li');
-    item.textContent = `Sensor · ${feature.label} · ${Math.round(distance)} m from route · ${feature.value == null ? 'no reading' : `${feature.value.toFixed(1)}°C`} · ${feature.availability} · observed ${formatTime(feature.provenance.observed_at)}`;
-    list.append(item);
-  });
-  const contextPlaces = selectedRoute()?.id === 'demo-route-a' ? [...WAYFINDING_PLACES, ...COOL_PLACES] : [];
-  contextPlaces.forEach((place) => {
-    const item = document.createElement('li');
-    item.textContent = `${place.label} · ${place.note} `;
-    const source = document.createElement('a');
-    source.href = place.sourceUrl ?? place.operatorUrl;
-    source.textContent = 'Source';
-    source.target = '_blank';
-    source.rel = 'noopener noreferrer';
-    item.append(source);
-    list.append(item);
-  });
+  $('#route-candidate-notes').textContent = status.textContent;
+  $('#route-candidate-notes').textContent += ' ' + currentAmenities().map(item => `${item.feature.label}: ${item.feature.explanation}`).join(' ');
+
 }
 
 function renderJourney() {
@@ -415,23 +393,55 @@ function renderJourney() {
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
-  $('#steps-summary').textContent = route ? `${state.chosenRouteId === route.id ? 'Chosen eligible route' : 'Inspecting route'} · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Walking route unavailable for this selection.';
-  routeSteps().forEach(appendStep);
+  $('#steps-summary').textContent = route ? `${Math.round(route.route.distance_m)} m · ${Math.round(route.route.duration_s/60)} min walking` : 'Walking route unavailable for this selection.';
+  const steps = routeSteps();
+  const arrival = steps.at(-1)?.[0] === 'Arrive' ? steps.pop() : null;
+  steps.forEach(appendStep);
+  plannedRestStops(state.route, route?.route.duration_s, stopSettings.rest_interval_minutes).forEach(stop => appendStep(['Rest', `Planned pause after ${stop.walk_minutes} minutes walking.`, 'On-route planning prompt; seating not guaranteed.']));
+  if (arrival) appendStep(arrival);
   $('#source-status').textContent = `${state.amenitiesStatus} · ${fountainsNearRoute().length} real fountains within ${FOUNTAIN_BUFFER_M} m`;
   renderRouteOptions();
   renderNearby();
+  const supermarkets = openSupermarkets();
+  $('#interior-list-section').hidden = !badgeActive('#cool-place-toggle');
+  $('#interior-list').replaceChildren();
+  supermarkets.forEach(feature => {
+    const item = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = feature.label;
+    button.onclick = () => {
+      map.focus(feature);
+      showFeature(feature);
+    };
+    item.append(button);
+    $('#interior-list').append(item);
+  });
+  if (!supermarkets.length) $('#interior-list').textContent = 'No supermarkets with supported open hours at this departure.';
   const markers = [];
-  if ($('#route-stops-toggle').checked) currentAmenities().slice(0, stopSettings.max_markers).forEach(({
-    feature
+  visibleAmenities().slice(0, stopSettings.max_markers).forEach(({
+    feature,
+    fraction
   }) => markers.push({
     kind: feature.kind === 'fountain' ? 'water' : feature.rest_type,
     label: amenityLabel(feature),
+    coordinates: coordinateAtFraction(state.route, fraction),
+    sourceFeature: feature
+  }));
+  if (badgeActive('#rest-stop-toggle')) plannedRestStops(state.route, selectedRoute()?.route.duration_s, stopSettings.rest_interval_minutes).forEach(stop => markers.push({
+    kind: 'rest',
+    label: `REST ${stop.walk_minutes}m`,
+    coordinates: stop.coordinates,
+  }));
+  if (badgeActive('#cool-place-toggle')) supermarkets.forEach(feature => markers.push({
+    kind: 'indoor',
+    label: feature.label,
     coordinates: feature.geometry.coordinates,
     sourceFeature: feature
   }));
   if (routePairSelected() && state.route) {
     if (selectedRoute().id === 'demo-route-a') {
-      if ($('#landmark-toggle').checked) WAYFINDING_PLACES.forEach((place) => markers.push({
+      if (badgeActive('#landmark-toggle')) WAYFINDING_PLACES.forEach((place) => markers.push({
         kind: 'landmark',
         label: place.label,
         coordinates: place.coordinates
@@ -441,7 +451,20 @@ function renderJourney() {
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
-  temperatureView?.render(state.route);
+  const visible = visibleRouteIds(routes(), activeComparison()?.winner, badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
+  map.setRouteVisibility(visible);
+  temperatureView?.render(state.route, visible.includes(route?.id));
+  map.setShadeVisible(badgeActive('#shade-samples-toggle'));
+  map.setPetVisible(badgeActive('#pet-layer-toggle'));
+  renderLayers();
+  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${activeComparison()?.winner ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
+  const notes = $('#route-step-notes');
+  notes.replaceChildren();
+  routeSteps().forEach(([type, instruction, note]) => {
+    const p = document.createElement('p');
+    p.textContent = `${type}: ${note}`;
+    notes.append(p);
+  });
   $('#calculate-journey').disabled = !routePairSelected() || !routes().length || state.comparisonJob?.status === 'running';
   $('#retry-walking-route').hidden = routePairSelected();
 }
@@ -473,26 +496,21 @@ const stopSettings = await fetch('/config/route-stops.json').then(response => re
 temperatureView = await routeTemperatureView(map, mode, renderJourney);
 
 function currentAmenities() {
-  const indoor = $('#cool-place-toggle').checked ? COOL_PLACES.map(place => ({
-    id: place.id,
-    label: place.label,
-    kind: 'rest',
-    rest_type: 'indoor',
-    geometry: {
-      type: 'Point',
-      coordinates: place.coordinates
-    },
-    availability: 'unknown',
-    explanation: place.note,
-    provenance: {
-      provider: 'Curated canton/operator evidence',
-      source_url: place.sourceUrl,
-      attribution: 'Operator factual information',
-      licence: 'Linked factual summary; website media not redistributed',
-      fixture: false
-    }
-  })) : [];
-  return routeAmenities(state.route, state.amenities, stopSettings, indoor);
+  const data = state.amenities;
+  const candidates = routeAmenities(state.route, data, stopSettings);
+  return candidates.filter(item => item.feature.rest_type !== 'indoor');
+}
+
+function visibleAmenities() {
+  return currentAmenities().filter(({
+    feature
+  }) => feature.rest_type !== 'indoor' && badgeActive(feature.kind === 'fountain' ? '#water-stop-toggle' : feature.rest_type === 'bench' ? '#bench-stop-toggle' : '#rest-stop-toggle'));
+}
+
+function openSupermarkets() {
+  const departure = new Date($('#departure-time').value || Date.now());
+  return (state.amenities?.rest_stops.features ?? []).filter(feature =>
+    feature.rest_type === 'indoor' && scheduledOpen(feature.opening_hours, departure, stopSettings.public_holidays));
 }
 fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => {
   if (!response.ok) throw new Error('Stop data unavailable');
@@ -505,7 +523,7 @@ fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => 
   state.amenitiesStatus = 'Real route-stop data unavailable; no candidates inferred.';
   renderJourney();
 });
-$('#route-stops-toggle').addEventListener('change', renderJourney);
+installLayerBadges(renderJourney);
 const calculation = journeyCalculation((job, message) => {
   state.comparisonJob = job;
   if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
@@ -574,7 +592,7 @@ function updatePreferences() {
 $('#shade-detour-limit').addEventListener('change', updatePreferences);
 ['shade', 'duration', 'water'].forEach((name) => $(`#weight-${name}`).addEventListener('change', updatePreferences));
 $('#balanced-mode').addEventListener('click', () => selectPreference('balanced'));
-$('#shade-samples-toggle').addEventListener('change', (event) => map.setShadeVisible(event.target.checked));
+
 fetch('/api/coverage').then((response) => {
   if (!response.ok) throw new Error('Coverage unavailable');
   return response.json();
@@ -582,10 +600,6 @@ fetch('/api/coverage').then((response) => {
   $('#layer-note').textContent = 'City boundary unavailable; calculation support remains explicit in route evidence.';
 });
 
-$('#pet-layer-toggle').checked = mode === 'online';
-$('#pet-layer-toggle').disabled = mode !== 'online';
-$('#pet-layer-toggle').addEventListener('change', (event) => map.setPetVisible(event.target.checked));
-map.setPetVisible(mode === 'online');
 
 async function refresh() {
   calculation.clear();
@@ -616,7 +630,7 @@ async function refresh() {
     renderLayers();
     renderFeatures();
     if (routes().length && routePairSelected()) {
-      state.selectedRouteId = routes().some((route) => route.id === state.selectedRouteId) ? state.selectedRouteId : routes()[0].id;
+      state.selectedRouteId = [...routes()].sort((a, b) => a.route.duration_s - b.route.duration_s)[0].id;
 
     }
     renderJourney();
@@ -713,8 +727,8 @@ $('#try-example').addEventListener('click', () => {
   selectDestination(MARKTPLATZ);
   showMap();
 });
-$('#landmark-toggle').addEventListener('change', renderJourney);
-$('#cool-place-toggle').addEventListener('change', renderJourney);
+
+
 renderQuickPlaces();
 setPins();
 renderPetLegend();

@@ -70,3 +70,29 @@ def test_offline_and_example_stop_api_has_zero_outbound_http():
                     for feature in layer["features"]
                 )
     transport.assert_not_called()
+
+
+def test_supermarket_hours_without_raw_identity():
+    layer = preparation.prepare(
+        {
+            "elements": [
+                {
+                    "type": "node",
+                    "id": 4,
+                    "lon": 7.606272,
+                    "lat": 47.537456,
+                    "tags": {
+                        "shop": "supermarket",
+                        "brand": "Migros",
+                        "name": "Do not retain",
+                        "contact:email": "synthetic@example.com",
+                        "opening_hours": "Mo-Su 08:00-22:00",
+                    },
+                }
+            ]
+        }
+    )
+    feature = layer.features[0]
+    assert feature.rest_type == "indoor" and feature.label == "Migros"
+    assert feature.opening_hours == "Mo-Su 08:00-22:00"
+    assert "Do not retain" not in layer.model_dump_json()

@@ -15,6 +15,7 @@ def open_map(page):
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
     assert page.locator("#features button").count() == 5
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     for summary in page.locator("#features summary").all():
         summary.click()
 
@@ -28,14 +29,14 @@ def test_layers_provenance_and_missing_states(browser_page):
     assert "28 °C" in page.locator("#details").inner_text()
     assert "Synthetic fixture" in page.locator("#details").inner_text()
     assert "01/10/2026" in page.locator("#details").inner_text()
-    toggle = page.locator("#layers").get_by_role(
-        "checkbox", name="Temperature", exact=False
-    )
-    toggle.uncheck()
-    assert not toggle.is_checked()
+    page.locator("#more-layers").evaluate("e=>e.open=true")
+    toggle = page.locator("#weather-stations-toggle")
+    assert toggle.get_attribute("aria-pressed") == "false"
+    toggle.click()
+    assert toggle.get_attribute("aria-pressed") == "true"
     # Source inspection remains available when its map layer is hidden.
     assert "Sample sensor A" in page.locator("#details").inner_text()
-    toggle.check()
+    toggle.click()
     page.get_by_role("button", name="Sample sensor B").click()
     assert "Unknown / no value" in page.locator("#details").inner_text()
     page.get_by_role("button", name="Sample fountain A").focus()
@@ -71,6 +72,7 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Offline mode')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     page.locator("#features summary").first.click()
     page.locator("#features button").first.click()
     assert "Provider data" in page.locator("#details").inner_text()

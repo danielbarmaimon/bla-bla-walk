@@ -25,7 +25,6 @@
             <p class="kicker">BASEL, SWITZERLAND</p>
             <h1 id="planner-title">Where are you going?</h1>
             <p class="intro">Compare checked walking options and the information available along them.</p>
-            <p class="mode-notice" id="mode-notice" role="status">Loading selected data mode…</p>
           </div>
 
           <div class="journey-fields">
@@ -104,12 +103,6 @@
           <div class="quick-grid" id="quick-grid"></div>
           <p class="prototype-note">The quick places are a small interaction sample, not a complete or verified Basel place directory. Checked walking geometry is available only for the SBB → Marktplatz pair.</p>
 
-          <section class="inspector" aria-labelledby="features-title">
-            <h2 id="features-title">Inspect a map feature</h2>
-            <p>Choose a marker or route to see its source, freshness and unknowns.</p>
-            <div id="features"></div>
-            <div id="details" aria-live="polite"><p>Select a feature to see its source and timestamps.</p></div>
-          </section>
         </section>
 
         <section class="map-screen" aria-label="Route map and directions">
@@ -118,24 +111,22 @@
             <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
           </div>
           <div class="map-controls">
-            <div class="map-view-row">
-              <label class="pet-toggle"><input id="pet-layer-toggle" type="checkbox"><span><strong>Historical PET map</strong><small>Fixed 14:00 summer scenario</small></span></label>
-              <details class="pet-legend"><summary>PET class legend</summary><ul id="pet-legend-list"></ul></details>
+            <div class="badge-grid" id="primary-layers" aria-label="Route layers">
+              <button type="button" class="layer-badge" id="temperature-route-toggle" aria-pressed="true">Temperature</button>
+              <button type="button" class="layer-badge" id="fast-route-toggle" aria-pressed="true">Fast route</button>
+              <button type="button" class="layer-badge" id="recommended-route-toggle" aria-pressed="true">Recommended</button>
+              <button type="button" class="layer-badge" id="water-stop-toggle" aria-pressed="true">Water</button>
+              <button type="button" class="layer-badge" id="bench-stop-toggle" aria-pressed="true">Bench</button>
+              <button type="button" class="layer-badge" id="rest-stop-toggle" aria-pressed="true">Rest</button>
             </div>
-            <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
-            <label><input id="temperature-route-toggle" type="checkbox" checked> Sensor-based route temperature · interpolated estimate</label>
-            <label>Temperature palette <select id="temperature-palette"><option value="auto">Automatic</option><option value="summer">Summer</option><option value="winter">Winter</option></select></label>
-            <div id="temperature-legend" aria-live="polite">Loading real sensor readings…</div>
-            <p>Temperature colours cover the selected route's shade strokes. Turn temperature off to inspect shade. Dotted grey means insufficient sensor coverage; air temperature is separate from shade and historical PET.</p>
-            <label><input id="shade-samples-toggle" type="checkbox" checked> Route shade samples · solid shaded, dashed sunlit, dotted unknown/night</label>
-            <p>City boundary is the shade calculation limit; prepared coverage inside it may be incomplete. Current-departure shade comparison supports only the saved SBB → Marktplatz pair. New address pairs have walking geometry, with shade unknown.</p>
-            <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
-            <div class="layer-switches" aria-label="Show route context">
-              <label><input id="landmark-toggle" type="checkbox" checked> Wayfinding cues · visibility unverified</label>
-              <label><input id="cool-place-toggle" type="checkbox"> Indoor rest candidate · hours and AC unknown</label>
-              <label><input id="route-stops-toggle" type="checkbox" checked> Route stops: WATER fountains · BENCH seating · REST candidates · access unknown</label>
-            </div>
-            <p id="layer-note">Source layers retain their own provenance and freshness.</p>
+            <details id="more-layers"><summary>More</summary><div class="badge-grid">
+              <button type="button" class="layer-badge" id="pet-layer-toggle" aria-pressed="false">Heatmap</button>
+              <button type="button" class="layer-badge" id="shade-samples-toggle" aria-pressed="false">Shading</button>
+              <button type="button" class="layer-badge" id="weather-stations-toggle" aria-pressed="false">Weather stations</button>
+              <button type="button" class="layer-badge" id="fountains-layer-toggle" aria-pressed="false">Fountains</button>
+              <button type="button" class="layer-badge" id="landmark-toggle" aria-pressed="false">Landmarks</button>
+              <button type="button" class="layer-badge" id="cool-place-toggle" aria-pressed="false">Interior space</button>
+            </div></details>
           </div>
           <div class="map-and-steps">
             <div class="map-wrap">
@@ -144,16 +135,32 @@
               <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
             </div>
             <aside class="steps" aria-labelledby="steps-title">
-              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p><p id="source-status" role="status"></p></div>
+              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p></div>
               <ol id="step-list"></ol>
               <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
-              <details class="nearby-details" id="map-feature-inspector" hidden><summary>Selected point · source and dates</summary><div id="map-feature-details" aria-live="polite"></div></details>
-              <div id="temperature-sample" aria-live="polite"></div>
-              <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Route geometry: OpenStreetMap via FOSSGIS. Historical PET is a fixed scenario, not current weather. Fountain operation, access, shade and seating remain unknown unless stated by source data.</p></div>
+              <details class="nearby-details" id="interior-list-section" hidden><summary>Supermarkets</summary><ul id="interior-list"></ul></details>
             </aside>
           </div>
         </section>
       </main>
+      <footer class="information-footer"><details id="information-sources"><summary>Information sources</summary>
+        <p id="mode-notice" role="status">Loading selected data mode…</p>
+        <p id="source-status" role="status"></p><p id="route-candidate-notes"></p><p id="route-display-info"></p>
+        <p id="pet-status" role="status">Heatmap is a fixed historical PET scenario, available online only.</p>
+        <ul id="pet-legend-list"></ul>
+        <label>Temperature palette <select id="temperature-palette"><option value="auto">Automatic</option><option value="summer">Summer</option><option value="winter">Winter</option></select></label>
+        <div id="temperature-legend" aria-live="polite">Loading real sensor readings…</div>
+        <p>Temperature colours cover shade strokes on the selected route. Turn Temperature off to inspect Shading. Dotted grey indicates insufficient sensor coverage. Air temperature, shade and historical PET are separate evidence.</p>
+        <p>Shading remains experimental and is off by default; its repair is deferred. Landmarks use only the saved demonstration route. Rest markers are planned prompts every 15 minutes of walking, not verified seating. Stop icons are projected onto the route; source locations and off-route distances remain in the details.</p>
+        <p id="interior-status">Interior space uses only supermarkets with interpretable mapped opening hours at the selected departure. Opening, access and cooling are not live-verified; unknown schedules are withheld.</p>
+        <p id="layer-note">Source layers retain their own provenance and freshness.</p>
+        <div id="layers"></div><div id="route-step-notes"></div>
+        <section class="inspector" aria-labelledby="features-title"><h2 id="features-title">Inspect a map feature</h2><div id="features"></div><div id="details" aria-live="polite">Select a feature for its sources.</div></section>
+        <details id="map-feature-inspector" hidden><summary>Selected point · source and dates</summary><div id="map-feature-details"></div></details>
+        <div id="temperature-sample" aria-live="polite"></div>
+        <p>Route geometry: © OpenStreetMap contributors via FOSSGIS. IWB fountain operation/drinking/access and OSM seating condition remain unknown. Provider terms and timestamps accompany the selected features.</p>
+      </details></footer>
+
     </div>
     <script src="/vendor/ol.js"></script>
     <script src="/vendor/ajv2020.js"></script>

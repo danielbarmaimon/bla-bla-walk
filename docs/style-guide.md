@@ -93,3 +93,7 @@ mistaken for measured heat or calculated shade.
 ## Reference images
 
 No visual references were supplied for this draft. If the team adds examples later, use cropped, non-personal images; record the specific element to borrow and do not copy a whole branded interface.
+
+## Map badge update — 2026-10-04
+
+The user chose equal-size title-only tap buttons, no layer checkboxes. Six active primary badges: Temperature, Fast route, Recommended, Water, Bench, Rest. More contains six inactive optional badges and starts collapsed. Native buttons expose aria-pressed, support keyboard activation and retain a focus outline; active text is underlined as well as filled. Theme tokens and badge sizing live in src/theme.css. Keep badge text free of source metadata. Information sources is a collapsed footer containing all provider/method/limit details; the map keeps concise journey instructions. Stop markers project onto the route without moving their source records; planned rest labels include walking-minute milestones.

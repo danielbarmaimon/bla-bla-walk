@@ -120,3 +120,7 @@ On the local app, select an address, show the calculated route, and enable Route
 ## Sensor route-temperature demonstration
 
 Use the local **Online** mode, select a route, and enable Sensor-based route temperature. The selected line uses real station-based estimates with an actual °C range, coverage and time/source details. Click a coloured section for its contributing observations. Summer is green–amber–rose; winter is cyan–indigo. Automatic uses current sensor temperature, then the departure day's city forecast to choose the palette. Forecast never fills route gaps. Disable temperature to inspect shade strokes. Example/offline uses saved readings and explicitly says SAVED / STALE. This feature is exploratory and does not establish street-level cooling or safety; the static T7 fallback remains its older labelled saved result.
+
+## Simplified map controls
+
+The local app now starts with Temperature, Fast route, Recommended, Water, Bench and Rest active. Tap badges to toggle them; open More for Heatmap, Shading, Weather stations, Fountains, Landmarks and Interior space. Recommended may have no supported route; do not call an arbitrary alternative recommended. Stops are displayed on the walking line, with rest planning prompts at 15 walking-minute intervals. Sources and actual off-route positions are under Information sources. Interior space filters mapped supermarkets by supported scheduled hours at the selected departure. Shading repair remains deferred. The static fallback still reflects its dated earlier saved output.
