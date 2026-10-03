@@ -12,7 +12,7 @@ Replace each `TBD` with the contributor's GitHub username after the team chooses
 | B | TBD | T5, T12, T15 · Route evaluation, spoken format and report rules |
 | C | TBD | T11 · Landmark and barrier validation |
 | D | TBD | T6 screen, T17 · Comparison screen and report display |
-| E | TBD | T8 validation, T10 calculation, T13 · Geometry, shade and spoken steps |
+| E | @danielbarmaimon | T8 validation, T10 calculation, T13 · Geometry, shade and spoken steps |
 | F | TBD | T10 cache/API, T6 integration, T7, T14, T16 · Journey, demo, call and report API |
 
 Core implementation tasks T0–T4 and T9 are merged; T8 ingestion and online/offline data modes are also available. Slot suggestions below describe remaining proposals, not assignments. Demo and end-to-end integration owner: TBD (slot F). Timekeeper: the team can assign one if useful.

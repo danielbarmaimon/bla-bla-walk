@@ -86,6 +86,7 @@ pnpm-debug.log*
 logs/
 tmp/
 temp/
+data/geometry/
 *.tmp
 *.sqlite
 *.sqlite3

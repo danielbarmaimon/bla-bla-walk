@@ -10,7 +10,7 @@ The shortest walk may involve exposed streets, few places to rest, or inaccessib
 
 ## Project status
 
-The map supports online provider observations/fountain locations, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Calculated shade and route comparison are still later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md).
+The map supports online provider observations/fountain locations, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Calculated shade and route comparison are still later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
 
 - [Design and demo proposal](docs/design.md)
 - [Build tasks and acceptance checks](docs/plan.md)
@@ -69,6 +69,19 @@ python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 0.0.0.0 --port 
 ```
 
 Put the app behind the server's HTTPS reverse proxy and open its address with `/?mode=online`. Browser modules and `/api/map` use that same server origin; no separate API URL or CORS setup is needed. Users do not download the height data to their phones. The server needs outbound access to the observation/fountain sources, and browsers need access to the Basel WMTS service. Keep geometry on persistent storage. An external server cannot provide disconnected offline use once the device loses access to it; use the locally prepared setup for that. Nothing has been deployed by these instructions.
+
+## Prepare native T8 geometry (validation)
+
+T8 keeps the native 0.5 m Float32 surface and terrain grids outside Git under `data/geometry/`. The committed [geometry metadata](data/fixtures/geometry-metadata.json) records every selected tile, explicit source gaps, checksums, alignment and cell-flag policy. Preparation is safe to rerun: verified artifacts are reused and incomplete downloads resume.
+
+```sh
+python backend/prepare_native_geometry.py plan
+python backend/prepare_native_geometry.py prepare --tiles 2613-1269 2614-1269 --workers 2 --batch-name vegetation-audit
+python backend/prepare_native_geometry.py prepare --all --batch-size 8 --workers 2
+python backend/prepare_native_geometry.py verify
+```
+
+Keep preparation at two workers or fewer. The full local output is about 3.7 GiB; a missing buffer source remains an explicit unknown rather than being filled or assumed clear. T10 consumes this prepared geometry and its flags but owns shade wire output.
 
 ## Development checks
 
