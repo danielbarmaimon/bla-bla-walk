@@ -121,7 +121,11 @@ def test_failed_new_route_has_no_demo_line(browser_page):
 def test_late_response_and_offline_never_overwrite_current_route(browser_page):
     page = browser_page
     page.goto(page.base_url)
-    page.wait_for_function("!document.querySelector('#destination-input').disabled")
+    page.wait_for_function(
+        "document.querySelector('#nearby-summary').textContent.includes('Route stops')"
+        " && document.querySelector('#mode-notice')"
+        ".textContent.includes('Example mode')"
+    )
     result = page.evaluate("""async () => {
       const {walkingRouting} = await import('/src/walking-routing.js');
       const original = window.fetch;

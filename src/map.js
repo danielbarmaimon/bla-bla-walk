@@ -199,7 +199,7 @@ export function createMap(
       return;
     }
     map.forEachFeatureAtPixel(event.pixel, (feature) => {
-      const selected = features.get(String(feature.getId()));
+      const selected = feature.get('sourceFeature') ?? features.get(String(feature.getId()));
       if (selected) onSelect(selected);
       return true;
     });
@@ -316,6 +316,7 @@ export function createMap(
         });
         marker.set('kind', item.kind);
         marker.set('label', item.label);
+        marker.set('sourceFeature', item.sourceFeature);
         contextFeatures.addFeature(marker);
       });
     },

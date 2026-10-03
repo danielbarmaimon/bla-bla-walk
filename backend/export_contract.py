@@ -11,6 +11,7 @@ from bla_bla_walk.interfaces import (
     ComparisonPreferences,
     ComparisonRequest,
     MapSnapshot,
+    RouteAmenities,
     ShadeRequest,
     ShadeResponse,
     WalkingRouteRequest,
@@ -28,6 +29,9 @@ def write_json(path: Path, value: object) -> None:
 
 if __name__ == "__main__":
     address_schema = AddressSearchResponse.model_json_schema()
+    (ROOT / "src/amenities-interfaces.ts").write_text(
+        typescript_contract(RouteAmenities.model_json_schema()), encoding="utf-8"
+    )
     (ROOT / "src/walking-interfaces.ts").write_text(
         typescript_contract(WalkingRouteRequest.model_json_schema()), encoding="utf-8"
     )

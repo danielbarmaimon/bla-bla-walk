@@ -1,4 +1,8 @@
 import {
+  routeAmenities,
+  amenityLabel
+} from './route-amenities.js';
+import {
   addressSearch
 } from './address-search.js';
 import {
@@ -51,13 +55,15 @@ const state = {
   chosenRouteId: null,
   walkingLayer: null,
   routingStatus: '',
+  amenities: null,
+  amenitiesStatus: 'Loading real route-stop data…',
 };
 const $ = (selector) => document.querySelector(selector);
 const routes = () => routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
 const routePairSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
 const sourceFeatures = (kind) => state.snapshot?.layers.find((layer) => layer.kind === kind)?.features ?? [];
-const fountainsNearRoute = () => state.route ? nearbyFeatures(state.route, sourceFeatures('fountain'), FOUNTAIN_BUFFER_M) : [];
+const fountainsNearRoute = () => state.route && state.amenities ? nearbyFeatures(state.route, state.amenities.fountains.features, FOUNTAIN_BUFFER_M) : [];
 const sensorsNearRoute = () => state.route ? nearbyFeatures(state.route, sourceFeatures('observation'), SENSOR_BUFFER_M) : [];
 
 function icon(name) {
@@ -124,6 +130,9 @@ function showFeature(feature) {
     link.rel = 'noopener noreferrer';
     details.append(link);
   }
+  $('#map-feature-details').replaceChildren(...Array.from(details.childNodes, node => node.cloneNode(true)));
+  $('#map-feature-inspector').hidden = false;
+  $('#map-feature-inspector').open = true;
 }
 
 function renderFeatures() {
@@ -327,7 +336,8 @@ function renderNearby() {
   if (details.hidden) return;
   const fountains = fountainsNearRoute();
   const sensors = sensorsNearRoute();
-  $('#nearby-summary').textContent = `Nearby source points · ${fountains.length} fountains, ${sensors.length} sensors`;
+  const stopCandidates = currentAmenities().filter(item => item.feature.kind === 'rest');
+  $('#nearby-summary').textContent = `Route stops · ${fountains.length} fountains, ${stopCandidates.filter(item=>item.feature.rest_type==='bench').length} benches, ${stopCandidates.filter(item=>item.feature.rest_type!=='bench').length} rest candidates`;
   const list = $('#nearby-list');
   list.replaceChildren();
   fountains.forEach(({
@@ -335,9 +345,37 @@ function renderNearby() {
     distance
   }) => {
     const item = document.createElement('li');
-    item.textContent = `Fountain · ${feature.label} · ${Math.round(distance)} m from route · drinking status unknown`;
+    item.textContent = `Fountain · ${feature.label} · ${Math.round(distance)} m from route · drinking/operation/access unknown · ${feature.explanation}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Show fountain';
+    button.onclick = () => {
+      showFeature(feature);
+      map.focus(feature);
+    };
+    item.append(button);
     list.append(item);
   });
+  stopCandidates.forEach(({
+    feature,
+    distance,
+    fraction
+  }) => {
+    const item = document.createElement('li');
+    item.textContent = `${amenityLabel(feature)} · ${Math.round(fraction*state.route.length)} m along route · ${Math.round(distance)} m away · ${feature.explanation}`;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = `Show ${feature.label}`;
+    button.onclick = () => {
+      showFeature(feature);
+      map.focus(feature);
+    };
+    item.append(button);
+    list.append(item);
+  });
+  const status = document.createElement('li');
+  status.textContent = `${state.amenitiesStatus} Distance is geometric proximity, not a verified walking detour.`;
+  list.append(status);
   sensors.forEach(({
     feature,
     distance
@@ -373,28 +411,26 @@ function renderJourney() {
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
   $('#steps-summary').textContent = route ? `${state.chosenRouteId === route.id ? 'Chosen eligible route' : 'Inspecting route'} · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Walking route unavailable for this selection.';
   routeSteps().forEach(appendStep);
-  $('#source-status').textContent = state.snapshot ? `${state.snapshot.mode} data · ${fountainsNearRoute().length} fountains within ${FOUNTAIN_BUFFER_M} m · ${sensorsNearRoute().length} sensors within ${SENSOR_BUFFER_M} m` : 'Map data has not loaded.';
+  $('#source-status').textContent = `${state.amenitiesStatus} · ${fountainsNearRoute().length} real fountains within ${FOUNTAIN_BUFFER_M} m`;
   renderRouteOptions();
   renderNearby();
   const markers = [];
+  if ($('#route-stops-toggle').checked) currentAmenities().slice(0, stopSettings.max_markers).forEach(({
+    feature
+  }) => markers.push({
+    kind: feature.kind === 'fountain' ? 'water' : feature.rest_type,
+    label: amenityLabel(feature),
+    coordinates: feature.geometry.coordinates,
+    sourceFeature: feature
+  }));
   if (routePairSelected() && state.route) {
     if (selectedRoute().id === 'demo-route-a') {
-      routeStops(state.route, fountainsNearRoute()).forEach((stop) => markers.push({
-        kind: stop.type,
-        label: stop.type.toUpperCase(),
-        coordinates: stop.coordinates
-      }));
       if ($('#landmark-toggle').checked) WAYFINDING_PLACES.forEach((place) => markers.push({
         kind: 'landmark',
         label: place.label,
         coordinates: place.coordinates
       }));
     }
-    if (selectedRoute().id === 'demo-route-a' && $('#cool-place-toggle').checked) COOL_PLACES.forEach((place) => markers.push({
-      kind: 'landmark',
-      label: 'Cool-place candidate',
-      coordinates: place.coordinates
-    }));
   }
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
@@ -426,6 +462,42 @@ const map = createMap($('#map'), showFeature, (message) => {
 }, (message) => {
   $('#pet-status').textContent = message;
 });
+const stopSettings = await fetch('/config/route-stops.json').then(response => response.json());
+
+function currentAmenities() {
+  const indoor = $('#cool-place-toggle').checked ? COOL_PLACES.map(place => ({
+    id: place.id,
+    label: place.label,
+    kind: 'rest',
+    rest_type: 'indoor',
+    geometry: {
+      type: 'Point',
+      coordinates: place.coordinates
+    },
+    availability: 'unknown',
+    explanation: place.note,
+    provenance: {
+      provider: 'Curated canton/operator evidence',
+      source_url: place.sourceUrl,
+      attribution: 'Operator factual information',
+      licence: 'Linked factual summary; website media not redistributed',
+      fixture: false
+    }
+  })) : [];
+  return routeAmenities(state.route, state.amenities, stopSettings, indoor);
+}
+fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => {
+  if (!response.ok) throw new Error('Stop data unavailable');
+  return response.json();
+}).then(data => {
+  state.amenities = data;
+  state.amenitiesStatus = `Route candidates: IWB ${data.fountains.availability} · OSM ${data.rest_stops.availability}; source dates in details`;
+  renderJourney();
+}).catch(() => {
+  state.amenitiesStatus = 'Real route-stop data unavailable; no candidates inferred.';
+  renderJourney();
+});
+$('#route-stops-toggle').addEventListener('change', renderJourney);
 const calculation = journeyCalculation((job, message) => {
   state.comparisonJob = job;
   if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
@@ -526,7 +598,7 @@ async function refresh() {
       });
     }
     const messages = {
-      fixture: 'Example mode: synthetic sensor and fountain layers beside sourced walking geometry. Calculated shade uses local prepared inputs.',
+      fixture: 'Example mode: synthetic sensor and fountain layers beside sourced walking geometry. Route stop candidates use saved IWB/OSM data with their own dates. Calculated shade uses local prepared inputs.',
       online: 'Online mode: provider data with source timestamps; missing and stale values remain explicit.',
       offline: 'Offline mode: saved provider data only. Observation timestamps retain their original dates.'
     };

@@ -57,7 +57,8 @@ export const snapshotSchema = {
             "observation",
             "fountain",
             "shade",
-            "route"
+            "route",
+            "rest"
           ],
           "title": "Kind",
           "type": "string"
@@ -175,6 +176,23 @@ export const snapshotSchema = {
             }
           ],
           "default": null
+        },
+        "rest_type": {
+          "anyOf": [
+            {
+              "enum": [
+                "bench",
+                "park",
+                "indoor"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rest Type"
         }
       },
       "required": [
@@ -206,7 +224,8 @@ export const snapshotSchema = {
             "observation",
             "fountain",
             "shade",
-            "route"
+            "route",
+            "rest"
           ],
           "title": "Kind",
           "type": "string"
