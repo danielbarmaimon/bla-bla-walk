@@ -29,6 +29,8 @@ uses a distinct branch; compare the overlapping implementations before merging.
 - Fixed real provider timestamp wrapping on narrow map controls and checked
   the downloaded provider snapshot at phone width. Strict docs, full lint,
   formatting, generated schema and staged privacy guard pass.
+- Expanded real geometry/model identifiers now wrap inside comparison cards;
+  desktop and phone saved-result rendering verified, with a browser regression.
 - Real API validation: 248 exact traversal-time samples in 702.683 seconds,
   zero external HTTP calls, zero detour-rescore samples and immediate online
   reuse. Baseline/Fastest/More shade all return no eligible route because access

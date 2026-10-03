@@ -206,6 +206,11 @@ def test_comparison_controls_unknowns_failure_and_keyboard(browser_page, mode):
         )
     )
     result = completed(service, JourneyRequest(mode="online", departure=DEPARTURE))
+    for evidence in result.evidence:
+        for sample in evidence.samples:
+            sample.metadata.geometry_version = (
+                "model-" + "a" * 64 + ";buildings=" + "b" * 64
+            )
     service.executor.shutdown()
     snapshot = MapSnapshot(
         mode=mode, generated_at=DEPARTURE, layers=[load_demo_routes()]
@@ -254,6 +259,7 @@ def test_comparison_controls_unknowns_failure_and_keyboard(browser_page, mode):
         assert "No eligible route" in page.locator("#route-options").inner_text()
         assert page.locator(".comparison-primary:disabled").count() == 2
         assert "Transit" in page.locator("#preference-note").inner_text()
+        page.locator(".comparison-card summary").first.click()
         assert not page.evaluate("document.documentElement.scrollWidth > innerWidth")
         page.locator("#shade-mode").click()
         count = len(calls)
