@@ -5,7 +5,6 @@ from datetime import UTC, datetime, timedelta, timezone
 
 import numpy as np
 import pytest
-
 from bla_bla_walk.geometry import compact_heights, geometry_settings
 from bla_bla_walk.shade import (
     NIGHT,

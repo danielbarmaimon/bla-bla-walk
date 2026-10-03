@@ -62,7 +62,7 @@ Keep the local server running with the Run locally command and open [offline mod
 
 Open [online mode](http://127.0.0.1:8000/?mode=online) to request provider observations and fountain locations through the API and live basemap images through the browser. Source timestamps and stale/missing states remain visible. The first provider load may take longer; later requests follow the adapters' hourly/daily caches.
 
-To run on an external server, install the same pinned environment and browser assets there. Prepare geometry there for the future shade worker, or copy the prepared geometry together with its manifest and config. Run:
+To run on an external server, install the same pinned environment and browser assets there. Prepare geometry there for the local shade API checkpoint, or copy the prepared geometry together with its manifest and config. Run:
 
 ```sh
 python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 0.0.0.0 --port 8000
@@ -85,6 +85,32 @@ Keep preparation at two workers or fewer. The full local output is about 3.7 GiB
 
 ## Development checks
 
+### Shade API checkpoint
+
+`POST /api/shade` accepts an aware timestamp and west/south/east/north viewport bounds in LV95 (EPSG:2056) metres, up to 1000m per side after outward 1m snapping. An optional LV95 `corridor` polyline and `corridor_width_m` restrict the requested cells. The canonical request/response models live in [interfaces.py](backend/bla_bla_walk/interfaces.py); generated client schemas and declarations are separate from the existing map snapshot contract.
+
+For example, POST this JSON to the running local or external server:
+
+```json
+{"bounds":[2610000,1266000,2611000,1267000],"requested_time":"2026-06-21T12:00:00Z"}
+```
+
+The response contains north-first, row-major uint8 raster bytes encoded as base64, snapped bounds, dimensions, per-state counts and requested/effective time plus preparation version. States are 0 unknown, 1 sunlit, 2 shaded and 3 night. **The compact production path currently returns unknown for every cell:** quantized height equality does not establish a verified walking receiver, and compact real-scene validation remains unfinished. Outside the admitted city/corridor cells, coverage is unsupported. This API is a checkpoint for integration, not a useful shade layer yet; T6 still owns browser wiring and T10 remains open.
+
+Shade uses local geometry and solar calculations in both online and offline modes; it makes no provider requests. Missing raster cells/buffer inputs remain unknown. A missing/invalid manifest or corrupt prepared file returns 503, oversized viewports return 413 and invalid request fields return 422. Busy workers return 503 with Retry-After. No geometry is downloaded automatically.
+
+[Service limits](config/shade-service.json) bound geometry to 16 million cells per request, two simultaneous calculations and 128MiB of serialized cache entries per server process. Restart after changing worker/cache limits. Identical misses share one calculation; a different request is rejected when both workers are occupied. Cache keys include exact UTC time, geometry/preparation and implementation versions, encoding/grid, extent, corridor, boundary, source-file presence/size/mtime and ray/receiver policy. Grid hashes are verified on cold reads. There are no five-minute buckets or disk cache; restart clears the cache. The X-Shade-Cache header indicates MISS/HIT. HTTP responses use no-store because local input availability can change.
+
+Reproduce the integration and separate synthetic ray-kernel measurements:
+
+```sh
+python scripts/benchmark_shade.py --repeats 5
+```
+
+[Recorded performance](data/fixtures/shade-performance.json) includes 1km centre, vegetation and boundary views and two concurrent requests. The real API measurements exercise geometry loading and unknown output; the synthetic benchmark exercises actual rays with an analytically verified ceiling. Neither establishes physical-scene accuracy or useful city-wide shade throughput. See [Slot F's handoff](handoff/t10-cache-api.md) for the remaining acceptance checks.
+
+### Calculation validation
+
 Slot E's T10 calculation checkpoint has analytic and independent numerical checks; see [its handoff](handoff/t10-shade-calculation.md) for remaining T10 acceptance work. To reproduce the small real-raster spot check, supply the native source pair for tile 2610-1266 from [the pinned inventory](data/tile-inventory.json), saved locally as .hack/t10/surface.tif and .hack/t10/terrain.tif. The validator verifies both catalogue checksums and does not download files:
 
 ```sh
@@ -96,8 +122,8 @@ Activate the environment and run from the repository root:
 ```sh
 python backend/export_contract.py
 python -m pytest -c backend/pyproject.toml backend/tests
-python -m ruff check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py
-python -m ruff format --check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py
+python -m ruff check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py
+python -m ruff format --check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py
 python scripts/format_browser.py --check
 bash scripts/doc-check.sh --strict
 ```

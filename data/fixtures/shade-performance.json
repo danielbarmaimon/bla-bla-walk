@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-03T16:15:35.873683+00:00",
+  "environment": {
+    "system": "Windows",
+    "python": "3.14.7",
+    "logical_processors": 3
+  },
+  "scope": "In-process HTTP/API integration using real compact grids; all production receivers unknown. Separate synthetic 1km ray-kernel benchmark. No network, production deployment, physical accuracy or full T10 acceptance claimed.",
+  "repetitions": 5,
+  "views": {
+    "urban_centre": {
+      "bounds_lv95": [
+        2610000,
+        1266000,
+        2611000,
+        1267000
+      ],
+      "cold": [
+        {
+          "seconds": 2.976444,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.297511,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.171412,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.340548,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.018014,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "warm": [
+        {
+          "seconds": 0.092168,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.07887,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.091705,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.09299,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.07807,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "cold_p95_seconds": 2.849265,
+      "warm_p95_seconds": 0.092825,
+      "cold_budget_5s_pass": true,
+      "warm_budget_0_5s_pass": true
+    },
+    "vegetation": {
+      "bounds_lv95": [
+        2613000,
+        1269000,
+        2614000,
+        1270000
+      ],
+      "cold": [
+        {
+          "seconds": 2.305621,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.156975,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.039763,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 1.941106,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.228715,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "warm": [
+        {
+          "seconds": 0.088011,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.085414,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.091103,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.074744,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.083353,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "cold_p95_seconds": 2.29024,
+      "warm_p95_seconds": 0.090484,
+      "cold_budget_5s_pass": true,
+      "warm_budget_0_5s_pass": true
+    },
+    "city_edge": {
+      "bounds_lv95": [
+        2608500,
+        1267500,
+        2609500,
+        1268500
+      ],
+      "cold": [
+        {
+          "seconds": 2.030756,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 1.778838,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 1.811929,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 1.821234,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 2.001062,
+          "cache": "MISS",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "warm": [
+        {
+          "seconds": 0.090489,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.085411,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.090807,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.090145,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        },
+        {
+          "seconds": 0.311252,
+          "cache": "HIT",
+          "counts": {
+            "unknown": 1000000,
+            "sunlit": 0,
+            "shaded": 0,
+            "night": 0
+          },
+          "availability": "unknown",
+          "response_bytes": 1333988
+        }
+      ],
+      "cold_p95_seconds": 2.024817,
+      "warm_p95_seconds": 0.267163,
+      "cold_budget_5s_pass": true,
+      "warm_budget_0_5s_pass": true
+    }
+  },
+  "concurrent_two_misses": [
+    {
+      "seconds": 3.190174,
+      "cache": "MISS",
+      "counts": {
+        "unknown": 1000000,
+        "sunlit": 0,
+        "shaded": 0,
+        "night": 0
+      },
+      "availability": "unknown",
+      "response_bytes": 1333988
+    },
+    {
+      "seconds": 3.101684,
+      "cache": "MISS",
+      "counts": {
+        "unknown": 1000000,
+        "sunlit": 0,
+        "shaded": 0,
+        "night": 0
+      },
+      "availability": "unknown",
+      "response_bytes": 1333988
+    }
+  ],
+  "cache_serialized_bytes": 22677796,
+  "cache_budget_bytes": 134217728,
+  "peak_process_bytes": 704278528,
+  "memory_scope": "Whole-process peak working set/RSS across two concurrent requests plus synthetic kernel; not isolated per-worker memory.",
+  "synthetic_kernel": {
+    "grid_cells": 1272384,
+    "receiver_area_cells": 1000000,
+    "seconds": [
+      0.523174,
+      0.531234,
+      0.534799,
+      0.518427,
+      0.518671
+    ],
+    "p95_seconds": 0.534086,
+    "counts": {
+      "unknown": 272484,
+      "sunlit": 999780,
+      "shaded": 120,
+      "night": 0
+    },
+    "verified_synthetic_ceiling_metres": 12
+  },
+  "full_T10_acceptance": false,
+  "remaining": [
+    "Compact receiver/scene and route-score sensitivity validation",
+    "Independent physical-scene evidence",
+    "Externally verified horizon ceiling",
+    "Useful real receiver cold/warm/concurrent city-wide shade performance",
+    "Per-worker memory and external-server deployment checks"
+  ]
+}

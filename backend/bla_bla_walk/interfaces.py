@@ -11,7 +11,7 @@ from datetime import datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Protocol
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
 
 if TYPE_CHECKING:
     import numpy as np
@@ -102,6 +102,65 @@ class ShadeCalculator(Protocol):
         grid_north_rotation_deg: float,
         **ray_options: Any,
     ) -> tuple[NDArray[np.uint8], ShadeMetadata]: ...
+
+
+class ShadeRequest(ContractModel):
+    """LV95 viewport, optionally limited to a walking corridor; exact aware time.
+
+    Bounds are west/south/east/north in metres. Corridor points also use LV95,
+    unlike the map's GeoJSON. Responses snap bounds outward to the stored grid.
+    """
+
+    bounds: tuple[float, float, float, float]
+    requested_time: AwareDatetime
+    corridor: (
+        Annotated[list[tuple[float, float]], Field(min_length=2, max_length=128)] | None
+    ) = None
+    corridor_width_m: Annotated[float, Field(gt=0, le=100)] = 10
+
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+    @model_validator(mode="after")
+    def ordered_bounds(self):
+        west, south, east, north = self.bounds
+        if west >= east or south >= north:
+            raise ValueError("Bounds must have positive width and height")
+        if self.corridor and any(
+            not (west <= x <= east and south <= y <= north) for x, y in self.corridor
+        ):
+            raise ValueError("Corridor points must lie within the requested bounds")
+        return self
+
+
+class ShadeCounts(ContractModel):
+    """Disjoint raster cell counts; unknown and night never earn shade credit."""
+
+    unknown: Annotated[int, Field(ge=0)]
+    sunlit: Annotated[int, Field(ge=0)]
+    shaded: Annotated[int, Field(ge=0)]
+    night: Annotated[int, Field(ge=0)]
+
+
+class ShadeResponse(ContractModel):
+    """North-first row-major uint8 raster encoded as base64, with ShadeState codes.
+
+    Unknown includes unsupported receivers and geometry gaps. Night is distinct
+    from shaded. This numerical output is not accepted physical-scene evidence.
+    The API serves local geometry in both operating modes; no provider calls.
+    """
+
+    bounds: tuple[float, float, float, float]
+    crs: Literal["EPSG:2056"] = "EPSG:2056"
+    width: int
+    height: int
+    encoding: Literal["base64-uint8-row-major-north-first"] = (
+        "base64-uint8-row-major-north-first"
+    )
+    states: str
+    counts: ShadeCounts
+    shade: ShadeMetadata
+    availability: Literal["unknown", "unsupported"]
+    explanation: str
 
 
 class RouteMetrics(ContractModel):

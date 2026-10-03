@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 from bla_bla_walk.contract_types import typescript_contract
 from bla_bla_walk.demo_fixture import fixture_snapshot
-from bla_bla_walk.interfaces import MapFeature, MapSnapshot
+from bla_bla_walk.interfaces import MapFeature, MapSnapshot, ShadeRequest, ShadeResponse
 from bla_bla_walk.main import app
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
@@ -69,6 +69,17 @@ def test_generated_types_and_browser_schema_match_canonical_models():
     assert (
         json.loads(module.split("export const snapshotSchema = ", 1)[1][:-2]) == schema
     )
+
+
+def test_generated_shade_contracts_match_canonical_models_and_coordinates():
+    for model, name in ((ShadeRequest, "request"), (ShadeResponse, "response")):
+        schema = json.loads((ROOT / f"src/shade-{name}.schema.json").read_text())
+        assert schema == model.model_json_schema()
+    declarations = (ROOT / "src/shade-interfaces.ts").read_text()
+    assert "LV95 (EPSG:2056) processing metres" in declarations
+    assert "WGS84" not in declarations
+    for model in (ShadeRequest, ShadeResponse):
+        assert f"export interface {model.__name__}" in declarations
 
 
 def test_static_page_and_assets_are_served_without_a_build():

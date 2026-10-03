@@ -1,0 +1,10 @@
+{
+  "cache_bytes": 134217728,
+  "workers": 2,
+  "maximum_viewport_side_metres": 1000,
+  "halo_metres": 1500,
+  "maximum_grid_cells": 16000000,
+  "receiver_policy": "unknown-until-compact-scene-validation",
+  "horizon_ceiling_metres": null,
+  "source": "Conservative Slot F resource limits within T0 budgets. Compact receiver support and a global horizon ceiling have not been verified. Exact timestamps; no time buckets."
+}

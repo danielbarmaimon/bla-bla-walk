@@ -3,17 +3,20 @@
 from pathlib import Path
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from .basemap import tile_path
 from .demo_fixture import fixture_snapshot
-from .interfaces import MapSnapshot
+from .interfaces import MapSnapshot, ShadeRequest, ShadeResponse
+from .shade_cache import ShadeBusy
+from .shade_service import ShadeService
 from .snapshots import offline_snapshot, online_snapshot
 
 app = FastAPI(title="Bla Bla Walk", version="0.1.0")
 ROOT = Path(__file__).resolve().parents[2]
+shade_service = ShadeService()
 app.mount("/src", StaticFiles(directory=ROOT / "src"), name="browser")
 app.mount("/config", StaticFiles(directory=ROOT / "config"), name="configuration")
 app.mount(
@@ -44,6 +47,24 @@ def map_snapshot(
                 503, "Saved provider snapshot unavailable; run offline preparation"
             ) from error
     return fixture_snapshot()
+
+
+@app.post("/api/shade", response_model=ShadeResponse)
+def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
+    """Local exact-time calculation; unknown compact acceptance stays explicit."""
+    try:
+        result, hit = shade_service.respond(request)
+    except ShadeBusy as error:
+        raise HTTPException(503, str(error), headers={"Retry-After": "1"}) from error
+    except OverflowError as error:
+        raise HTTPException(413, str(error)) from error
+    except (OSError, ValueError, KeyError) as error:
+        raise HTTPException(
+            503, "Prepared shade inputs unavailable or invalid; verify local geometry"
+        ) from error
+    response.headers["X-Shade-Cache"] = "HIT" if hit else "MISS"
+    response.headers["Cache-Control"] = "no-store"
+    return result
 
 
 @app.get("/tiles/{zoom}/{x}/{y}.png", include_in_schema=False)
