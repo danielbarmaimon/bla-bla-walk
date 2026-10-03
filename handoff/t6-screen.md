@@ -51,4 +51,3 @@ Built the comparison presentation on `feat/t6-comparison-screen` from merged
    after online external-server and local offline journeys pass, including
    zero offline external requests, missing data, pan/city extent, source and
    calculation failures, tile seams, city edges, freshness and effective time.
-
