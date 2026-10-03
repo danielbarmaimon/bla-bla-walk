@@ -112,3 +112,7 @@ Arrive at **FHNW Dreispitz, Dornacherstrasse 394, Basel**. Doors open **13:30**;
 building stops **14:59**; introduction **15:00–15:30**; presentations begin
 **15:30 in random order**. These are the event details supplied for this task.
 Keep the app and fallback ready throughout the presentation session.
+
+## Route-stop demonstration
+
+On the local app, select an address, show the calculated route, and enable Route stops. WATER uses saved IWB fountains; BENCH and REST use saved OSM seating/park candidates, with optional sourced indoor candidates. Open Route stops or select a marker to show provenance. Describe these as mapped candidates within 50m, with drinking, operation, access and cooling unknown. A dated saved acquisition is never a live condition report. The static T7 fallback retains its labelled saved result and does not claim this new interactive feature.

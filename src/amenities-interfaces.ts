@@ -74,8 +74,7 @@ export interface ShadeMetadata {
   resolution_m: number;
 }
 
-export interface MapSnapshot {
-  generated_at: string;
-  layers: (MapLayer)[];
-  mode?: "fixture" | "online" | "offline";
+export interface RouteAmenities {
+  fountains: MapLayer;
+  rest_stops: MapLayer;
 }

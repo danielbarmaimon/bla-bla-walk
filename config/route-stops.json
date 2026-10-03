@@ -1,0 +1,8 @@
+{
+  "endpoint": "https://overpass.osm.ch/api/interpreter",
+  "timeout_seconds": 45,
+  "max_response_bytes": 8388608,
+  "fountain_buffer_metres": 50,
+  "rest_buffer_metres": 50,
+  "max_markers": 80
+}

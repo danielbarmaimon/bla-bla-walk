@@ -22,7 +22,7 @@ Longitude = Annotated[float, Field(ge=-180, le=180)]
 Latitude = Annotated[float, Field(ge=-90, le=90)]
 Position = tuple[Longitude, Latitude]
 Availability = Literal["current", "stale", "missing", "unknown", "unsupported"]
-LayerKind = Literal["observation", "fountain", "shade", "route"]
+LayerKind = Literal["observation", "fountain", "shade", "route", "rest"]
 
 
 class ContractModel(BaseModel):
@@ -223,6 +223,7 @@ class MapFeature(ContractModel):
     shade: ShadeMetadata | None = None
     route: RouteMetrics | None = None
     pet: PetRouteMetrics | None = None
+    rest_type: Literal["bench", "park", "indoor"] | None = None
 
 
 class MapLayer(ContractModel):
@@ -234,6 +235,13 @@ class MapLayer(ContractModel):
     availability: Availability
     explanation: str
     features: list[MapFeature]
+
+
+class RouteAmenities(ContractModel):
+    """Real provider/saved stop candidates, separate from synthetic map layers."""
+
+    fountains: MapLayer
+    rest_stops: MapLayer
 
 
 class MapSnapshot(ContractModel):

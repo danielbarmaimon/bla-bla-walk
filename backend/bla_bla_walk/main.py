@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from rasterio.warp import transform_geom
 
 from .adapters.addresses import search_addresses
+from .adapters.rest_stops import rest_stops
 from .adapters.routes import load_demo_routes
 from .adapters.walking import walking_routes as provider_walking_routes
 from .basemap import tile_path
@@ -26,13 +27,14 @@ from .interfaces import (
     MapLayer,
     MapSnapshot,
     PolygonGeometry,
+    RouteAmenities,
     ShadeRequest,
     ShadeResponse,
     WalkingRouteRequest,
 )
 from .shade_cache import ShadeBusy
 from .shade_service import ShadeService
-from .snapshots import offline_snapshot, online_snapshot
+from .snapshots import FOUNTAINS, offline_snapshot, online_snapshot
 
 
 @asynccontextmanager
@@ -122,6 +124,28 @@ def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
     response.headers["X-Shade-Cache"] = "HIT" if hit else "MISS"
     response.headers["Cache-Control"] = "no-store"
     return result
+
+
+@app.get("/api/route-amenities", response_model=RouteAmenities)
+def route_amenities(mode: Literal["fixture", "online", "offline"] = "offline"):
+    """Real stop evidence independently of illustrative sensor mode."""
+    if mode == "online":
+        fountains = FOUNTAINS.get_layer()
+    else:
+        try:
+            fountains = next(
+                layer for layer in offline_snapshot().layers if layer.kind == "fountain"
+            )
+        except (OSError, ValueError, StopIteration):
+            fountains = MapLayer(
+                id="route-fountains",
+                label="IWB fountains",
+                kind="fountain",
+                availability="missing",
+                features=[],
+                explanation="Saved IWB fountain data unavailable.",
+            )
+    return RouteAmenities(fountains=fountains, rest_stops=rest_stops())
 
 
 @app.post("/api/walking-routes", response_model=MapLayer)
