@@ -242,3 +242,87 @@ class MapSnapshot(ContractModel):
     generated_at: AwareDatetime
     layers: list[MapLayer]
     mode: Literal["fixture", "online", "offline"] = "fixture"
+
+
+class WaterEvidence(ContractModel):
+    """Verified network diversion and physical evidence, never point proximity."""
+
+    state: str = "unknown"
+    evidence_complete: bool = False
+    age_hours: float | None = None
+    drinking: bool | None = None
+    accessible: bool | None = None
+    operational: bool | None = None
+    extra_distance_metres: float | None = None
+    extra_distance_included: bool = False
+    provenance: Provenance | None = None
+
+
+class WalkingEvidence(ContractModel):
+    """Cached T5 route distances; invalid metrics remain displayable with reasons.
+
+    Sampling approximation, requested/effective times and model limits live in
+    samples. Unknown includes night for scoring, with night separately recorded.
+    Flags must come from evidence, never from the mere existence of a polyline.
+    """
+
+    id: str
+    distance_metres: float
+    shaded_metres: float
+    unshaded_metres: float
+    unknown_metres: float
+    planned_stop_minutes: float = 0
+    access_state: Literal["checked_open", "confirmed_blocked", "unknown"] = "unknown"
+    inside_calculation_coverage: bool = False
+    construction_caution: bool = False
+    shade_state: Literal["current", "stale", "failed", "unknown"] = "unknown"
+    shade_time_matches_request: bool = False
+    shade_geometry_matches_request: bool = False
+    duration_complete: bool = True
+    water: WaterEvidence = Field(default_factory=WaterEvidence)
+    provenance: Provenance | None = None
+    samples: list[WalkingShadeSample] = Field(default_factory=list)
+
+
+class WalkingShadeSample(ContractModel):
+    """Midpoint quadrature interval in route metres, sampled at traversal time.
+
+    This estimates distance, not exact cell intersection or observed shade.
+    A stop at an interval boundary affects all subsequent sample times.
+    """
+
+    start_metres: float
+    end_metres: float
+    requested_time: AwareDatetime
+    metadata: ShadeMetadata | None = None
+    state: ShadeState = ShadeState.UNKNOWN
+    model: str = "unavailable"
+    explanation: str
+
+
+class WalkingStop(ContractModel):
+    """Planned pause at a route distance; diversions already belong in geometry."""
+
+    at_metres: Annotated[float, Field(ge=0)]
+    minutes: Annotated[float, Field(ge=0)]
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+
+class TripComparison(ContractModel):
+    """Pure rescoring result for T6; manual choice only among eligible IDs.
+
+    Metrics retain full-route denominators. Scores can be incomplete lower
+    bounds; status and explanation determine whether a winner is available.
+    Transit stays unavailable until T18/T19 admission and approval.
+    """
+
+    status: str
+    winner: str | None = None
+    route_statuses: dict[str, str]
+    metrics: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    scores: dict[str, float] = Field(default_factory=dict)
+    contributions: dict[str, dict[str, float]] = Field(default_factory=dict)
+    reasons: dict[str, list[str]] = Field(default_factory=dict)
+    manual_choices: list[str] = Field(default_factory=list)
+    explanation: str = ""
+    transit_status: Literal["unavailable"] = "unavailable"

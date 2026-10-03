@@ -1,0 +1,32 @@
+{
+  "source": "T2 approved baseline in docs/routing-rules.md; data/scenarios.json pins acceptance examples. Sampling is midpoint quadrature of the approved T10 approximation, not observed physical shade.",
+  "maximum_sample_metres": 25,
+  "maximum_route_samples": 512,
+  "walking_speed_m_per_s": 1,
+  "default_planned_stop_minutes": 0,
+  "selected_water_stop_minutes": 2,
+  "max_extra_distance_fraction": 0.3,
+  "max_extra_duration_minutes": 10,
+  "duration_benefit_range_minutes": [
+    0,
+    40
+  ],
+  "shade_benefit_range_fraction": [
+    0,
+    1
+  ],
+  "water_benefit_range": [
+    0,
+    1
+  ],
+  "default_weights": {
+    "shade": 0.5,
+    "duration": 0.4,
+    "water": 0.1
+  },
+  "minimum_known_shade_fraction": 0.8,
+  "water_evidence_max_age_hours": 24,
+  "water_max_extra_distance_metres": 100,
+  "tie_tolerance": 1e-06,
+  "arithmetic_tolerance": 1e-09
+}

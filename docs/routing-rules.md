@@ -70,8 +70,9 @@ comparison and say transit data are unavailable.
 
 ## Defaults and adjustable assumptions
 
-[The scenario file](../data/scenarios.json) is the single home for numeric
-defaults in its `rules` object. It defines speed, stop duration, detour limits,
+[Production config](../config/routing-rules.json) is the home for numeric
+defaults. [The scenario file](../data/scenarios.json) pins T2's acceptance
+examples and original policy for regression checks. Config defines speed, stop duration, detour limits,
 fixed benefit ranges, default weights, completeness, water freshness/proximity
 and arithmetic/tie tolerances. These are editable prototype settings.
 
@@ -202,6 +203,37 @@ criteria, ties, zero/invalid weights, detour boundaries and invalid metrics.
 
 Run `node scripts/check-routing-scenarios.mjs` to check their arithmetic and
 expected outcomes. Add `--format` to format the JSON. This is a dependency-free
-T2 acceptance checker, not the production evaluator. T5 must port these cases
-to its tests and production config; T1 remains owner of the shared contract.
+T2 acceptance checker. T5's production evaluator is
+[evaluation.py](../backend/bla_bla_walk/evaluation.py), with all cases ported to
+[production tests](../backend/tests/test_evaluation.py); the shared contract
+remains canonical in the interface file.
 No real Basel route distances, shade values or fountains are asserted here.
+
+## T5 approximation and integration boundary
+
+[Route sampling](../backend/bla_bla_walk/route_shade.py) estimates shaded,
+unshaded and unknown route metres from the user-approved T10 building model.
+It partitions full source route length along projected geometry, preserves
+bends and stop boundaries, and uses interval midpoints at departure plus
+cumulative walking and stop time. The maximum interval and sample budget live
+in production config. This numerical approximation can miss changes inside an
+interval; it is neither exact cell intersection nor observed physical shade.
+Night contributes to unknown for baseline scoring but retains its own sample
+state. Unknown, failed, unsupported or mismatched responses cannot earn credit.
+Samples retain exact requested/effective times, geometry version, model and
+source explanations; the original route provenance remains attached.
+
+`compare_routes` only consumes cached evidence: weight changes make zero shade
+calls. `compare_choices` additionally exposes walking-only Fastest overall and
+More shade views for T6 to review, without replacing the approved baseline or
+admitting the multimodal proposal. Fastest compares complete total minutes
+directly, avoiding duration-normalization saturation. More shade uses current
+shade over full route length and the same eligibility/completeness rules.
+The optional user time limit only tightens the absolute limit; five minutes is
+not imposed by default. Both keep manual choice among eligible routes. Transit
+is explicitly unavailable pending T18/T19 admission and approval.
+
+The saved T9 routes' access remains unknown and current fountain records do not
+establish operation. They can display metrics but receive no recommendation.
+T6 owns API/browser wiring; it should reuse these contracts and functions and
+keep approximate model and missing-evidence explanations visible.
