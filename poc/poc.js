@@ -1,6 +1,8 @@
 import { CATEGORIES, PLACES } from './sample-places.js';
 import { parseSnapshot } from '/src/api.js';
 import { FOUNTAIN_BUFFER_M, SENSOR_BUFFER_M, routeGeometry, nearbyFeatures, exampleTemperature, temperatureColor } from './route-data.js';
+import { WAYFINDING_PLACES, COOL_PLACES, routeStops } from './wayfinding-places.js';
+import { exampleHeatFeatures, exampleShadowFeatures } from './preview-layers.js';
 
 const FALLBACK_START = { id: 'sbb', name: 'Basel SBB · example start', lon: 7.590209, lat: 47.548055 };
 const EXAMPLE_DESTINATION = PLACES.find((place) => place.id === 'marktplatz');
@@ -8,6 +10,8 @@ const state = {
   origin: FALLBACK_START, destination: null, mode: 'fast', picking: null,
   offline: false, basemapError: false, route: null, routeInfo: null,
   snapshot: null, sourceStatus: 'Loading Basel source data…',
+  mapView: 'route', reverseHeat: false,
+  layers: { fountains: true, sensors: true, landmarks: true, shadows: false, coolPlaces: false, heatmap: true },
 };
 const $ = (selector) => document.querySelector(selector);
 const exampleSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
@@ -153,15 +157,17 @@ function journeySteps() {
   if (!exampleSelected() || !state.route) return [
     ['Route pending', 'Street directions are available for the SBB → Marktplatz example.', 'Choose the example route to inspect the mapped path.'],
   ];
-  const water = nearbyFountains().find((item) => item.fraction > 0.55) ?? nearbyFountains()[0];
+  const stops = routeStops(state.route, nearbyFountains());
+  const water = stops.find((stop) => stop.type === 'water');
   const steps = [
     ['Start', 'Leave Centralbahnplatz by Basel SBB.', 'Saved pedestrian route start'],
     ['Walk', 'Follow Centralbahn-Passage and Steinenvorstadt.', 'Street names from the saved route'],
+    ['Wayfinding', 'Reach Barfüsserplatz, a wayfinding node.', 'Stadtcasino and Barfüsserkirche are nearby landmarks; visibility unverified'],
     ['Rest', 'Consider resting near Barfüsserplatz.', 'Example rest point; seating unverified'],
     ['Walk', 'Continue toward Gerbergasse.', 'Follow the highlighted street path'],
   ];
   if (water) steps.push([
-    'Water', `${water.feature.label} lies about ${Math.round(water.distance)} m from the route.`,
+    'Water', `${water.sourceFeature.label} lies near this point.`,
     'Fountain location only; drinking water and operation unknown',
   ]);
   steps.push(
@@ -178,6 +184,7 @@ function appendStep([type, instruction, note]) {
   if (type === 'Rest') heading.append(icon('armchair'));
   if (type === 'Pause') heading.append(icon('pause'));
   if (type === 'Water') heading.append(icon('droplets'));
+  if (type === 'Wayfinding') heading.append(icon('landmark'));
   heading.append(document.createTextNode(type));
   const text = document.createElement('p');
   text.textContent = instruction;
@@ -209,6 +216,28 @@ function renderNearbyDetails() {
     item.textContent = `Sensor · ${feature.label} · ${Math.round(distance)} m from route · ${reading} · ${feature.availability} · observed ${observed}`;
     list.append(item);
   });
+  WAYFINDING_PLACES.forEach((place) => {
+    const item = document.createElement('li');
+    item.textContent = `Wayfinding ${place.type} · ${place.label} · ${place.note} `;
+    const source = document.createElement('a');
+    source.href = place.sourceUrl;
+    source.textContent = 'OSM source';
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    item.append(source);
+    list.append(item);
+  });
+  COOL_PLACES.forEach((place) => {
+    const item = document.createElement('li');
+    item.textContent = `Cool-place candidate · ${place.label} · ${place.note} `;
+    const source = document.createElement('a');
+    source.href = place.operatorUrl;
+    source.textContent = 'Check opening hours';
+    source.target = '_blank';
+    source.rel = 'noopener noreferrer';
+    item.append(source);
+    list.append(item);
+  });
 }
 
 function renderJourney() {
@@ -234,6 +263,7 @@ function renderJourney() {
   const sensors = exampleSelected() ? nearbySensors().length : 0;
   $('#source-status').textContent = `${state.sourceStatus} · ${fountains} fountains within 50 m · ${sensors} sensors within 250 m`;
   $('#map-legend').hidden = !exampleSelected() || !state.route;
+  updateDisplayControls();
   renderNearbyDetails();
   updateMapOverlay();
   renderMapRoute();
@@ -247,13 +277,19 @@ function updateMapOverlay() {
   }
   const preference = state.mode === 'fast' ? 'Fastest' : 'More shade';
   $('#map-overlay').textContent = exampleSelected() && state.route ?
-    `${preference} · street route · example temperatures` :
+    `${preference} · street route · ${state.mapView === 'route' ? 'example route temperatures' :
+      state.layers.heatmap ? 'example area heat' : 'area heat hidden'}` :
     state.destination ? 'Street route unavailable for this selection. Try the SBB → Marktplatz example.' :
       'Choose a place to preview a route.';
 }
 
 let mapSource;
+let heatSource;
+let shadowSource;
+let heatmapLayer;
+let shadowLayer;
 let routeStyles;
+let heatColors;
 const routeAnchors = [
   { celsius: 26, cssProperty: '--poc-temp-26' },
   { celsius: 29, cssProperty: '--poc-temp-29' },
@@ -290,13 +326,68 @@ function sourceMarkers(kind, items) {
     const marker = new Feature(new Point(window.ol.proj.fromLonLat(feature.geometry.coordinates)));
     marker.set('kind', kind);
     marker.set('sourceFeature', feature);
+    marker.set('popup', kind === 'sensor' ?
+      `${feature.label} · ${feature.value == null ? 'No reading' : `${feature.value.toFixed(1)}°C`} · ${feature.availability} · ${state.sourceStatus}` :
+      `${feature.label} · Drinking water and operation unknown · ${state.sourceStatus}`);
     return marker;
   });
+}
+
+function placeMarkers(kind, places) {
+  const { Feature } = window.ol;
+  const { Point } = window.ol.geom;
+  return places.map((place) => {
+    const marker = new Feature(new Point(window.ol.proj.fromLonLat(place.coordinates)));
+    marker.set('kind', kind);
+    marker.set('label', place.label);
+    marker.set('popup', `${place.label} · ${place.note}`);
+    return marker;
+  });
+}
+
+function stopMarkers(stops) {
+  const { Feature } = window.ol;
+  const { Point } = window.ol.geom;
+  return stops.map((stop) => {
+    const marker = new Feature(new Point(window.ol.proj.fromLonLat(stop.coordinates)));
+    marker.set('kind', 'stop');
+    marker.set('stopType', stop.type);
+    marker.set('label', stop.label);
+    marker.set('popup', `${stop.label} · ${stop.note}`);
+    return marker;
+  });
+}
+
+function updateDisplayControls() {
+  $('#route-heat-view').setAttribute('aria-pressed', String(state.mapView === 'route'));
+  $('#area-heat-view').setAttribute('aria-pressed', String(state.mapView === 'area'));
+  $('#reverse-heat').setAttribute('aria-pressed', String(state.reverseHeat));
+  $('#heat-ramp').classList.toggle('reversed', state.reverseHeat);
+  $('#heat-ramp').alt = state.reverseHeat ?
+    'Yellow through red to purple reversed temperature colour ramp' :
+    'Purple through red to yellow temperature colour ramp';
+  const areaHidden = state.mapView === 'area' && !state.layers.heatmap;
+  $('#ramp-display').hidden = areaHidden;
+  $('#legend-title').textContent = state.mapView === 'route' ? 'Example route temperature' :
+    areaHidden ? 'Area heat hidden' : 'Example area heat';
+  $('#legend-note').textContent = state.mapView === 'route' ?
+    'Start 26°C · peak 36°C · end 31°C' :
+    areaHidden ? 'Teal line shows the route.' : 'Example heat surface. Teal line shows the route.';
+  $('#legend-fountains').hidden = !state.layers.fountains;
+  $('#legend-sensors').hidden = !state.layers.sensors;
+  $('#legend-wayfinding').hidden = !state.layers.landmarks;
+  $('#legend-cool').hidden = !state.layers.coolPlaces;
+  $('#legend-shadow').hidden = !state.layers.shadows;
+  $('#layer-note').textContent = state.mapView === 'route' ?
+    'Route colours use example temperatures. Shadows are illustrative; cooling-place AC is unknown.' :
+    'Area heat uses example values near the route. It is not a measured temperature map.';
 }
 
 function renderMapRoute() {
   if (!mapSource || !window.ol) return;
   mapSource.clear();
+  heatSource.clear();
+  shadowSource.clear();
   const { Feature } = window.ol;
   const { Point, LineString } = window.ol.geom;
   const project = (place) => window.ol.proj.fromLonLat([place.lon, place.lat]);
@@ -304,10 +395,24 @@ function renderMapRoute() {
     const outline = new Feature(new LineString(state.route.coordinates.map((point) => window.ol.proj.fromLonLat(point))));
     outline.set('kind', 'route-outline');
     mapSource.addFeature(outline);
-    mapSource.addFeatures(routeSegments());
-    mapSource.addFeatures(sourceMarkers('fountain', nearbyFountains()));
-    mapSource.addFeatures(sourceMarkers('sensor', nearbySensors()));
+    if (state.mapView === 'route') mapSource.addFeatures(routeSegments());
+    else {
+      const route = new Feature(new LineString(state.route.coordinates.map((point) => window.ol.proj.fromLonLat(point))));
+      route.set('kind', 'plain-route');
+      mapSource.addFeature(route);
+    }
+    if (state.layers.fountains) mapSource.addFeatures(sourceMarkers('fountain', nearbyFountains()));
+    if (state.layers.sensors) mapSource.addFeatures(sourceMarkers('sensor', nearbySensors()));
+    if (state.layers.landmarks) mapSource.addFeatures(placeMarkers('wayfinding', WAYFINDING_PLACES));
+    if (state.layers.coolPlaces) mapSource.addFeatures(placeMarkers('cool-place', COOL_PLACES));
+    mapSource.addFeatures(stopMarkers(routeStops(state.route, nearbyFountains())));
+    if (state.layers.shadows) shadowSource.addFeatures(exampleShadowFeatures(window.ol, state.route));
+    if (state.mapView === 'area' && state.layers.heatmap) {
+      heatSource.addFeatures(exampleHeatFeatures(window.ol, state.route));
+    }
   }
+  heatmapLayer.setVisible(state.mapView === 'area' && state.layers.heatmap);
+  shadowLayer.setVisible(state.layers.shadows);
   const origin = new Feature(new Point(project(state.origin)));
   origin.set('kind', 'origin');
   mapSource.addFeature(origin);
@@ -339,18 +444,28 @@ async function createMap() {
   const { ol } = window;
   const view = new ol.View({ center: ol.proj.fromLonLat([7.5886, 47.5596]), zoom: 14, minZoom: 12, maxZoom: 17 });
   mapSource = new ol.source.Vector();
+  heatSource = new ol.source.Vector();
+  shadowSource = new ol.source.Vector();
   const theme = getComputedStyle(document.documentElement);
+  const teal = theme.getPropertyValue('--poc-teal').trim();
   const originColor = theme.getPropertyValue('--poc-origin').trim();
   const destinationColor = theme.getPropertyValue('--poc-destination').trim();
   const sensorColor = theme.getPropertyValue('--poc-sensor').trim();
+  const landmarkColor = theme.getPropertyValue('--poc-landmark').trim();
+  const coolColor = theme.getPropertyValue('--poc-cool-place').trim();
   const outlineColor = theme.getPropertyValue('--poc-route-outline').trim();
   const white = theme.getPropertyValue('--poc-white').trim();
-  const anchors = routeAnchors.map(({ celsius, cssProperty }) => ({
+  const baseAnchors = routeAnchors.map(({ celsius, cssProperty }) => ({
     celsius, rgb: theme.getPropertyValue(cssProperty).trim().match(/[a-f\d]{2}/gi).map((part) => parseInt(part, 16)),
   }));
   routeStyles = new Map();
   const outlineStyle = new ol.style.Style({ stroke: new ol.style.Stroke({ color: outlineColor, width: 10 }) });
+  const plainRouteStyle = new ol.style.Style({ stroke: new ol.style.Stroke({ color: teal, width: 7 }) });
   const segmentStyle = (feature) => {
+    const anchors = baseAnchors.map((anchor, index) => ({
+      celsius: anchor.celsius,
+      rgb: state.reverseHeat ? baseAnchors[baseAnchors.length - 1 - index].rgb : anchor.rgb,
+    }));
     const color = temperatureColor(feature.get('temperature'), anchors);
     if (!routeStyles.has(color)) routeStyles.set(color, new ol.style.Style({
       stroke: new ol.style.Stroke({ color, width: 7 }),
@@ -368,6 +483,47 @@ async function createMap() {
     image: new ol.style.Circle({ radius: 5, fill: new ol.style.Fill({ color: white }),
       stroke: new ol.style.Stroke({ color: sensorColor, width: 2 }) }),
   });
+  const iconStyle = (name, label, color, offsetY = -29) => [
+    new ol.style.Style({ image: new ol.style.Circle({ radius: 19,
+      fill: new ol.style.Fill({ color: white }), stroke: new ol.style.Stroke({ color, width: 3 }),
+    }) }),
+    new ol.style.Style({
+      image: new ol.style.Icon({ src: `/poc-assets/icons/${name}.svg`, scale: 0.85 }),
+      text: new ol.style.Text({ text: label, offsetY, font: '700 13px sans-serif',
+        fill: new ol.style.Fill({ color: outlineColor }),
+        backgroundFill: new ol.style.Fill({ color: white }),
+        padding: [3, 5, 3, 5],
+      }),
+    }),
+  ];
+  const stopStyles = new Map([
+    ['rest', iconStyle('armchair', 'REST', teal)],
+    ['water', iconStyle('droplets', 'WATER', teal)],
+    ['pause', iconStyle('pause', 'PAUSE', teal)],
+  ]);
+  const cueStyle = (name, color) => [
+    new ol.style.Style({ image: new ol.style.Circle({ radius: 13,
+      fill: new ol.style.Fill({ color: white }), stroke: new ol.style.Stroke({ color, width: 3 }),
+    }) }),
+    new ol.style.Style({ image: new ol.style.Icon({ src: `/poc-assets/icons/${name}.svg`, scale: 0.55 }) }),
+  ];
+  const landmarkStyles = new Map([
+    ['Barfüsserplatz', cueStyle('map-pin', landmarkColor)],
+    ['Stadtcasino Basel', cueStyle('landmark', landmarkColor)],
+    ['Barfüsserkirche', cueStyle('landmark', landmarkColor)],
+  ]);
+  const coolPlaceStyle = iconStyle('landmark', 'Foyer Public · AC?', coolColor, 29);
+  const shadowStyle = new ol.style.Style({
+    fill: new ol.style.Fill({ color: theme.getPropertyValue('--poc-shadow-example-fill').trim() }),
+    stroke: new ol.style.Stroke({ color: theme.getPropertyValue('--poc-shadow-example-stroke').trim(), width: 2, lineDash: [7, 5] }),
+  });
+  shadowLayer = new ol.layer.Vector({ source: shadowSource, visible: false, style: shadowStyle });
+  heatmapLayer = new ol.layer.Heatmap({ source: heatSource, visible: false,
+    blur: 35, radius: 42, opacity: Number(theme.getPropertyValue('--poc-heat-opacity')),
+    weight: (feature) => feature.get('weight'),
+  });
+  heatColors = baseAnchors.map(({ rgb }) => `rgb(${rgb.join(',')})`);
+  heatmapLayer.setGradient(heatColors);
   const tiles = new ol.source.XYZ({ url: tileUrl, maxZoom: config.max_zoom,
     attributions: '© Geodaten Kanton Basel-Stadt · CC BY 4.0', crossOrigin: 'anonymous' });
   tiles.on('tileloaderror', () => {
@@ -378,11 +534,17 @@ async function createMap() {
     target: 'poc-map',
     layers: [
       new ol.layer.Tile({ opacity: Number(theme.getPropertyValue('--poc-basemap-opacity')), source: tiles }),
+      heatmapLayer,
+      shadowLayer,
       new ol.layer.Vector({ source: mapSource, style: (feature) => {
         if (feature.get('kind') === 'route-outline') return outlineStyle;
         if (feature.get('kind') === 'route') return segmentStyle(feature);
+        if (feature.get('kind') === 'plain-route') return plainRouteStyle;
         if (feature.get('kind') === 'fountain') return fountainStyle;
         if (feature.get('kind') === 'sensor') return sensorStyle;
+        if (feature.get('kind') === 'stop') return stopStyles.get(feature.get('stopType'));
+        if (feature.get('kind') === 'wayfinding') return landmarkStyles.get(feature.get('label'));
+        if (feature.get('kind') === 'cool-place') return coolPlaceStyle;
         return pointStyle(feature.get('kind') === 'origin' ? originColor : destinationColor);
       } }),
     ],
@@ -391,13 +553,8 @@ async function createMap() {
   window.routePreviewMap = map;
   map.on('singleclick', (event) => {
     if (!state.picking) {
-      const selected = map.forEachFeatureAtPixel(event.pixel, (feature) => feature.get('sourceFeature'));
-      if (selected) {
-        const measurement = selected.kind === 'observation' ?
-          `${selected.value == null ? 'No reading' : `${selected.value.toFixed(1)}°C`} · ${selected.availability}` :
-          'Drinking water and operation unknown';
-        $('#map-overlay').textContent = `${selected.label} · ${measurement} · ${state.sourceStatus}`;
-      }
+      const popup = map.forEachFeatureAtPixel(event.pixel, (feature) => feature.get('popup'));
+      if (popup) $('#map-overlay').textContent = popup;
       return;
     }
     const [lon, lat] = ol.proj.toLonLat(event.coordinate);
@@ -489,6 +646,24 @@ $('#pick-origin').addEventListener('click', () => pickOnMap('origin'));
 $('#pick-destination').addEventListener('click', () => pickOnMap('destination'));
 $('#fast-mode').addEventListener('click', () => setMode('fast'));
 $('#shade-mode').addEventListener('click', () => setMode('shade'));
+$('#route-heat-view').addEventListener('click', () => {
+  state.mapView = 'route';
+  renderJourney();
+});
+$('#area-heat-view').addEventListener('click', () => {
+  state.mapView = 'area';
+  renderJourney();
+});
+$('#reverse-heat').addEventListener('click', () => {
+  state.reverseHeat = !state.reverseHeat;
+  routeStyles?.clear();
+  if (heatmapLayer) heatmapLayer.setGradient(state.reverseHeat ? [...heatColors].reverse() : heatColors);
+  renderJourney();
+});
+document.querySelectorAll('[data-layer]').forEach((checkbox) => checkbox.addEventListener('change', () => {
+  state.layers[checkbox.dataset.layer] = checkbox.checked;
+  renderJourney();
+}));
 $('#show-route').addEventListener('click', showMap);
 $('#back-to-plan').addEventListener('click', showPlan);
 $('#try-example').addEventListener('click', () => {

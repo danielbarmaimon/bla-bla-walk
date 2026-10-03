@@ -58,6 +58,19 @@ export function nearbyFeatures(route, features, metres) {
   }).sort((a, b) => a.fraction - b.fraction);
 }
 
+export function coordinateAtFraction(route, fraction) {
+  const target = Math.max(0, Math.min(1, fraction)) * route.length;
+  for (let index = 1; index < route.cumulative.length; index += 1) {
+    if (target <= route.cumulative[index]) {
+      const distance = route.cumulative[index] - route.cumulative[index - 1];
+      const share = distance ? (target - route.cumulative[index - 1]) / distance : 0;
+      return route.coordinates[index - 1].map((value, axis) =>
+        value + (route.coordinates[index][axis] - value) * share);
+    }
+  }
+  return route.coordinates.at(-1);
+}
+
 export function exampleTemperature(fraction) {
   const position = Math.max(0, Math.min(1, fraction));
   for (let index = 1; index < ROUTE_TEMPERATURES.length; index += 1) {

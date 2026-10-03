@@ -54,6 +54,12 @@ large labelled controls, and Lucide icons. Its SBB → Marktplatz route follows
 saved pedestrian street geometry. The supplied inferno image illustrates a
 26–36°C example route palette; route colours do not derive from sensor readings.
 Rest and pause instructions remain examples until route/shade integration in T6.
+The PoC now keeps rest, water, and pause markers on the route in both display
+modes. Its area heat surface and shadow patches are labelled examples. Layer
+switches cover fountains, sensors, wayfinding cues, shadows, a cool-place
+candidate, and area heat. The colour ramp can be reversed; the route stays
+teal in area-heat mode. Nearby OSM nodes and landmarks are orientation cues,
+with visibility unverified. Public cooling listings do not establish AC.
 
 ## Principles
 

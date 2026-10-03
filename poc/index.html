@@ -85,17 +85,42 @@
           <div><p class="kicker">YOUR JOURNEY</p><h2 id="map-title">Explore Basel</h2></div>
           <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
         </div>
+        <div class="map-controls" aria-label="Map display controls">
+          <div class="map-view-row">
+            <div class="map-view-switch" role="group" aria-label="Map view">
+              <button id="route-heat-view" type="button" aria-pressed="true">Coloured route</button>
+              <button id="area-heat-view" type="button" aria-pressed="false">Area heat</button>
+            </div>
+            <button class="reverse-button" id="reverse-heat" type="button" aria-pressed="false">Reverse heat colours</button>
+          </div>
+          <div class="layer-switches" role="group" aria-label="Show map layers">
+            <label><input type="checkbox" data-layer="fountains" checked> Fountains</label>
+            <label><input type="checkbox" data-layer="sensors" checked> Sensors</label>
+            <label><input type="checkbox" data-layer="landmarks" checked> Wayfinding cues</label>
+            <label><input type="checkbox" data-layer="shadows"> Shadows · example</label>
+            <label><input type="checkbox" data-layer="coolPlaces"> Cool places · AC unknown</label>
+            <label><input type="checkbox" data-layer="heatmap" checked> Area heat · example</label>
+          </div>
+          <p id="layer-note">The heat surface and shadows are illustrative. Cooling-place AC remains unverified.</p>
+        </div>
         <div class="map-and-steps">
           <div class="map-wrap">
             <div id="poc-map" tabindex="0" role="region" aria-label="Interactive Basel map. Select a map pin to set a place."></div>
             <div class="map-overlay" id="map-overlay">Loading checked street route…</div>
             <div class="map-legend" id="map-legend" hidden>
-              <strong>Example route temperature</strong>
-              <img src="/poc-assets/assets/inferno.png" alt="Purple through red to yellow temperature colour ramp">
-              <div class="ramp-labels"><span>26°C</span><span>29°C</span><span>36°C</span></div>
-              <p>Start 26°C · peak 36°C · end 31°C</p>
-              <p><span class="legend-dot fountain-dot"></span> Fountains within 50 m</p>
-              <p><span class="legend-dot sensor-dot"></span> Sensors within 250 m</p>
+              <strong id="legend-title">Example route temperature</strong>
+              <div id="ramp-display">
+                <img id="heat-ramp" src="/poc-assets/assets/inferno.png" alt="Purple through red to yellow temperature colour ramp">
+                <div class="ramp-labels"><span>26°C</span><span>29°C</span><span>36°C</span></div>
+              </div>
+              <p id="legend-note">Start 26°C · peak 36°C · end 31°C</p>
+              <p><span class="legend-stop"><img src="/poc-assets/icons/armchair.svg" alt=""></span> Rest or pause on route</p>
+              <p><span class="legend-stop"><img src="/poc-assets/icons/droplets.svg" alt=""></span> Fountain stop, status unknown</p>
+              <p id="legend-fountains"><span class="legend-dot fountain-dot"></span> Fountains within 50 m</p>
+              <p id="legend-sensors"><span class="legend-dot sensor-dot"></span> Sensors within 250 m</p>
+              <p id="legend-wayfinding"><span class="legend-dot landmark-dot"></span> Wayfinding cues · nearby</p>
+              <p id="legend-cool"><span class="legend-dot cool-dot"></span> Cool place · AC unknown</p>
+              <p id="legend-shadow"><span class="legend-dot shadow-dot"></span> Shadows · example only</p>
             </div>
             <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
           </div>
@@ -106,7 +131,7 @@
               <summary id="nearby-summary">Nearby source points</summary>
               <ul id="nearby-list"></ul>
             </details>
-            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>OSM pedestrian route via FOSSGIS. Fountain locations: IWB, noncommercial. Temperatures: meteoblue via Basel-Stadt. Route colours are example values. Conditions and access need checking.</p></div>
+            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>OSM pedestrian route via FOSSGIS. Fountain locations: IWB, noncommercial. Temperatures: meteoblue via Basel-Stadt. Lynch-inspired cues use OSM. Heat and shadows are examples. Check water, seating, visibility, AC, and access.</p></div>
           </aside>
         </div>
       </section>
