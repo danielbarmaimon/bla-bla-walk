@@ -3,5 +3,6 @@
   "cell_size_metres": 1,
   "maximum_ray_distance_metres": 1500,
   "ground_difference_metres": 2,
+  "query_cell_degrees": 0.005,
   "source": "User-approved building-cast shadow approximation along route paths. Ground tolerance equals the compact height step; explicit metre heights or surveyed roof-minus-terrain cells supply casters. No level-height guesses, vegetation shadows or terrain relief. No global physical horizon is claimed."
 }

@@ -1,6 +1,6 @@
 # T10 — building-cast shadows along demo routes
 
-Status: done — user-approved building-shadow approximation; ready for PR review, not merged.
+Status: done — user-approved building-shadow approximation, merged in PR #34; broader original acceptance remains future work.
 Branch: feat/t10-building-shadows
 
 ## Goal and decision
@@ -58,7 +58,7 @@ the new branch uses the unchanged hook to check newly introduced commits.
 
 ## Next
 
-1. Review the continuation PR; merging requires an explicit yes for that PR.
+1. Continue from merged PR #34. Offline preparation follow-up is tracked in [its handoff](t10-offline-preparation.md).
 2. T5/T6 own route-distance scoring and browser shade integration. Supply
    corridor requests in bounded chunks, show approximate model identity and
    requested/effective times, retain unknown cells and keep night separate.

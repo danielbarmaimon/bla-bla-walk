@@ -4,7 +4,7 @@
 
 # T10 · Slot F cache/API checkpoint
 
-Status: cache/API checkpoint ready for review; parent T10 open · Branch: feat/t10-shade-cache-api · Owner: @danielbarmaimon
+Status: cache/API checkpoint merged in PR #30; approximation continuation merged in PR #34; original city-wide acceptance remains future work · Historical branch: feat/t10-shade-cache-api · Owner: @danielbarmaimon
 
 ## State
 
