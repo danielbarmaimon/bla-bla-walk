@@ -331,6 +331,14 @@ class TripComparison(ContractModel):
     transit_status: Literal["unavailable"] = "unavailable"
 
 
+class WalkingRouteRequest(ContractModel):
+    """Ephemeral Basel coordinates for provider pedestrian-network geometry."""
+
+    start: Position
+    end: Position
+    mode: Literal["fixture", "online", "offline"] = "online"
+
+
 class AddressSearchRequest(ContractModel):
     """Ephemeral address query; offline requests never contact a provider."""
 

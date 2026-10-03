@@ -2,6 +2,9 @@ import {
   addressSearch
 } from './address-search.js';
 import {
+  walkingRouting
+} from './walking-routing.js';
+import {
   parseSnapshot
 } from './api.js';
 import {
@@ -46,9 +49,11 @@ const state = {
   route: null,
   comparisonJob: null,
   chosenRouteId: null,
+  walkingLayer: null,
+  routingStatus: '',
 };
 const $ = (selector) => document.querySelector(selector);
-const routes = () => state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [];
+const routes = () => routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
 const routePairSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
 const sourceFeatures = (kind) => state.snapshot?.layers.find((layer) => layer.kind === kind)?.features ?? [];
@@ -124,7 +129,7 @@ function showFeature(feature) {
 function renderFeatures() {
   const list = $('#features');
   list.replaceChildren();
-  state.snapshot?.layers.forEach((layer) => {
+  displayLayers().forEach((layer) => {
     const group = document.createElement('details');
     group.className = 'feature-group';
     const summary = document.createElement('summary');
@@ -147,7 +152,7 @@ function renderFeatures() {
 function renderLayers() {
   const container = $('#layers');
   container.replaceChildren();
-  state.snapshot?.layers.forEach((layer) => {
+  displayLayers().forEach((layer) => {
     const label = document.createElement('label');
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -203,6 +208,7 @@ function setPins() {
 function selectDestination(place) {
   calculation.clear();
   state.destination = place;
+  updateWalkingRoute();
   $('#destination-input').value = place.name;
   $('#suggestions').hidden = true;
   renderJourney();
@@ -216,6 +222,7 @@ function selectDestination(place) {
 function setOrigin(place, message) {
   calculation.clear();
   state.origin = place;
+  updateWalkingRoute();
   $('#origin-input').value = place.name;
   $('#origin-status').textContent = message;
   renderQuickPlaces();
@@ -240,7 +247,10 @@ function selectPreference(preference) {
 
 function routeSteps() {
   const route = selectedRoute();
-  if (!route || !routePairSelected()) return [];
+  if (!route) return [];
+  if (!routePairSelected()) return [
+    ['Walking network route', 'Inspect the calculated street route on the map.', 'Turn-by-turn guidance, shade and temporary access remain unverified.']
+  ];
   const water = fountainsNearRoute().find((point) => point.distance <= 25);
   const steps = [
     ['Start', 'Begin at Basel SBB / Centralbahnplatz.', 'Checked route snapshot start; local access is not verified.'],
@@ -284,7 +294,7 @@ function activeComparison() {
 function renderRouteOptions() {
   const list = $('#route-options');
   const focused = list.contains(document.activeElement) ? document.activeElement.dataset : null;
-  if (!routePairSelected()) {
+  if (!routes().length) {
     list.replaceChildren();
     return;
   }
@@ -313,7 +323,7 @@ function renderRouteOptions() {
 
 function renderNearby() {
   const details = $('#nearby-details');
-  details.hidden = !routePairSelected() || !state.route;
+  details.hidden = !state.route;
   if (details.hidden) return;
   const fountains = fountainsNearRoute();
   const sensors = sensorsNearRoute();
@@ -353,15 +363,15 @@ function renderNearby() {
 function renderJourney() {
   const destination = state.destination;
   const route = selectedRoute();
-  state.route = routePairSelected() && route ? routeGeometry(route.geometry.coordinates) : null;
+  state.route = route ? routeGeometry(route.geometry.coordinates) : null;
   $('#selected-journey').hidden = !destination;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
   $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : state.preference === 'shade' ? 'More shade' : 'Balanced';
   $('#journey-title').textContent = destination?.name ?? '';
-  $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : 'No checked street route is available for this selected pair. Use the Basel SBB → Marktplatz example.';
-  $('#preference-note').textContent = activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.';
-  $('#steps-summary').textContent = routePairSelected() && route ? `${state.chosenRouteId === route.id ? 'Chosen eligible route' : 'Inspecting route'} · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Checked route and step guidance are unavailable for this selection.';
+  $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
+  $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
+  $('#steps-summary').textContent = route ? `${state.chosenRouteId === route.id ? 'Chosen eligible route' : 'Inspecting route'} · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Walking route unavailable for this selection.';
   routeSteps().forEach(appendStep);
   $('#source-status').textContent = state.snapshot ? `${state.snapshot.mode} data · ${fountainsNearRoute().length} fountains within ${FOUNTAIN_BUFFER_M} m · ${sensorsNearRoute().length} sensors within ${SENSOR_BUFFER_M} m` : 'Map data has not loaded.';
   renderRouteOptions();
@@ -390,6 +400,7 @@ function renderJourney() {
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
   $('#calculate-journey').disabled = !routePairSelected() || !routes().length || state.comparisonJob?.status === 'running';
+  $('#retry-walking-route').hidden = routePairSelected();
 }
 
 function renderPetLegend() {
@@ -421,6 +432,38 @@ const calculation = journeyCalculation((job, message) => {
   $('#comparison-control-status').textContent = `${message}${job?.status === 'running' ? ` ${job.completed_samples} of ${job.total_samples} samples completed.` : ''}`;
   renderJourney();
 });
+const routingSettings = await fetch('/config/walking-routing.json').then(response => response.json());
+const walking = walkingRouting(mode, routingSettings, (layer, message) => {
+  state.walkingLayer = layer;
+  state.routingStatus = message;
+  state.selectedRouteId = layer?.features[0]?.id ?? null;
+  syncWalkingLayers();
+  renderJourney();
+});
+
+function displayLayers() {
+  const layers = state.snapshot?.layers ?? [];
+  const routeLayer = routePairSelected() ? layers.find(layer => layer.kind === 'route') : state.walkingLayer;
+  return [...layers.filter(layer => layer.kind !== 'route'), ...routeLayer ? [routeLayer] : []];
+}
+
+function syncWalkingLayers() {
+  map.replaceLayers(displayLayers());
+  renderLayers();
+  renderFeatures();
+}
+
+function updateWalkingRoute() {
+  state.walkingLayer = null;
+  state.chosenRouteId = null;
+  walking.clear();
+  if (routePairSelected()) {
+    syncWalkingLayers();
+    return;
+  }
+  walking.start([state.origin.lon, state.origin.lat], [state.destination.lon, state.destination.lat]);
+}
+$('#retry-walking-route').addEventListener('click', updateWalkingRoute);
 
 function setDepartureNow() {
   const now = new Date();
@@ -488,7 +531,7 @@ async function refresh() {
       offline: 'Offline mode: saved provider data only. Observation timestamps retain their original dates.'
     };
     $('#mode-notice').textContent = messages[state.snapshot.mode] ?? 'Selected map data loaded.';
-    map.replaceLayers(state.snapshot.layers);
+    syncWalkingLayers();
     renderLayers();
     renderFeatures();
     if (routes().length && routePairSelected()) {

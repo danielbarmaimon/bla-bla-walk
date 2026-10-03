@@ -13,7 +13,7 @@ The user scenario proposed for review is an older person travelling to a grocery
 
 ### Proposed journey flow (three minutes)
 1. Open Basel, toggle sensor temperatures, fountains and calculated shade. Inspect a feature's source, timestamp and uncertainty.
-2. Search for a Basel-Stadt street address for the start or destination; official building-address lookup now supports selecting map coordinates online. Arbitrary-endpoint walking routes remain unavailable. Compare eligible trips for the checked endpoint pair. Keep the existing Basel SBB–Marktplatz walk as the current checked example; do not imply a specific Migros route is verified.
+2. Search for a Basel-Stadt street address for the start or destination; official building-address lookup now supports selecting map coordinates online. Online endpoint selection now requests FOSSGIS foot-network geometry; shade/access ranking for new pairs remains unavailable. Compare eligible trips for the checked endpoint pair. Keep the existing Basel SBB–Marktplatz walk as the current checked example; do not imply a specific Migros route is verified.
 3. Choose Fastest overall or More shade. Show walking time/distance, shaded/exposed/unknown lengths, benches, fountains and confirmed closures. If transit is admitted, show walking access, wait, ride, transfers and schedule/live status separately.
 4. Choose Now or another departure time. Recalculate shade along outdoor walking legs; show the recommendation and its evidence.
 5. Disconnect a source: show retained observations as stale and saved shade results with their original effective time.
@@ -23,7 +23,7 @@ The user scenario proposed for review is an older person travelling to a grocery
 - Investigate public and aggregated data before committing to live integrations.
 - Preserve access for people without smartphones; the phone-access concept and demo direction are captured in [future features](future-features.md), with implementation deferred until the core web-app demo is ready.
 - Treat volunteer accompaniment and community assistance as a later phase, with operating and vetting arrangements still unresolved.
-Coverage includes all Basel, rather than one neighbourhood. The T0 engineering boundary is pinned to Basel-Stadt canton, including Riehen/Bettingen; use the source register and inventory for exact extent and buffer gaps. Inventory city-wide geometry plus surrounding shadow-casting objects. Calculate requested map tiles and route corridors on demand. The first demo uses two checked walking alternatives; arbitrary-endpoint route generation is a later decision.
+Coverage includes all Basel, rather than one neighbourhood. The T0 engineering boundary is pinned to Basel-Stadt canton, including Riehen/Bettingen; use the source register and inventory for exact extent and buffer gaps. Inventory city-wide geometry plus surrounding shadow-casting objects. Calculate requested map tiles and route corridors on demand. The first demo uses two checked walking alternatives; online arbitrary-endpoint street geometry is supported, while physical access and shade-based comparison for new pairs remain unvalidated.
 
 ## Data
 The [source register](SOURCES.md) is authoritative for endpoints, licensing, attribution, evidence and admission checks.
@@ -52,7 +52,7 @@ Use the same app in three explicit modes: synthetic fixtures, online provider da
 ## Recommendation rules
 Offer Fastest overall and More shade choices, with manual route selection retained. Compare public transport only when its source and trip-time evidence pass admission. Include walking access, waiting, transfers and riding in door-to-door duration; do not treat vehicle time as walking time or vehicle interiors as measured shade. The [routing rules](routing-rules.md) define walking metrics, weights and evidence completeness. Cross-mode ranking still needs team agreement. Show raw metrics and evidence; missing or stale data must not improve a score. Known access/blocking constraints stay outside preferences.
 
-Waiting outdoors has unknown heat exposure unless stop shade or shelter data are available. Store search and arbitrary-endpoint routing are proposals; the current checked routes remain the fixed T9 pair until a destination and route source are verified.
+Waiting outdoors has unknown heat exposure unless stop shade or shelter data are available. Official building-address search and online FOSSGIS walking geometry now support endpoint selection. Store-category listings remain illustrative, and current-departure shade comparison retains the fixed T9 pair.
 
 ## Later extension: shared user reports
 Let users report a broken fountain, a temporarily closed place, or a blocked path. Reports appear as shared map alerts with a category, location, submission time and status; a short note is optional. Users can confirm, resolve or flag reports. Show report age and confirmation state so unverified reports are clear. Define expiry, moderation and rate limits before launch. Start without accounts or stored reporter identities. Do not label any reported place as safe. Choose persistent storage and abuse controls when this extension is designed; it is outside the core demo.

@@ -81,8 +81,10 @@ OpenLayers, FastAPI and Rasterio support the implementation. Codex assisted with
 code, tests, documentation and this script. Numerical and browser checks establish
 software behaviour, not measured cooling, physical shade accuracy or route safety.
 
-Transit, arbitrary-destination routing and the proposed phone service are not
-available here. The PET layer is a historical scenario, not current temperature.
+Transit and the proposed phone service are not available here. Online address
+search and street-route geometry now work for selected Basel endpoints; shade
+comparison remains limited to the saved example. The PET layer is a historical
+scenario, not current temperature.
 Our next step is field validation of shade and access, followed by user testing
 and performance work. Today we demonstrate transparent evidence and uncertainty,
 not a finished navigation or health service.
