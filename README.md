@@ -221,6 +221,13 @@ zero shade calls and unknown route access withholds all recommendations.
 These are building-shadow midpoint approximations, with unknown/night retained;
 see [routing rules](docs/routing-rules.md) for limits and T6's integration boundary.
 
+Run `python scripts/validate_journey.py` with prepared local inputs and the saved
+offline provider snapshot to exercise the background comparison API while blocking
+outbound HTTP. It checks polling, duplicate-request reuse, detour rescoring and
+withheld recommendations for unknown access, then saves the real response locally
+under `.hack/`. See [T6's acceptance audit](handoff/t6-integration.md) for measured
+results and the outstanding external-server check.
+
 Format Python with `python -m ruff format backend scripts/fetch_browser_assets.py scripts/format_browser.py` and browser code with `python scripts/format_browser.py`. [backend/bla_bla_walk/interfaces.py](backend/bla_bla_walk/interfaces.py) is canonical; regeneration writes [src/interfaces.ts](src/interfaces.ts) for editor/JSDoc use and the browser validation schema. Include a decision line with model changes and never edit generated files by hand. Consumer ownership is listed in [ROADMAP.md](ROADMAP.md); the map modules now use .js filenames.
 
 ## Data sources

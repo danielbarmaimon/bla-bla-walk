@@ -77,10 +77,13 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
         < page.viewport_size["height"]
     )
     assert not external
+    page.set_viewport_size({"width": 390, "height": 844})
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
 
 
 def test_missing_offline_tiles_explain_saved_coverage(browser_page):
     page = browser_page
+    page.set_viewport_size({"width": 1280, "height": 900})
     page.route("**/tiles/**", lambda route: route.fulfill(status=404))
     page.goto(page.base_url + "/?mode=offline")
     page.wait_for_function(

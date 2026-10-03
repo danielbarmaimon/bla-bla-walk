@@ -25,6 +25,12 @@ def wire_calculation(page):
         )
         for index, route in enumerate(routes.features)
     ]
+    for route_evidence in evidence:
+        for sample in route_evidence.samples:
+            if sample.metadata:
+                sample.metadata.geometry_version = (
+                    "model-" + "a" * 64 + ";buildings=" + "b" * 64
+                )
     job = ComparisonJob(
         id="synthetic-browser-validation",
         status="ready",
@@ -94,6 +100,7 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         == "true"
     )
     assert page.evaluate("document.activeElement.textContent") == "Chosen route"
+    page.locator(".comparison-card summary").first.click()
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     page.locator("#shade-mode").click()
     page.locator("#shade-detour-limit").select_option("5")

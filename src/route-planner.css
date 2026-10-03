@@ -419,6 +419,9 @@
 
 .route-app .comparison-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  overflow-wrap: anywhere;
   gap: var(--space-3);
   padding: var(--space-3);
   border: 1px solid var(--poc-line);
@@ -937,6 +940,11 @@
   cursor: pointer;
   font-weight: 700;
   color: var(--poc-teal-dark);
+}
+
+.route-app .layer-switches label>span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .route-app .nearby-details ul {

@@ -5,6 +5,7 @@ import math
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
+from rasterio import Env
 from rasterio.warp import transform
 
 from .evaluation import load_rules
@@ -58,9 +59,10 @@ def intervals(points, distance, maximum, stops):
 def route_intervals(route, policy, stops):
     """Plan the bounded distance samples used by calculation and job progress."""
     coordinates = route.geometry.coordinates
-    x, y = transform(
-        4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
-    )
+    with Env(PROJ_NETWORK="OFF"):
+        x, y = transform(
+            4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
+        )
     segments = list(
         intervals(
             list(zip(x, y)),

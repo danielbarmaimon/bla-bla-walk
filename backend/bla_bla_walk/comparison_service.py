@@ -9,6 +9,7 @@ from pathlib import Path
 from threading import Event, RLock
 from uuid import uuid4
 
+from rasterio import Env
 from rasterio.warp import transform
 
 from .adapters.routes import load_demo_routes
@@ -45,7 +46,8 @@ class ComparisonService:
         contexts = []
         for route in routes:
             lon, lat = route.geometry.coordinates[0]
-            x, y = transform(4326, 2056, [lon], [lat])
+            with Env(PROJ_NETWORK="OFF"):
+                x, y = transform(4326, 2056, [lon], [lat])
             contexts.append(
                 self.shade.context(
                     ShadeRequest(
