@@ -130,6 +130,9 @@ function showFeature(feature) {
     link.rel = 'noopener noreferrer';
     details.append(link);
   }
+  $('#map-feature-details').replaceChildren(...Array.from(details.childNodes, node => node.cloneNode(true)));
+  $('#map-feature-inspector').hidden = false;
+  $('#map-feature-inspector').open = true;
 }
 
 function renderFeatures() {
