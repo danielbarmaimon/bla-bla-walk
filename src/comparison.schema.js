@@ -1,5 +1,5 @@
 // Generated from canonical Python models. Do not edit by hand.
-export const journeySchema = {
+export const comparisonJobSchema = {
   "$defs": {
     "Provenance": {
       "additionalProperties": false,
@@ -491,24 +491,35 @@ export const journeySchema = {
     }
   },
   "additionalProperties": false,
-  "description": "Poll the same request while pending; evidence is local model output.",
+  "description": "Bounded background calculation. Ready evidence can be rescored locally.\n\nCache identity pins routes, complete stops, speed, policy and input versions.\nSource changes invalidate a job; only ready results can guide selection.",
   "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
     "status": {
       "enum": [
-        "pending",
-        "complete"
+        "running",
+        "ready",
+        "failed"
       ],
       "title": "Status",
       "type": "string"
     },
-    "departure": {
+    "departure_time": {
       "format": "date-time",
-      "title": "Departure",
+      "title": "Departure Time",
       "type": "string"
     },
-    "explanation": {
-      "title": "Explanation",
-      "type": "string"
+    "completed_samples": {
+      "default": 0,
+      "title": "Completed Samples",
+      "type": "integer"
+    },
+    "total_samples": {
+      "default": 0,
+      "title": "Total Samples",
+      "type": "integer"
     },
     "evidence": {
       "items": {
@@ -517,19 +528,24 @@ export const journeySchema = {
       "title": "Evidence",
       "type": "array"
     },
-    "comparison": {
+    "choices": {
       "additionalProperties": {
         "$ref": "#/$defs/TripComparison"
       },
-      "title": "Comparison",
+      "title": "Choices",
       "type": "object"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "type": "string"
     }
   },
   "required": [
+    "id",
     "status",
-    "departure",
+    "departure_time",
     "explanation"
   ],
-  "title": "JourneyResponse",
+  "title": "ComparisonJob",
   "type": "object"
 };

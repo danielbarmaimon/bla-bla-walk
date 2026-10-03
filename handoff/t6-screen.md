@@ -1,6 +1,6 @@
 # T6 screen · Slot D handoff to Slot F
 
-Status: screen portion ready · Parent T6 remains in progress
+Status: screen portion merged in PR #38 · Parent T6 prepared-data acceptance remains open
 
 ## State
 
@@ -35,6 +35,9 @@ Built the comparison presentation on `feat/t6-comparison-screen` from merged
 - Did not run tests; this checkpoint is screen work only.
 
 ## Next · Slot F
+
+The current continuation is tracked in [T6 journey integration](t6-journey-integration.md).
+The original integration checklist below describes the screen handoff.
 
 1. Pass the chosen T5 `compare_choices` result to `renderTripComparison` as
    `comparison`, preserving the `fastest_overall` / `more_shade` keys and

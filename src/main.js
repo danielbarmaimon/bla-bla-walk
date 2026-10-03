@@ -1,10 +1,12 @@
 import {
-  parseSnapshot,
-  loadComparison
+  parseSnapshot
 } from './api.js';
 import {
   renderTripComparison
 } from './comparison.js';
+import {
+  journeyCalculation
+} from './journey-calculation.js';
 import {
   createMap
 } from './map.js';
@@ -39,9 +41,8 @@ const state = {
   preference: 'fast',
   selectedRouteId: 'demo-route-a',
   route: null,
-  journey: null,
-  comparisonMessage: 'Choose a departure and calculate local route evidence.',
-  comparisonVersion: 0
+  comparisonJob: null,
+  chosenRouteId: null,
 };
 const $ = (selector) => document.querySelector(selector);
 const routes = () => state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [];
@@ -84,8 +85,6 @@ function showFeature(feature) {
     ['Licence', source.licence],
     ['Observed', formatTime(source.observed_at)],
     ['Retrieved', formatTime(source.retrieved_at)],
-    ['Shade requested', formatTime(feature.shade?.requested_time)],
-    ['Shade effective', formatTime(feature.shade?.effective_time)],
   ];
   const list = document.createElement('dl');
   rows.forEach(([label, value]) => {
@@ -218,8 +217,7 @@ function setPins() {
 }
 
 function selectDestination(place) {
-  ++state.comparisonVersion;
-  state.journey = null;
+  calculation.clear();
   state.destination = place;
   $('#destination-input').value = place.name;
   $('#suggestions').hidden = true;
@@ -228,8 +226,7 @@ function selectDestination(place) {
 }
 
 function setOrigin(place, message) {
-  ++state.comparisonVersion;
-  state.journey = null;
+  calculation.clear();
   state.origin = place;
   $('#origin-input').value = place.name;
   $('#origin-status').textContent = message;
@@ -242,48 +239,9 @@ function selectPreference(preference) {
   state.preference = preference;
   $('#fast-mode').setAttribute('aria-pressed', String(preference === 'fast'));
   $('#shade-mode').setAttribute('aria-pressed', String(preference === 'shade'));
-  applyRecommendation();
-  renderJourney();
-}
-
-function applyRecommendation() {
-  const view = state.journey?.comparison[state.preference === 'fast' ? 'fastest_overall' : 'more_shade'];
-  if (view?.winner) state.selectedRouteId = view.winner;
-}
-
-async function refreshComparison() {
-  const version = ++state.comparisonVersion;
-  state.journey = null;
-  const departure = new Date($('#departure-time').value);
-  if (!routePairSelected() || !routes().length || mode === 'fixture' || !Number.isFinite(departure.getTime())) {
-    state.comparisonMessage = 'Comparison unavailable: choose the checked pair, provider mode and a valid departure.';
-    renderJourney();
-    return;
-  }
-  const request = {
-    mode,
-    departure: departure.toISOString(),
-    extra_time_limit_minutes: $('#shade-detour-limit').value === '5' ? 5 : null
-  };
-  state.comparisonMessage = 'Starting local exact-time route sampling…';
-  renderJourney();
-  try {
-    const journey = await loadComparison(request);
-    if (version !== state.comparisonVersion) return;
-    if (new Date(journey.departure).getTime() !== departure.getTime()) throw new Error('Departure mismatch; evidence withheld.');
-    state.comparisonMessage = journey.explanation;
-    if (journey.status === 'pending') {
-      setTimeout(() => {
-        if (version === state.comparisonVersion) void refreshComparison();
-      }, 3000);
-    } else {
-      state.journey = journey;
-      applyRecommendation();
-    }
-  } catch (error) {
-    if (version !== state.comparisonVersion) return;
-    state.comparisonMessage = error.message;
-  }
+  $('#balanced-mode').setAttribute('aria-pressed', String(preference === 'balanced'));
+  const winner = activeComparison()?.winner;
+  if (winner) state.selectedRouteId = winner;
   renderJourney();
 }
 
@@ -325,19 +283,27 @@ function appendStep([type, instruction, note]) {
   $('#step-list').append(item);
 }
 
+function activeComparison() {
+  if (state.comparisonJob?.status !== 'ready') return null;
+  return state.comparisonJob.choices[state.preference === 'fast' ? 'fastest_overall' : state.preference === 'shade' ? 'more_shade' : 'baseline'];
+}
+
 function renderRouteOptions() {
   const list = $('#route-options');
+  const focused = list.contains(document.activeElement) ? document.activeElement.dataset : null;
   if (!routePairSelected()) {
     list.replaceChildren();
     return;
   }
   renderTripComparison(list, {
     routes: routes(),
-    comparison: state.journey?.comparison ?? null,
-    evidence: state.journey?.evidence ?? [],
+    comparison: state.comparisonJob?.status === 'ready' ? state.comparisonJob.choices : null,
+    chosenRouteId: state.chosenRouteId,
     selectedRouteId: state.selectedRouteId,
-    preference: state.preference === 'fast' ? 'fastest_overall' : 'more_shade',
+    preference: state.preference === 'fast' ? 'fastest_overall' : state.preference === 'shade' ? 'more_shade' : 'baseline',
     onChoose: (route) => {
+      if (!activeComparison()?.manual_choices.includes(route.id)) return;
+      state.chosenRouteId = route.id;
       state.selectedRouteId = route.id;
       renderJourney();
       $('#route-options .comparison-primary[aria-pressed="true"]')?.focus();
@@ -345,9 +311,11 @@ function renderRouteOptions() {
     onShow: (route) => {
       state.selectedRouteId = route.id;
       renderJourney();
+      showMap();
       map.focus(route);
     }
   });
+  if (focused?.routeId) list.querySelector(`[data-route-id="${CSS.escape(focused.routeId)}"][data-action="${focused.action}"]`)?.focus();
 }
 
 function renderNearby() {
@@ -396,21 +364,15 @@ function renderJourney() {
   $('#selected-journey').hidden = !destination;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
-  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : 'More shade';
+  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : state.preference === 'shade' ? 'More shade' : 'Balanced';
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : 'No checked street route is available for this selected pair. Use the Basel SBB → Marktplatz example.';
-  $('#preference-note').textContent = 'Recommendations and manual choice require eligible evidence. Show on map inspects any route. Transit unavailable; access and water operation remain unverified.';
-  $('#comparison-control-status').textContent = state.comparisonMessage;
-  const controlsAvailable = routePairSelected() && routes().length > 0 && mode !== 'fixture';
-  ['departure-time', 'departure-now', 'shade-detour-limit', 'calculate-comparison'].forEach((id) => {
-    $(`#${id}`).disabled = !controlsAvailable;
-  });
-  $('#steps-summary').textContent = routePairSelected() && route ? `${state.preference === 'fast' ? 'Fastest' : 'More shade'} preference · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Checked route and step guidance are unavailable for this selection.';
+  $('#preference-note').textContent = activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.';
+  $('#steps-summary').textContent = routePairSelected() && route ? `${state.chosenRouteId === route.id ? 'Chosen eligible route' : 'Inspecting route'} · ${Math.round(route.route.distance_m)} m · access and temporary closures unverified` : 'Checked route and step guidance are unavailable for this selection.';
   routeSteps().forEach(appendStep);
   $('#source-status').textContent = state.snapshot ? `${state.snapshot.mode} data · ${fountainsNearRoute().length} fountains within ${FOUNTAIN_BUFFER_M} m · ${sensorsNearRoute().length} sensors within ${SENSOR_BUFFER_M} m` : 'Map data has not loaded.';
   renderRouteOptions();
   renderNearby();
-  map.setShadeSamples(routePairSelected() ? routes() : [], state.journey?.evidence ?? []);
   const markers = [];
   if (routePairSelected() && state.route) {
     if (selectedRoute().id === 'demo-route-a') {
@@ -432,6 +394,9 @@ function renderJourney() {
     }));
   }
   map.setContextMarkers(markers);
+  const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
+  map.setShadeSamples(routes(), evidence);
+  $('#calculate-journey').disabled = !routePairSelected() || !routes().length || state.comparisonJob?.status === 'running';
 }
 
 function renderPetLegend() {
@@ -457,12 +422,56 @@ const map = createMap($('#map'), showFeature, (message) => {
 }, (message) => {
   $('#pet-status').textContent = message;
 });
+const calculation = journeyCalculation((job, message) => {
+  state.comparisonJob = job;
+  if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
+  $('#comparison-control-status').textContent = `${message}${job?.status === 'running' ? ` ${job.completed_samples} of ${job.total_samples} samples completed.` : ''}`;
+  renderJourney();
+});
+
+function setDepartureNow() {
+  const now = new Date();
+  $('#departure-time').value = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 19);
+  calculation.clear();
+}
+$('#departure-time').step = '1';
+setDepartureNow();
+$('#departure-time').addEventListener('input', () => {
+  $('#departure-time').setCustomValidity('');
+  calculation.clear();
+});
+$('#departure-now').addEventListener('click', setDepartureNow);
+$('#calculate-journey').addEventListener('click', () => {
+  const input = $('#departure-time');
+  const date = new Date(input.value);
+  input.setCustomValidity(Number.isFinite(date.getTime()) ? '' : 'Choose a valid departure time.');
+  if (input.reportValidity()) void calculation.start(date.toISOString());
+});
+
+function updatePreferences() {
+  calculation.setPreferences({
+    weights: Object.fromEntries(['shade', 'duration', 'water'].map((name) => [name, Number($(`#weight-${name}`).value)])),
+    extra_time_limit_minutes: $('#shade-detour-limit').value === '5' ? 5 : null,
+  });
+}
+$('#shade-detour-limit').addEventListener('change', updatePreferences);
+['shade', 'duration', 'water'].forEach((name) => $(`#weight-${name}`).addEventListener('change', updatePreferences));
+$('#balanced-mode').addEventListener('click', () => selectPreference('balanced'));
+$('#shade-samples-toggle').addEventListener('change', (event) => map.setShadeVisible(event.target.checked));
+fetch('/api/coverage').then((response) => {
+  if (!response.ok) throw new Error('Coverage unavailable');
+  return response.json();
+}).then((coverage) => map.setCoverage(coverage)).catch(() => {
+  $('#layer-note').textContent = 'City boundary unavailable; calculation support remains explicit in route evidence.';
+});
+
 $('#pet-layer-toggle').checked = mode === 'online';
 $('#pet-layer-toggle').disabled = mode !== 'online';
 $('#pet-layer-toggle').addEventListener('change', (event) => map.setPetVisible(event.target.checked));
 map.setPetVisible(mode === 'online');
 
 async function refresh() {
+  calculation.clear();
   $('#mode-notice').textContent = 'Loading selected data mode…';
   try {
     const response = await fetch(`/api/map?mode=${encodeURIComponent(mode)}`, {
@@ -470,8 +479,18 @@ async function refresh() {
     });
     if (!response.ok) throw new Error('Map API unavailable');
     state.snapshot = parseSnapshot(await response.json());
+    if (!routes().length) {
+      const routeResponse = await fetch('/api/walking-routes', {
+        signal: AbortSignal.timeout(10_000)
+      });
+      if (!routeResponse.ok) throw new Error('Saved walking routes unavailable');
+      state.snapshot = parseSnapshot({
+        ...state.snapshot,
+        layers: [...state.snapshot.layers, await routeResponse.json()]
+      });
+    }
     const messages = {
-      fixture: 'Example mode: invented locations and values, not current conditions.',
+      fixture: 'Example mode: synthetic sensor and fountain layers beside sourced walking geometry. Calculated shade uses local prepared inputs.',
       online: 'Online mode: provider data with source timestamps; missing and stale values remain explicit.',
       offline: 'Offline mode: saved provider data only. Observation timestamps retain their original dates.'
     };
@@ -481,6 +500,7 @@ async function refresh() {
     renderFeatures();
     if (routes().length && routePairSelected()) {
       state.selectedRouteId = routes().some((route) => route.id === state.selectedRouteId) ? state.selectedRouteId : routes()[0].id;
+
     }
     renderJourney();
   } catch {
@@ -590,21 +610,6 @@ $('#try-example').addEventListener('click', () => {
 });
 $('#landmark-toggle').addEventListener('change', renderJourney);
 $('#cool-place-toggle').addEventListener('change', renderJourney);
-$('#shade-layer-toggle').addEventListener('change', (event) => map.setShadeVisible(event.target.checked));
-
-function setDepartureNow() {
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  $('#departure-time').value = local.toISOString().slice(0, 19);
-}
-setDepartureNow();
-$('#departure-time').addEventListener('change', () => void refreshComparison());
-$('#departure-now').addEventListener('click', () => {
-  setDepartureNow();
-  void refreshComparison();
-});
-$('#shade-detour-limit').addEventListener('change', () => void refreshComparison());
-$('#calculate-comparison').addEventListener('click', () => void refreshComparison());
 PLACES.forEach((place) => {
   const option = document.createElement('option');
   option.value = place.name;

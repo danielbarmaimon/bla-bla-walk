@@ -37,21 +37,18 @@ function routeMetrics(route, metrics) {
 export function renderTripComparison(container, {
   routes,
   comparison = null,
-  evidence = [],
   preference = 'fastest_overall',
   selectedRouteId,
+  chosenRouteId,
   onChoose = () => {},
   onShow = () => {}
 }) {
-  const focused = container.contains(document.activeElement) ? document.activeElement.dataset : null;
-  const focusedRoute = focused?.routeId;
-  const focusedAction = focused?.action;
   container.replaceChildren();
   const view = comparison?.[preference];
   const status = textElement(
     'p',
     'comparison-status',
-    view ? view.explanation : 'No calculated comparison for this departure. Eligibility and recommendations remain unknown. Transit unavailable.'
+    view ? view.explanation : 'No calculated comparison yet. Inspect routes; eligibility and recommendations remain unknown.'
   );
   status.setAttribute('role', 'status');
   container.append(status);
@@ -63,22 +60,11 @@ export function renderTripComparison(container, {
     const heading = document.createElement('div');
     heading.className = 'comparison-card-heading';
     heading.append(textElement('h3', '', route.label));
+    if (view?.winner === route.id) heading.append(textElement('strong', '', 'Recommended'));
     const routeStatus = view?.route_statuses?.[route.id] ?? 'comparison pending';
-    heading.append(textElement('span', 'route-eligibility', `${view?.winner === route.id ? 'Recommended · ' : ''}${routeStatus.replaceAll('_', ' ')}`));
+    heading.append(textElement('span', 'route-eligibility', routeStatus.replaceAll('_', ' ')));
     card.append(heading);
     card.append(routeMetrics(route, view?.metrics?.[route.id]));
-    const routeEvidence = evidence.find((item) => item.id === route.id);
-    if (routeEvidence?.samples.length) {
-      const samples = routeEvidence.samples;
-      const times = samples.map((sample) => sample.metadata?.effective_time).filter(Boolean);
-      card.append(textElement('p', 'comparison-historical',
-        `Locally calculated traversal samples · requested ${samples[0].requested_time} to ${samples.at(-1).requested_time} · effective ${times[0] ?? 'unavailable'} to ${times.at(-1) ?? 'unavailable'}. Night intervals: ${samples.filter((sample) => sample.state === 3).length}; night earns no shade credit.`));
-      const details = document.createElement('details');
-      details.append(textElement('summary', '', 'Shade model and source evidence'));
-      details.append(textElement('p', '', samples[0].explanation));
-      details.append(textElement('p', '', `Model: ${samples[0].model} · geometry: ${samples[0].metadata?.geometry_version ?? 'unavailable'}. Route source retrieved: ${routeEvidence.provenance?.retrieved_at ?? 'unknown'}.`));
-      card.append(details);
-    }
 
     if (route.pet) {
       card.append(textElement(
@@ -90,30 +76,39 @@ export function renderTripComparison(container, {
     const reasons = view?.reasons?.[route.id] ?? [];
     if (reasons.length) card.append(textElement('p', 'comparison-reasons', `Cannot recommend: ${reasons.join(', ').replaceAll('_', ' ')}.`));
 
+    const metrics = view?.metrics?.[route.id];
+    const samples = metrics?.samples ?? [];
+    if (samples.length) {
+      const details = document.createElement('details');
+      details.append(textElement('summary', '', 'Calculation times, model and sources'));
+      details.append(textElement('p', '', `Night: ${metres(metrics.night_metres)}. Route source: ${metrics.provenance?.provider ?? 'unknown'}; ${metrics.provenance?.attribution ?? ''}; ${metrics.provenance?.licence ?? ''}. Retrieved ${metrics.provenance?.retrieved_at ?? 'unknown'}.`));
+      const list = document.createElement('ul');
+      samples.forEach((sample) => list.append(textElement('li', '', `${metres(sample.start_metres)}–${metres(sample.end_metres)}: ${['unknown', 'sunlit', 'shaded', 'night'][sample.state]}. Requested ${sample.requested_time}; effective ${sample.metadata?.effective_time ?? 'unavailable'}; geometry ${sample.metadata?.geometry_version ?? 'unavailable'}; ${sample.model}. ${sample.explanation}`)));
+      details.append(list);
+      card.append(details);
+    }
+    if (view?.contributions?.[route.id]) card.append(textElement('p', '', `Weighted contributions: ${Object.entries(view.contributions[route.id]).map(([name, value]) => `${name} ${value.toFixed(3)}`).join(' · ')}`));
     const actions = document.createElement('div');
     actions.className = 'comparison-actions';
     const show = document.createElement('button');
     show.type = 'button';
-    show.className = 'comparison-secondary';
     show.dataset.routeId = route.id;
     show.dataset.action = 'show';
+    show.className = 'comparison-secondary';
     show.textContent = 'Show on map';
     show.addEventListener('click', () => onShow(route));
     const choose = document.createElement('button');
     choose.type = 'button';
-    choose.className = 'comparison-primary';
     choose.dataset.routeId = route.id;
     choose.dataset.action = 'choose';
-    choose.textContent = route.id === selectedRouteId ? (view?.manual_choices?.includes(route.id) ? 'Chosen route' : 'Shown route') : 'Choose route';
-    choose.setAttribute('aria-pressed', String(route.id === selectedRouteId));
+    choose.className = 'comparison-primary';
+    choose.textContent = route.id === chosenRouteId ? 'Chosen route' : 'Choose route';
+    choose.setAttribute('aria-pressed', String(route.id === chosenRouteId));
     const eligible = view?.manual_choices?.includes(route.id) ?? false;
     choose.disabled = !eligible;
     choose.addEventListener('click', () => onChoose(route));
     actions.append(show, choose);
     card.append(actions);
     container.append(card);
-  });
-  if (focusedRoute && focusedAction) container.querySelector(`[data-route-id="${CSS.escape(focusedRoute)}"][data-action="${CSS.escape(focusedAction)}"]`)?.focus({
-    preventScroll: true
   });
 }

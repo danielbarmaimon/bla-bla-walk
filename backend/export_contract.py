@@ -6,7 +6,9 @@ from pathlib import Path
 from bla_bla_walk.contract_types import typescript_contract
 from bla_bla_walk.demo_fixture import fixture_snapshot
 from bla_bla_walk.interfaces import (
-    JourneyResponse,
+    ComparisonJob,
+    ComparisonPreferences,
+    ComparisonRequest,
     MapSnapshot,
     ShadeRequest,
     ShadeResponse,
@@ -23,14 +25,6 @@ def write_json(path: Path, value: object) -> None:
 
 
 if __name__ == "__main__":
-    journey_schema = JourneyResponse.model_json_schema()
-    (ROOT / "src/journey.schema.js").write_text(
-        "// Generated from canonical Python models. Do not edit by hand.\n"
-        + "export const journeySchema = "
-        + json.dumps(journey_schema, indent=2)
-        + ";\n",
-        encoding="utf-8",
-    )
     schema = MapSnapshot.model_json_schema()
     write_json(ROOT / ".cache/openapi.json", app.openapi())
     write_json(ROOT / "src/snapshot.schema.json", schema)
@@ -61,4 +55,26 @@ if __name__ == "__main__":
     write_json(
         ROOT / ".cache/fixture-snapshot.json",
         fixture_snapshot().model_dump(mode="json"),
+    )
+
+    comparison_schema = ComparisonJob.model_json_schema()
+    (ROOT / "src/comparison.schema.js").write_text(
+        "// Generated from canonical Python models. Do not edit by hand.\n"
+        + "export const comparisonJobSchema = "
+        + json.dumps(comparison_schema, indent=2)
+        + ";\n",
+        encoding="utf-8",
+    )
+    client_schema = {
+        **comparison_schema,
+        "$defs": {
+            **comparison_schema.get("$defs", {}),
+            **ComparisonRequest.model_json_schema().get("$defs", {}),
+            "ComparisonRequest": ComparisonRequest.model_json_schema(),
+            "ComparisonPreferences": ComparisonPreferences.model_json_schema(),
+        },
+    }
+    (ROOT / "src/comparison-interfaces.ts").write_text(
+        typescript_contract(client_schema),
+        encoding="utf-8",
     )

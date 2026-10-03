@@ -331,19 +331,44 @@ class TripComparison(ContractModel):
     transit_status: Literal["unavailable"] = "unavailable"
 
 
-class JourneyRequest(ContractModel):
-    """Exact departure for the saved demo pair; detour changes only rescore."""
+class ComparisonPreferences(ContractModel):
+    """Rescore complete cached evidence; preferences never change sample times."""
 
-    mode: Literal["online", "offline"]
-    departure: AwareDatetime
+    weights: dict[str, Annotated[float, Field(ge=0, le=1)]] | None = None
     extra_time_limit_minutes: Literal[5] | None = None
 
+    @model_validator(mode="after")
+    def criteria(self):
+        if self.weights is not None and set(self.weights) != {
+            "shade",
+            "duration",
+            "water",
+        }:
+            raise ValueError("Supply shade, duration and water weights")
+        return self
 
-class JourneyResponse(ContractModel):
-    """Poll the same request while pending; evidence is local model output."""
 
-    status: Literal["pending", "complete"]
-    departure: AwareDatetime
-    explanation: str
+class ComparisonRequest(ContractModel):
+    """Exact departure for the server-owned checked pair; no access overrides."""
+
+    departure_time: AwareDatetime
+    stops: dict[str, Annotated[list[WalkingStop], Field(max_length=16)]] = Field(
+        default_factory=dict
+    )
+
+
+class ComparisonJob(ContractModel):
+    """Bounded background calculation. Ready evidence can be rescored locally.
+
+    Cache identity pins routes, complete stops, speed, policy and input versions.
+    Source changes invalidate a job; only ready results can guide selection.
+    """
+
+    id: str
+    status: Literal["running", "ready", "failed"]
+    departure_time: AwareDatetime
+    completed_samples: int = 0
+    total_samples: int = 0
     evidence: list[WalkingEvidence] = Field(default_factory=list)
-    comparison: dict[str, TripComparison] = Field(default_factory=dict)
+    choices: dict[str, TripComparison] = Field(default_factory=dict)
+    explanation: str

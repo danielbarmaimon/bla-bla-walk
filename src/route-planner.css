@@ -1071,3 +1071,29 @@
     min-height: 6.8rem;
   }
 }
+
+.weight-controls {
+  margin-block: var(--space-3);
+}
+
+.weight-controls label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comparison-card details ul {
+  max-height: var(--feature-list-height);
+  overflow: auto;
+  overflow-wrap: anywhere;
+}
+
+.comparison-card {
+  overflow-wrap: anywhere;
+}
+
+.comparison-controls input {
+  min-width: 0;
+  max-width: 100%;
+}
