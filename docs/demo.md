@@ -116,3 +116,7 @@ Keep the app and fallback ready throughout the presentation session.
 ## Route-stop demonstration
 
 On the local app, select an address, show the calculated route, and enable Route stops. WATER uses saved IWB fountains; BENCH and REST use saved OSM seating/park candidates, with optional sourced indoor candidates. Open Route stops or select a marker to show provenance. Describe these as mapped candidates within 50m, with drinking, operation, access and cooling unknown. A dated saved acquisition is never a live condition report. The static T7 fallback retains its labelled saved result and does not claim this new interactive feature.
+
+## Sensor route-temperature demonstration
+
+Use the local **Online** mode, select a route, and enable Sensor-based route temperature. The selected line uses real station-based estimates with an actual °C range, coverage and time/source details. Click a coloured section for its contributing observations. Summer is green–amber–rose; winter is cyan–indigo. Automatic uses current sensor temperature, then the departure day's city forecast to choose the palette. Forecast never fills route gaps. Disable temperature to inspect shade strokes. Example/offline uses saved readings and explicitly says SAVED / STALE. This feature is exploratory and does not establish street-level cooling or safety; the static T7 fallback remains its older labelled saved result.

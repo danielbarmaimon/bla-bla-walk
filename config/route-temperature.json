@@ -1,0 +1,13 @@
+{
+  "note": "Exploratory IDW display settings, not validated physical accuracy; user palettes and minimum 2 degree relative scale. Automatic winter below 15 C is a display convention, not a weather classification.",
+  "radius_metres": 1000,
+  "minimum_sensors": 2,
+  "nearest_sensors": 3,
+  "alignment_minutes": 60,
+  "current_age_minutes": 90,
+  "future_tolerance_minutes": 5,
+  "step_metres": 25,
+  "max_segments": 1200,
+  "minimum_span_c": 2,
+  "winter_below_c": 15
+}

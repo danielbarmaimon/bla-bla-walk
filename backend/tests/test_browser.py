@@ -28,7 +28,9 @@ def test_layers_provenance_and_missing_states(browser_page):
     assert "28 °C" in page.locator("#details").inner_text()
     assert "Synthetic fixture" in page.locator("#details").inner_text()
     assert "01/10/2026" in page.locator("#details").inner_text()
-    toggle = page.get_by_role("checkbox", name="Temperature", exact=False)
+    toggle = page.locator("#layers").get_by_role(
+        "checkbox", name="Temperature", exact=False
+    )
     toggle.uncheck()
     assert not toggle.is_checked()
     # Source inspection remains available when its map layer is hidden.
@@ -53,6 +55,7 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     ):
         pytest.skip("Offline browser check needs scripts/prepare_offline.py downloads")
     page = browser_page
+    page.wait_for_load_state("networkidle")
     external = []
     page.on(
         "request",
