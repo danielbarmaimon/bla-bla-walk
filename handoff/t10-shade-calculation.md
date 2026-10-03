@@ -1,7 +1,7 @@
 # T10 — building-cast shadows along demo routes
 
 Status: done — user-approved building-shadow approximation; ready for PR review, not merged.
-Branch: feat/t10-receiver-validation
+Branch: feat/t10-building-shadows
 
 ## Goal and decision
 
@@ -49,6 +49,13 @@ data/fixtures/compact-pipeline-validation.json to retain both independent audits
 - Reproduction and interpretation are documented in README and docs/SOURCES.md;
   physical/city-wide acceptance is retained in docs/future-features.md.
 
+## Publication
+
+The continuation is published on a fresh review branch. Updating the old review
+branch brought an already-published GitHub web-merge identity into its push
+range, which the local strict privacy hook refused. Shared history was retained;
+the new branch uses the unchanged hook to check newly introduced commits.
+
 ## Next
 
 1. Review the continuation PR; merging requires an explicit yes for that PR.
@@ -64,7 +71,7 @@ data/fixtures/compact-pipeline-validation.json to retain both independent audits
 ## Resume prompt
 
 Review the completed T10 building-shadow approximation on
-feat/t10-receiver-validation. Reuse the dated local building cache and prepared
+feat/t10-building-shadows. Reuse the dated local building cache and prepared
 geometry, the canonical labelled response and recorded route validation. Carry
 T5/T6 browser/scoring integration forward without claiming physical or city-wide
 shade acceptance. Do not merge this PR without its explicit approval.

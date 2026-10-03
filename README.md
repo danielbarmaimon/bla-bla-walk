@@ -121,7 +121,7 @@ Shade uses local geometry and solar calculations in both online and offline mode
 
 [Service limits](config/shade-service.json) bound geometry to 16 million cells per request, two simultaneous calculations and 128MiB of serialized cache entries per server process. Restart after changing worker/cache limits. Identical misses share one calculation; a different request is rejected when both workers are occupied. Cache keys include exact UTC time, geometry/preparation and implementation versions, encoding/grid, extent, corridor, boundary, source-file presence/size/mtime and ray/receiver policy. Grid hashes are verified on cold reads. There are no five-minute buckets or disk cache; restart clears the cache. The X-Shade-Cache header indicates MISS/HIT. HTTP responses use no-store because local input availability can change.
 
-The earlier strict survey checkpoint has separate integration and synthetic ray-kernel measurements:
+The earlier strict survey checkpoint has separate integration and synthetic ray-kernel measurements. On rerun, this script uses the currently configured receiver policy; switch to the strict policy described above to reproduce unknown-only behavior:
 
 ```sh
 python scripts/benchmark_shade.py --repeats 5

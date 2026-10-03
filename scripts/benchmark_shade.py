@@ -154,8 +154,8 @@ def benchmark(repeats):
             "logical_processors": os.cpu_count(),
         },
         "scope": (
-            "In-process HTTP/API integration using real compact grids; all "
-            "production receivers unknown. Separate synthetic 1km ray-kernel "
+            "In-process HTTP/API integration using real compact grids and the "
+            "currently configured receiver policy. Separate synthetic 1km ray-kernel "
             "benchmark. No network, production deployment, physical accuracy "
             "or full T10 acceptance claimed."
         ),
