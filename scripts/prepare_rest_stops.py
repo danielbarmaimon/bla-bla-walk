@@ -25,6 +25,9 @@ def prepare(
 ):
     """Keep only IDs, positions and enumerated amenity evidence; no raw tags."""
     _, polygons = search_settings()
+    brands = json.loads((ROOT / "config/route-stops.json").read_text())[
+        "supermarket_brands"
+    ]
     provenance = Provenance(
         provider="OpenStreetMap via Swiss Overpass",
         source_url="https://www.openstreetmap.org/copyright",
@@ -41,6 +44,8 @@ def prepare(
             if tags.get("amenity") == "bench"
             else "park"
             if tags.get("leisure") == "park"
+            else "indoor"
+            if tags.get("shop") == "supermarket"
             else None
         )
         position = item.get("center", item)
@@ -52,9 +57,18 @@ def prepare(
         features.append(
             MapFeature(
                 id=f"osm-{item['type']}-{item['id']}",
-                label="Mapped bench" if kind == "bench" else "Mapped park centre",
+                label="Mapped bench"
+                if kind == "bench"
+                else "Mapped park centre"
+                if kind == "park"
+                else (
+                    tags.get("brand")
+                    if tags.get("brand") in brands
+                    else "Mapped supermarket"
+                ),
                 kind="rest",
                 rest_type=kind,
+                opening_hours=tags.get("opening_hours") if kind == "indoor" else None,
                 geometry=PointGeometry(type="Point", coordinates=coords),
                 availability="unknown",
                 provenance=provenance,
@@ -62,6 +76,8 @@ def prepare(
                 + (
                     "Park centre is not a verified entrance or seating location."
                     if kind == "park"
+                    else "Mapped supermarket; scheduled hours only; cooling unknown."
+                    if kind == "indoor"
                     else "Mapped seating; no field verification."
                 ),
             )
@@ -91,7 +107,8 @@ def download(settings):
     )
     query = (
         f'[out:json][timeout:40];(nwr["amenity"="bench"]({bbox});'
-        f'nwr["leisure"="park"]({bbox}););out tags center;'
+        f'nwr["leisure"="park"]({bbox});'
+        f'nwr["shop"="supermarket"]({bbox}););out tags center;'
     )
     with httpx.Client(timeout=settings["timeout_seconds"]) as client:
         with client.stream(

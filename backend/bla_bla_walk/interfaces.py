@@ -232,6 +232,7 @@ class MapFeature(ContractModel):
     route: RouteMetrics | None = None
     pet: PetRouteMetrics | None = None
     rest_type: Literal["bench", "park", "indoor"] | None = None
+    opening_hours: str | None = None
 
 
 class MapLayer(ContractModel):

@@ -42,11 +42,13 @@ def test_real_saved_candidates_visible_and_toggle(browser_page):
     page.locator("#show-route").click()
     page.locator("#nearby-details").evaluate("element => element.open = true")
     assert (
-        "Distance is geometric proximity" in page.locator("#nearby-list").inner_text()
+        "Distance is geometric proximity"
+        in page.locator("#route-candidate-notes").text_content()
     )
     page.locator("#nearby-list button").first.click()
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "Provider data" in page.locator("#map-feature-details").inner_text()
     assert "Retrieved" in page.locator("#map-feature-details").inner_text()
     assert page.locator("#map-feature-inspector").evaluate("element => element.open")
-    page.locator("#route-stops-toggle").uncheck()
-    assert not page.locator("#route-stops-toggle").is_checked()
+    page.locator("#water-stop-toggle").click()
+    assert page.locator("#water-stop-toggle").get_attribute("aria-pressed") == "false"

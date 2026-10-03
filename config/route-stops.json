@@ -4,5 +4,28 @@
   "max_response_bytes": 8388608,
   "fountain_buffer_metres": 50,
   "rest_buffer_metres": 50,
-  "max_markers": 80
+  "max_markers": 80,
+  "rest_interval_minutes": 15,
+  "public_holidays": {
+    "2026": [
+      "2026-01-01",
+      "2026-04-03",
+      "2026-04-06",
+      "2026-05-01",
+      "2026-05-14",
+      "2026-05-25",
+      "2026-08-01",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  },
+  "holiday_source": "https://www.bs.ch/themen/arbeit-und-steuern/feiertage-im-kanton-basel-stadt",
+  "supermarket_brands": [
+    "Migros",
+    "Coop",
+    "Denner",
+    "Lidl",
+    "ALDI",
+    "ALDI SUISSE"
+  ]
 }

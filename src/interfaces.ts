@@ -21,6 +21,7 @@ export interface MapFeature {
   route?: RouteMetrics | null;
   pet?: PetRouteMetrics | null;
   rest_type?: "bench" | "park" | "indoor" | null;
+  opening_hours?: string | null;
 }
 
 export interface MapLayer {

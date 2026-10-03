@@ -3,6 +3,9 @@ import {
   temperatureColour,
   validateSensorInterpolation
 } from './route-temperature.js';
+import {
+  badgeActive
+} from './layer-badges.js';
 
 const $ = selector => document.querySelector(selector);
 const baselDay = () => new Intl.DateTimeFormat('en-CA', {
@@ -62,10 +65,10 @@ export async function routeTemperatureView(map, mode, onUpdate) {
     loading = false;
     onUpdate();
   });
-  ['temperature-route-toggle', 'temperature-palette'].forEach(id => $('#' + id).addEventListener('change', onUpdate));
+  $('#temperature-palette').addEventListener('change', onUpdate);
 
   return {
-    render(route) {
+    render(route, routeVisible = true) {
       const profile = temperatureProfile(route, layer, settings);
       const day = $('#departure-time').value.slice(0, 10) || baselDay();
       const choice = $('#temperature-palette').value;
@@ -79,7 +82,7 @@ export async function routeTemperatureView(map, mode, onUpdate) {
       }
       const selected = chooseTemperaturePalette(profile, forecast, settings, day, choice);
       const palette = palettes[selected.name];
-      const visible = $('#temperature-route-toggle').checked;
+      const visible = badgeActive('#temperature-route-toggle') && routeVisible;
       map.setTemperatureProfile(route, profile, profile.segments.map(item => item.estimate ? temperatureColour(item.estimate.value, profile.low, profile.high, palette) : theme.getPropertyValue('--unknown').trim()), visible);
       const legend = $('#temperature-legend');
       legend.replaceChildren();

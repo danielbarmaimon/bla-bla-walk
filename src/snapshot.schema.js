@@ -193,6 +193,18 @@ export const snapshotSchema = {
           ],
           "default": null,
           "title": "Rest Type"
+        },
+        "opening_hours": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opening Hours"
         }
       },
       "required": [
