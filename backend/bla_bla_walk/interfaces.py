@@ -8,7 +8,7 @@ Feature tasks extend these models with a decision line before regeneration.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Protocol
 
@@ -29,6 +29,14 @@ class ContractModel(BaseModel):
     """Reject undeclared fields so producers cannot silently drift."""
 
     model_config = ConfigDict(extra="forbid")
+
+
+class PaletteForecast(ContractModel):
+    """Basel daily mean forecast for palette selection, never route observations."""
+
+    days: dict[date, Annotated[float, Field(allow_inf_nan=False)]]
+    availability: Availability
+    provenance: Provenance | None = None
 
 
 class PointGeometry(ContractModel):

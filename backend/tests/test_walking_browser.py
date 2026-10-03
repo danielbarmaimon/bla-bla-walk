@@ -126,6 +126,7 @@ def test_late_response_and_offline_never_overwrite_current_route(browser_page):
         " && document.querySelector('#mode-notice')"
         ".textContent.includes('Example mode')"
     )
+    page.wait_for_load_state("networkidle")
     result = page.evaluate("""async () => {
       const {walkingRouting} = await import('/src/walking-routing.js');
       const original = window.fetch;

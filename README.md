@@ -231,6 +231,14 @@ results and the outstanding external-server check.
 
 Format Python with `python -m ruff format backend scripts/fetch_browser_assets.py scripts/format_browser.py` and browser code with `python scripts/format_browser.py`. [backend/bla_bla_walk/interfaces.py](backend/bla_bla_walk/interfaces.py) is canonical; regeneration writes [src/interfaces.ts](src/interfaces.ts) for editor/JSDoc use and the browser validation schema. Include a decision line with model changes and never edit generated files by hand. Consumer ownership is listed in [ROADMAP.md](ROADMAP.md); the map modules now use .js filenames.
 
+## Route temperature colours
+
+Enable **Sensor-based route temperature** to colour the selected walking line from real meteoblue station readings (Open Data Basel-Stadt). Online mode refreshes the admitted adapter; example/offline mode uses explicitly saved readings. Colours are exploratory inverse-distance-squared estimates from up to three sensors within 1,000m, requiring at least two readings aligned within 60 minutes. Dotted grey marks unsupported sections. No shade/PET cooling is added. The displayed relative scale has a minimum 2°C span; equal readings stay one colour. Actual estimated range, coverage, source times and a withheld-station check accompany the legend. Click a coloured route section to inspect its estimate and contributing readings. Disable temperature to see underlying shade strokes.
+
+Summer uses green `#86efac`, amber `#fbbf24`, rose `#e11d48`; winter uses colder cyan `#a5f3fc` through warmer indigo `#4338ca`. Automatic selects winter below 15°C (a configurable display convention), otherwise summer. Current sensor estimates take priority for today; unavailable/stale readings or another departure day fall back to that day's Open-Meteo daily mean for the fixed Basel city point. Manual palette choice is also available. Forecast chooses colours only and never fills unknown route temperatures. These are observation-time estimates, not a forecast for the selected departure.
+
+The forecast fallback uses the free **noncommercial** Open-Meteo API, with CC BY 4.0 attribution, a one-hour city cache, bounded timeout/response and a five-minute retry delay. Only the fixed Basel point is sent; no route/user coordinates. Offline reads the saved forecast and labels it saved; missing/out-of-range days remain explicit. If forecast also fails, saved sensor values may choose the palette with a visible fallback label. Settings live in `config/route-temperature.json` and `config/palette-forecast.json`; caches stay local. Details and limitations: [source register](docs/SOURCES.md).
+
 ## Prepare route stops
 
 Download the fixed Basel-Stadt extent once (no route or address is sent):

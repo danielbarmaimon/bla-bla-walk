@@ -49,6 +49,7 @@ export function createMap(
   onSelect,
   onBasemapStatus,
   onPetStatus,
+  onTemperatureSelect,
 ) {
   const source = new XYZ({
     url: BASEMAP_URL,
@@ -173,6 +174,19 @@ export function createMap(
     },
   });
   map.addLayer(shadeLayer);
+  const temperatureFeatures = new VectorSource();
+  const temperatureLayer = new VectorLayer({
+    source: temperatureFeatures,
+    zIndex: 6,
+    style: feature => new Style({
+      stroke: new Stroke({
+        color: feature.get('temperatureColour'),
+        width: 8,
+        lineDash: feature.get('temperatureSample') ? undefined : [2, 6]
+      })
+    })
+  });
+  map.addLayer(temperatureLayer);
   const coverageFeatures = new VectorSource();
   map.addLayer(new VectorLayer({
     source: coverageFeatures,
@@ -199,6 +213,10 @@ export function createMap(
       return;
     }
     map.forEachFeatureAtPixel(event.pixel, (feature) => {
+      if (feature.get('temperatureSample')) {
+        onTemperatureSelect?.(feature.get('temperatureSample'));
+        return true;
+      }
       const selected = feature.get('sourceFeature') ?? features.get(String(feature.getId()));
       if (selected) onSelect(selected);
       return true;
@@ -318,6 +336,21 @@ export function createMap(
         marker.set('label', item.label);
         marker.set('sourceFeature', item.sourceFeature);
         contextFeatures.addFeature(marker);
+      });
+    },
+    setTemperatureProfile: (route, profile, colours, visible) => {
+      temperatureFeatures.clear();
+      temperatureLayer.setVisible(visible);
+      if (!route || !visible) return;
+      profile.segments.forEach((sample, index) => {
+        const middle = route.coordinates.filter((_, vertex) => route.cumulative[vertex] / route.length > sample.start && route.cumulative[vertex] / route.length < sample.end);
+        const coordinates = [coordinateAtFraction(route, sample.start), ...middle, coordinateAtFraction(route, sample.end)];
+        const feature = new Feature({
+          geometry: new window.ol.geom.LineString(coordinates.map(point => fromLonLat(point)))
+        });
+        feature.set('temperatureColour', colours[index]);
+        feature.set('temperatureSample', sample.estimate);
+        temperatureFeatures.addFeature(feature);
       });
     },
     setPicking: (kind, callback) => {

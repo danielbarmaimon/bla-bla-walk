@@ -1,0 +1,12 @@
+{
+  "endpoint": "https://api.open-meteo.com/v1/forecast",
+  "latitude": 47.5596,
+  "longitude": 7.5886,
+  "timezone": "Europe/Zurich",
+  "forecast_days": 7,
+  "timeout_seconds": 6,
+  "max_response_bytes": 65536,
+  "refresh_seconds": 3600,
+  "retry_seconds": 300,
+  "note": "Fixed Basel city forecast, palette only. Open-Meteo CC BY 4.0; free API restricted to noncommercial use. No user coordinates sent."
+}

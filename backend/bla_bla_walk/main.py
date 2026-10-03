@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from rasterio.warp import transform_geom
 
 from .adapters.addresses import search_addresses
+from .adapters.palette_forecast import palette_forecast
 from .adapters.rest_stops import rest_stops
 from .adapters.routes import load_demo_routes
 from .adapters.walking import walking_routes as provider_walking_routes
@@ -26,6 +27,7 @@ from .interfaces import (
     ComparisonRequest,
     MapLayer,
     MapSnapshot,
+    PaletteForecast,
     PolygonGeometry,
     RouteAmenities,
     ShadeRequest,
@@ -34,7 +36,7 @@ from .interfaces import (
 )
 from .shade_cache import ShadeBusy
 from .shade_service import ShadeService
-from .snapshots import FOUNTAINS, offline_snapshot, online_snapshot
+from .snapshots import FOUNTAINS, TEMPERATURE, offline_snapshot, online_snapshot
 
 
 @asynccontextmanager
@@ -146,6 +148,31 @@ def route_amenities(mode: Literal["fixture", "online", "offline"] = "offline"):
                 explanation="Saved IWB fountain data unavailable.",
             )
     return RouteAmenities(fountains=fountains, rest_stops=rest_stops())
+
+
+@app.get("/api/route-temperatures", response_model=MapLayer)
+def route_temperatures(mode: Literal["fixture", "online", "offline"] = "offline"):
+    """Real station observations; illustrative mode uses explicitly saved data."""
+    if mode == "online":
+        return TEMPERATURE.get_layer()
+    try:
+        return next(
+            layer for layer in offline_snapshot().layers if layer.kind == "observation"
+        )
+    except (OSError, ValueError, StopIteration):
+        return MapLayer(
+            id="route-temperatures",
+            label="Air temperature · meteoblue",
+            kind="observation",
+            availability="missing",
+            features=[],
+            explanation="Saved sensor observations unavailable.",
+        )
+
+
+@app.get("/api/palette-forecast", response_model=PaletteForecast)
+def forecast_palette(mode: Literal["fixture", "online", "offline"] = "offline"):
+    return palette_forecast(mode)
 
 
 @app.post("/api/walking-routes", response_model=MapLayer)

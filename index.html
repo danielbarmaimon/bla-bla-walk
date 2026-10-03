@@ -123,6 +123,10 @@
               <details class="pet-legend"><summary>PET class legend</summary><ul id="pet-legend-list"></ul></details>
             </div>
             <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
+            <label><input id="temperature-route-toggle" type="checkbox" checked> Sensor-based route temperature · interpolated estimate</label>
+            <label>Temperature palette <select id="temperature-palette"><option value="auto">Automatic</option><option value="summer">Summer</option><option value="winter">Winter</option></select></label>
+            <div id="temperature-legend" aria-live="polite">Loading real sensor readings…</div>
+            <p>Temperature colours cover the selected route's shade strokes. Turn temperature off to inspect shade. Dotted grey means insufficient sensor coverage; air temperature is separate from shade and historical PET.</p>
             <label><input id="shade-samples-toggle" type="checkbox" checked> Route shade samples · solid shaded, dashed sunlit, dotted unknown/night</label>
             <p>City boundary is the shade calculation limit; prepared coverage inside it may be incomplete. Current-departure shade comparison supports only the saved SBB → Marktplatz pair. New address pairs have walking geometry, with shade unknown.</p>
             <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
@@ -144,6 +148,7 @@
               <ol id="step-list"></ol>
               <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
               <details class="nearby-details" id="map-feature-inspector" hidden><summary>Selected point · source and dates</summary><div id="map-feature-details" aria-live="polite"></div></details>
+              <div id="temperature-sample" aria-live="polite"></div>
               <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Route geometry: OpenStreetMap via FOSSGIS. Historical PET is a fixed scenario, not current weather. Fountain operation, access, shade and seating remain unknown unless stated by source data.</p></div>
             </aside>
           </div>

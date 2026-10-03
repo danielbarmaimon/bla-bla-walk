@@ -3,6 +3,10 @@ import {
   amenityLabel
 } from './route-amenities.js';
 import {
+  routeTemperatureView,
+  showRouteTemperature
+} from './route-temperature-view.js';
+import {
   addressSearch
 } from './address-search.js';
 import {
@@ -59,6 +63,7 @@ const state = {
   amenitiesStatus: 'Loading real route-stop data…',
 };
 const $ = (selector) => document.querySelector(selector);
+let temperatureView = null;
 const routes = () => routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
 const routePairSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
@@ -399,6 +404,7 @@ function renderNearby() {
 }
 
 function renderJourney() {
+  $('#temperature-sample').replaceChildren();
   const destination = state.destination;
   const route = selectedRoute();
   state.route = route ? routeGeometry(route.geometry.coordinates) : null;
@@ -435,6 +441,7 @@ function renderJourney() {
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
+  temperatureView?.render(state.route);
   $('#calculate-journey').disabled = !routePairSelected() || !routes().length || state.comparisonJob?.status === 'running';
   $('#retry-walking-route').hidden = routePairSelected();
 }
@@ -461,8 +468,9 @@ const map = createMap($('#map'), showFeature, (message) => {
   $('#basemap-status').textContent = message;
 }, (message) => {
   $('#pet-status').textContent = message;
-});
+}, showRouteTemperature);
 const stopSettings = await fetch('/config/route-stops.json').then(response => response.json());
+temperatureView = await routeTemperatureView(map, mode, renderJourney);
 
 function currentAmenities() {
   const indoor = $('#cool-place-toggle').checked ? COOL_PLACES.map(place => ({
@@ -547,6 +555,7 @@ setDepartureNow();
 $('#departure-time').addEventListener('input', () => {
   $('#departure-time').setCustomValidity('');
   calculation.clear();
+  renderJourney();
 });
 $('#departure-now').addEventListener('click', setDepartureNow);
 $('#calculate-journey').addEventListener('click', () => {

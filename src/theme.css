@@ -1,4 +1,9 @@
 :root {
+  --temperature-summer-cold: #86efac;
+  --temperature-summer-middle: #fbbf24;
+  --temperature-summer-warm: #e11d48;
+  --temperature-winter-cold: #a5f3fc;
+  --temperature-winter-warm: #4338ca;
   --surface: #eef3f4;
   --surface-raised: #ffffff;
   --text-primary: #20363f;
@@ -303,4 +308,11 @@ dd {
   #map {
     height: var(--map-min-height);
   }
+}
+
+.temperature-ramp {
+  height: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  max-width: 28rem;
 }
