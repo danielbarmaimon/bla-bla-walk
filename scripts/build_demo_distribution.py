@@ -83,8 +83,9 @@ routing by OSRM (FOSSGIS). Survey heights: © swisstopo, open-data terms.</p>
 <p>OpenLayers BSD-2-Clause · FastAPI MIT · Rasterio BSD-3-Clause · AJV MIT.
 Codex assisted code, tests, documentation and the pitch.</p>
 <p>Saved observations are not live; historical PET is not current temperature.
-Fixture mode is synthetic. Transit and phone service unavailable. Only the saved endpoint pair
-has checked route geometry; pedestrian access remains unknown. External hosting untested.</p>
+Fixture mode is synthetic. Transit and phone service unavailable. New address pairs have
+online walking geometry; shade comparison uses only the saved example. Pedestrian access
+remains unknown. External hosting untested.</p>
 <p>Next: field validation of shade/access, user tests and performance work.</p>
 <a href="SOURCES.md">Detailed source register</a></section>
 <section id="reflection"><h2>5:00–5:42 — HackAmRhein reflection</h2>

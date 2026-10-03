@@ -13,6 +13,7 @@ from rasterio.warp import transform_geom
 
 from .adapters.addresses import search_addresses
 from .adapters.routes import load_demo_routes
+from .adapters.walking import walking_routes as provider_walking_routes
 from .basemap import tile_path
 from .comparison_service import ComparisonService
 from .demo_fixture import fixture_snapshot
@@ -27,6 +28,7 @@ from .interfaces import (
     PolygonGeometry,
     ShadeRequest,
     ShadeResponse,
+    WalkingRouteRequest,
 )
 from .shade_cache import ShadeBusy
 from .shade_service import ShadeService
@@ -120,6 +122,24 @@ def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
     response.headers["X-Shade-Cache"] = "HIT" if hit else "MISS"
     response.headers["Cache-Control"] = "no-store"
     return result
+
+
+@app.post("/api/walking-routes", response_model=MapLayer)
+def selected_walking_routes(request: WalkingRouteRequest, response: Response):
+    """Resolve ephemeral endpoints; never reuse the demo line for another pair."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return provider_walking_routes(request)
+    except OverflowError as error:
+        raise HTTPException(429, str(error), headers={"Retry-After": "1"}) from error
+    except ValueError as error:
+        raise HTTPException(
+            422, "Select different endpoints within Basel-Stadt"
+        ) from error
+    except (httpx.HTTPError, OSError, KeyError, TypeError) as error:
+        raise HTTPException(
+            503, "Walking route unavailable; retry or use saved example"
+        ) from error
 
 
 @app.get("/api/walking-routes", response_model=MapLayer)

@@ -86,6 +86,8 @@
               </div>
             </div>
             <button id="calculate-journey" class="example-button" type="button">Calculate this departure</button>
+            <button id="retry-walking-route" class="example-button" type="button" hidden>Recalculate walking route</button>
+            <p class="helper">Online walking routes send endpoint coordinates to FOSSGIS, whose service logs requests. © OpenStreetMap contributors · Routing by OSRM (FOSSGIS). <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Fix the map</a></p>
             <p class="helper">Times use your device’s local timezone. No planned stops are included; rest cues are optional and unverified.</p>
             <details class="weight-controls"><summary>Balanced comparison weights</summary>
               <label>Shade <input id="weight-shade" type="range" min="0" max="1" step="0.1" value="0.5"></label>
@@ -122,7 +124,7 @@
             </div>
             <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
             <label><input id="shade-samples-toggle" type="checkbox" checked> Route shade samples · solid shaded, dashed sunlit, dotted unknown/night</label>
-            <p>City boundary is the calculation limit; prepared coverage inside it may be incomplete. Only the saved SBB → Marktplatz pair is supported.</p>
+            <p>City boundary is the shade calculation limit; prepared coverage inside it may be incomplete. Current-departure shade comparison supports only the saved SBB → Marktplatz pair. New address pairs have walking geometry, with shade unknown.</p>
             <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
             <div class="layer-switches" aria-label="Show route context">
               <label><input id="landmark-toggle" type="checkbox" checked> Wayfinding cues · visibility unverified</label>

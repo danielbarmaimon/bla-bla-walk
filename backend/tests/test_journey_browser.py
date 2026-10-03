@@ -173,6 +173,18 @@ def test_offline_journey_uses_only_same_origin_even_with_missing_tiles(browser_p
 def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
     page = browser_page
     page.route(
+        "**/api/addresses",
+        lambda route: route.fulfill(json={"places": [], "status": "available"}),
+    )
+    page.route(
+        "**/api/walking-routes",
+        lambda route: (
+            route.fulfill(status=503, json={"detail": "unavailable"})
+            if route.request.method == "POST"
+            else route.continue_()
+        ),
+    )
+    page.route(
         "**/api/comparison",
         lambda route: route.fulfill(
             status=503,
@@ -196,7 +208,9 @@ def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
     page.wait_for_selector("#suggestions button")
     page.locator("#suggestions button").first.click()
     assert page.locator("#calculate-journey").is_disabled()
-    assert "No checked street route" in page.locator("#journey-summary").inner_text()
+    assert (
+        "Calculating a walking route" in page.locator("#journey-summary").inner_text()
+    )
     page.unroute("**/api/comparison")
 
 

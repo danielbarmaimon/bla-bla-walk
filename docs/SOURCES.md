@@ -24,6 +24,29 @@ addresses, and marks replies no-store. Offline mode makes no address-provider
 request; map pins and sample places remain available. Address coordinates do not
 certify pedestrian access or supply arbitrary-endpoint route geometry.
 
+## Selected-endpoint walking routes — checked 2026-10-04
+
+The admitted [FOSSGIS OSM service](https://routing.openstreetmap.de/about.html)
+now supplies ephemeral street geometry for selected Basel endpoints via its
+`routed-foot/route/v1/driving` endpoint. The server uses a foot profile despite
+the URL's final profile token. Attribution: **© OpenStreetMap contributors**,
+ODbL 1.0, **Routing by OSRM (FOSSGIS)**. The UI links to OpenStreetMap's
+map-correction page. A valid user agent and one upstream request per second per
+server process follow the provider's terms; no scraping or persistent route cache.
+
+Endpoint coordinates are sent to FOSSGIS, which states that requests are saved
+in its server log; the controls disclose this. Local POST access-log URLs omit
+coordinates. Both endpoints must lie inside Basel-Stadt. Paths may cross the
+canton boundary and carry no shade-coverage guarantee. Snaps to the pedestrian
+network over 100m are rejected rather than drawing invented building connectors.
+
+Live public-address tests produced two routes to Dornacherstrasse 394; changing
+the start to Freie Strasse 10 replaced the line with different network geometry.
+Distances come from OSRM; walking time uses the configured T2 speed assumption.
+Access, temporary closures and shade ranking stay unknown for these new pairs.
+Only the saved checked pair has current-departure shade comparison. Offline has
+no arbitrary-endpoint routing graph; unavailable routing clears old lines.
+
 ## Approved building-shadow route model
 
 The user chose a building-cast shadow approximation to finish the T10 continuation.

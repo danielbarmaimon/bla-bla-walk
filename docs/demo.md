@@ -40,6 +40,8 @@ No screenshots or recording are necessary for the primary fallback.
    existing [T6 evidence](../handoff/t6-integration.md) records the real offline
    journey. A new cold calculation cannot fit this presentation; do it before
    the session if desired, and label its time accurately.
+   New-address street routing is online-only and has no current-departure shade
+   comparison. Keep the saved pair for this offline presentation.
 6. Start the presentation timer. Follow pitch.md's section boundaries; switch
    from the local map to the saved fallback by 2:10. At 5:00 start reflection;
    stop at 5:42. Manual slide switching remains possible after a timer boundary.

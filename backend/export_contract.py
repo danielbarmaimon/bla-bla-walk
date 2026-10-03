@@ -13,6 +13,7 @@ from bla_bla_walk.interfaces import (
     MapSnapshot,
     ShadeRequest,
     ShadeResponse,
+    WalkingRouteRequest,
 )
 from bla_bla_walk.main import app
 
@@ -27,6 +28,9 @@ def write_json(path: Path, value: object) -> None:
 
 if __name__ == "__main__":
     address_schema = AddressSearchResponse.model_json_schema()
+    (ROOT / "src/walking-interfaces.ts").write_text(
+        typescript_contract(WalkingRouteRequest.model_json_schema()), encoding="utf-8"
+    )
     (ROOT / "src/address-interfaces.ts").write_text(
         typescript_contract(address_schema), encoding="utf-8"
     )

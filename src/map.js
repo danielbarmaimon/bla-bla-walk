@@ -248,7 +248,7 @@ export function createMap(
           }),
         }),
         style: (marker) => {
-          const routeColor = marker.getId() === 'demo-route-b' ? '--route-b' : '--route-a';
+          const routeColor = marker.getId() === layer.features[1]?.id ? '--route-b' : '--route-a';
           return new Style({
             image,
             stroke: layer.kind === 'route' ? new Stroke({
