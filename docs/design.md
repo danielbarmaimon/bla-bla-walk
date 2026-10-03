@@ -1,7 +1,7 @@
 # Bla Bla Walk
 
 Track: Social impact · Updated: 2026-10-03
-Status: agreed direction and scope; the grocery-first multimodal journey below is a proposal for team review. [Demo endpoints and domain defaults](routing-rules.md) are specified for T2. T1's runnable map foundation and T0's source/geometry inventory are merged to `main`. Geometry processing, shade accuracy and performance remain to validate in later tasks. See task handoffs for implementation state.
+Status: agreed direction and scope; the grocery-first multimodal journey below is a proposal for team review. [Demo endpoints and domain defaults](routing-rules.md) are specified for T2. T1's runnable map foundation and T0's source/geometry inventory are merged to `main`. T8 prepares the pinned native geometry and explicit gaps; shade accuracy and performance remain for T10. See task handoffs for implementation state.
 
 ## Problem
 People affected by heat, and caregivers planning on their behalf, need to understand shade, drinking water and walking effort together. A short route can leave someone exposed; a shaded detour may be impractical. The [routing rules](routing-rules.md) describe the selected demo walk, assumed current workaround and one concrete domain pitfall; the workaround is a scenario assumption rather than an observed participant habit.
@@ -39,7 +39,7 @@ The [source register](SOURCES.md) is authoritative for endpoints, licensing, att
 | Public transport | BVB/BLT GTFS and GTFS-RT | Proposed; scheduled times and live alerts need separate admission and freshness checks |
 
 ## How it is built
-Chosen stack: OpenLayers browser UI and a Python FastAPI API/worker. At the T1 user's request, serve browser-native JavaScript modules directly from FastAPI without a JavaScript package manager or build step. Python models remain canonical, with generated TypeScript declarations for editor/JSDoc use and a generated browser validation schema. Pin browser distribution URLs/checksums and Python requirements. Rasterio prepares compact geometry and provides windowed raster access; the shadow algorithm still needs validation. Keep geometry processing and versioned caches outside the browser. Hosting must support a worker and persistent geometry storage.
+Chosen stack: OpenLayers browser UI and a Python FastAPI API/worker. At the T1 user's request, serve browser-native JavaScript modules directly from FastAPI without a JavaScript package manager or build step. Python models remain canonical, with generated TypeScript declarations for editor/JSDoc use and a generated browser validation schema. Pin browser distribution URLs/checksums and Python requirements. Rasterio prepares compact geometry and provides windowed raster access; T8 also keeps bounded native-grid 0.5 m preparation for validation; the shadow algorithm still needs validation. Keep geometry processing and versioned caches outside the browser. Hosting must support a worker and persistent geometry storage.
 
 Browser code lives under src; adapters, geometry, shade and evaluation under backend/bla_bla_walk; domain values under config; licensed manifests under data. Large rasters and caches stay outside Git. T1 defines one authored Python interface, generates browser types, and checks cross-language fixtures. Actual interface edits include decision lines in the same commit. File ownership lives in the [plan](plan.md).
 
