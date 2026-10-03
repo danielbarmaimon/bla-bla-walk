@@ -36,6 +36,12 @@ def route_poc() -> FileResponse:
     return FileResponse(ROOT / "poc/index.html")
 
 
+@app.get("/api/poc-route", include_in_schema=False)
+def poc_route() -> FileResponse:
+    """Serve the checked SBB to Marktplatz pedestrian route example."""
+    return FileResponse(ROOT / "data/routes/demo.geojson", media_type="application/geo+json")
+
+
 @app.get("/api/map", response_model=MapSnapshot)
 def map_snapshot(
     mode: Literal["fixture", "online", "offline"] = "fixture",

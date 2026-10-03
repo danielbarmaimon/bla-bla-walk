@@ -50,8 +50,10 @@ choice.
 
 The isolated `/poc` route preview applies this proposal for review. It is not
 the accepted main-screen design. The preview uses `src/theme.css` tokens,
-large labelled controls, and Lucide icons. Place search and route steps use
-clearly marked examples until route/shade integration in T6.
+large labelled controls, and Lucide icons. Its SBB → Marktplatz route follows
+saved pedestrian street geometry. The supplied inferno image illustrates a
+26–36°C example route palette; route colours do not derive from sensor readings.
+Rest and pause instructions remain examples until route/shade integration in T6.
 
 ## Principles
 

@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/src/theme.css">
   <link rel="stylesheet" href="/poc-assets/poc.css">
   <script src="/vendor/ol.js" defer></script>
+  <script src="/vendor/ajv2020.js" defer></script>
   <script type="module" src="/poc-assets/poc.js"></script>
 </head>
 <body class="poc" data-view="plan">
@@ -60,7 +61,8 @@
             <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest</button>
             <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
           </div>
-          <p class="helper">Shade is illustrated here. Calculated shade arrives later.</p>
+          <p class="helper">Both preferences show this example path. Calculated shade arrives later.</p>
+          <button class="example-button" id="try-example" type="button">Try SBB → Marktplatz example</button>
         </fieldset>
 
         <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
@@ -75,7 +77,7 @@
           <p>Closest sample place</p>
         </div>
         <div class="quick-grid" id="quick-grid"></div>
-        <p class="prototype-note">Illustrative route only. Times, shade, transit, and stops are not live guidance.</p>
+        <p class="prototype-note">The SBB → Marktplatz example follows a saved pedestrian street route. Route temperatures, rest points, and other destinations remain illustrative.</p>
       </section>
 
       <section class="map-screen" aria-label="Route map and directions">
@@ -86,13 +88,24 @@
         <div class="map-and-steps">
           <div class="map-wrap">
             <div id="poc-map" tabindex="0" role="region" aria-label="Interactive Basel map. Select a map pin to set a place."></div>
-            <div class="map-overlay" id="map-overlay">Schematic connection · not a walking path</div>
+            <div class="map-overlay" id="map-overlay">Loading checked street route…</div>
+            <div class="map-legend" id="map-legend" hidden>
+              <strong>Example route temperature</strong>
+              <img src="/poc-assets/assets/inferno.png" alt="Purple through red to yellow temperature colour ramp">
+              <div class="ramp-labels"><span>26°C</span><span>29°C</span><span>36°C</span></div>
+              <p><span class="legend-dot fountain-dot"></span> Fountains within 50 m</p>
+              <p><span class="legend-dot sensor-dot"></span> Sensors within 250 m</p>
+            </div>
             <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
           </div>
           <aside class="steps" aria-labelledby="steps-title">
-            <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to preview directions.</p></div>
+            <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to preview directions.</p><p id="source-status" role="status"></p></div>
             <ol id="step-list"></ol>
-            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Example guidance only. Transit service and rest stops need verification.</p></div>
+            <details class="nearby-details" id="nearby-details" hidden>
+              <summary id="nearby-summary">Nearby source points</summary>
+              <ul id="nearby-list"></ul>
+            </details>
+            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>OSM pedestrian route via FOSSGIS. Fountain locations: IWB, noncommercial. Temperatures: meteoblue via Basel-Stadt. Route colours are example values. Conditions and access need checking.</p></div>
           </aside>
         </div>
       </section>

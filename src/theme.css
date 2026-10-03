@@ -62,6 +62,12 @@
   --poc-map-tint: rgba(17, 24, 39, 0.82);
   --poc-map-white: rgba(255, 255, 255, 0.96);
   --poc-route: #0d9488;
+  --poc-temp-26: #6c186e;
+  --poc-temp-29: #cb4149;
+  --poc-temp-36: #f2ea69;
+  --poc-sensor: #030712;
+  --poc-route-outline: #030712;
+  --poc-icon-accent-filter: invert(38%) sepia(86%) saturate(550%) hue-rotate(126deg) brightness(87%);
   --poc-origin: #030712;
   --poc-destination: #0d9488;
   --poc-shadow: rgba(17, 24, 39, 0.12);

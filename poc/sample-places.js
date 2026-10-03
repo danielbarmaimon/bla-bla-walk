@@ -1,5 +1,6 @@
 // Illustrative interaction fixtures. These coordinates are not admitted POI data.
 export const PLACES = [
+  { id: 'marktplatz', name: 'Marktplatz · street route example', category: 'Square', lon: 7.587694, lat: 47.558107 },
   { id: 'migros-city', name: 'Migros City · Marktplatz', category: 'Supermarket', lon: 7.5887, lat: 47.5593 },
   { id: 'coop-sbb', name: 'Supermarket · Basel SBB', category: 'Supermarket', lon: 7.5898, lat: 47.5488 },
   { id: 'rhine-mittlere', name: 'Rhine · Mittlere Brücke', category: 'River', lon: 7.5901, lat: 47.5608 },
