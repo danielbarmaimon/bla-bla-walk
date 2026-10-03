@@ -1,0 +1,159 @@
+{
+  "$defs": {
+    "ShadeCounts": {
+      "additionalProperties": false,
+      "description": "Disjoint raster cell counts; unknown and night never earn shade credit.",
+      "properties": {
+        "unknown": {
+          "minimum": 0,
+          "title": "Unknown",
+          "type": "integer"
+        },
+        "sunlit": {
+          "minimum": 0,
+          "title": "Sunlit",
+          "type": "integer"
+        },
+        "shaded": {
+          "minimum": 0,
+          "title": "Shaded",
+          "type": "integer"
+        },
+        "night": {
+          "minimum": 0,
+          "title": "Night",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "unknown",
+        "sunlit",
+        "shaded",
+        "night"
+      ],
+      "title": "ShadeCounts",
+      "type": "object"
+    },
+    "ShadeMetadata": {
+      "additionalProperties": false,
+      "description": "Calculation context, independent of sensor observations.",
+      "properties": {
+        "requested_time": {
+          "format": "date-time",
+          "title": "Requested Time",
+          "type": "string"
+        },
+        "effective_time": {
+          "format": "date-time",
+          "title": "Effective Time",
+          "type": "string"
+        },
+        "geometry_version": {
+          "title": "Geometry Version",
+          "type": "string"
+        },
+        "resolution_m": {
+          "exclusiveMinimum": 0,
+          "title": "Resolution M",
+          "type": "number"
+        }
+      },
+      "required": [
+        "requested_time",
+        "effective_time",
+        "geometry_version",
+        "resolution_m"
+      ],
+      "title": "ShadeMetadata",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "North-first row-major uint8 raster encoded as base64, with ShadeState codes.\n\nUnknown includes unsupported receivers and geometry gaps. Night is distinct\nfrom shaded. Model and availability distinguish the finite building approximation\nfrom strict survey rays. This is not observed physical-scene evidence.\nThe API serves local geometry in both operating modes; no provider calls.",
+  "properties": {
+    "bounds": {
+      "maxItems": 4,
+      "minItems": 4,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Bounds",
+      "type": "array"
+    },
+    "crs": {
+      "const": "EPSG:2056",
+      "default": "EPSG:2056",
+      "title": "Crs",
+      "type": "string"
+    },
+    "width": {
+      "title": "Width",
+      "type": "integer"
+    },
+    "height": {
+      "title": "Height",
+      "type": "integer"
+    },
+    "encoding": {
+      "const": "base64-uint8-row-major-north-first",
+      "default": "base64-uint8-row-major-north-first",
+      "title": "Encoding",
+      "type": "string"
+    },
+    "states": {
+      "title": "States",
+      "type": "string"
+    },
+    "counts": {
+      "$ref": "#/$defs/ShadeCounts"
+    },
+    "shade": {
+      "$ref": "#/$defs/ShadeMetadata"
+    },
+    "availability": {
+      "enum": [
+        "approximate",
+        "unknown",
+        "unsupported"
+      ],
+      "title": "Availability",
+      "type": "string"
+    },
+    "model": {
+      "default": "survey-raytrace",
+      "enum": [
+        "survey-raytrace",
+        "building-shadow-approximation"
+      ],
+      "title": "Model",
+      "type": "string"
+    },
+    "explanation": {
+      "title": "Explanation",
+      "type": "string"
+    }
+  },
+  "required": [
+    "bounds",
+    "width",
+    "height",
+    "states",
+    "counts",
+    "shade",
+    "availability",
+    "explanation"
+  ],
+  "title": "ShadeResponse",
+  "type": "object"
+}

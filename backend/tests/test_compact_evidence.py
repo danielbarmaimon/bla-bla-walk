@@ -2,8 +2,6 @@
 
 import numpy as np
 import pytest
-from test_shade import independent_reference
-
 from bla_bla_walk.compact_evidence import (
     compact_receiver_evidence,
     read_receiver_evidence,
@@ -11,6 +9,7 @@ from bla_bla_walk.compact_evidence import (
 )
 from bla_bla_walk.interfaces import CompactReceiverEvidence
 from bla_bla_walk.shade import SHADED, UNKNOWN, shadow_mask
+from test_shade import independent_reference
 
 
 def test_missing_mismatch_and_canopy_are_not_hidden_by_aggregation():

@@ -72,9 +72,11 @@ def open_map(page):
     """Wait for the actual API round trip and three keyboard sample controls."""
     page.goto(page.base_url)
     page.wait_for_function(
-        "document.querySelector('#api-status').textContent.includes('connected')"
+        "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
     assert page.locator("#features button").count() == 3
+    for summary in page.locator("#features summary").all():
+        summary.click()
 
 
 def test_layers_provenance_and_missing_states(browser_page):
@@ -86,9 +88,11 @@ def test_layers_provenance_and_missing_states(browser_page):
     assert "28 °C" in page.locator("#details").inner_text()
     assert "Synthetic fixture" in page.locator("#details").inner_text()
     assert "01/10/2026" in page.locator("#details").inner_text()
-    toggle = page.get_by_role("checkbox", name="Temperature")
+    toggle = page.get_by_role("checkbox", name="Temperature", exact=False)
     toggle.uncheck()
-    assert page.get_by_role("button", name="Sample sensor A").is_hidden()
+    assert not toggle.is_checked()
+    # Source inspection remains available when its map layer is hidden.
+    assert "Sample sensor A" in page.locator("#details").inner_text()
     toggle.check()
     page.get_by_role("button", name="Sample sensor B").click()
     assert "Unknown / no value" in page.locator("#details").inner_text()
@@ -122,8 +126,9 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
         ".includes('downloaded offline')"
     )
     page.wait_for_function(
-        "document.querySelector('#api-status').textContent.includes('Saved data API')"
+        "document.querySelector('#mode-notice').textContent.includes('Offline mode')"
     )
+    page.locator("#features summary").first.click()
     page.locator("#features button").first.click()
     assert "Provider data" in page.locator("#details").inner_text()
     assert "Offline mode" in page.locator("#mode-notice").inner_text()
@@ -152,13 +157,14 @@ def test_api_failure_and_recovery(browser_page):
     )
     page.goto(page.base_url)
     page.wait_for_function(
-        "document.querySelector('#api-status').textContent.includes('Layers missing')"
+        "document.querySelector('#mode-notice').textContent"
+        ".includes('Map data unavailable')"
     )
     assert page.locator("#features button").count() == 0
     page.unroute("**/api/map**")
-    page.get_by_role("button", name="Reload layers").click()
+    page.reload()
     page.wait_for_function(
-        "document.querySelector('#api-status').textContent.includes('connected')"
+        "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
     assert page.locator("#features button").count() == 3
 
@@ -168,6 +174,7 @@ def test_narrow_screen_and_browser_contract(browser_page):
     page.set_viewport_size({"width": 390, "height": 844})
     open_map(page)
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    page.get_by_role("button", name="Use Basel SBB").click()
     assert page.locator("#map").bounding_box()["height"] >= 400
     result = page.evaluate("""async () => {
       const {parseSnapshot} = await import('/src/api.js');

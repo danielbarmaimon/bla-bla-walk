@@ -5,7 +5,7 @@ from pathlib import Path
 
 from bla_bla_walk.contract_types import typescript_contract
 from bla_bla_walk.demo_fixture import fixture_snapshot
-from bla_bla_walk.interfaces import MapSnapshot
+from bla_bla_walk.interfaces import MapSnapshot, ShadeRequest, ShadeResponse
 from bla_bla_walk.main import app
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +30,20 @@ if __name__ == "__main__":
     )
     (ROOT / "src/interfaces.ts").write_text(
         typescript_contract(schema), encoding="utf-8"
+    )
+    write_json(ROOT / "src/shade-request.schema.json", ShadeRequest.model_json_schema())
+    shade_schema = ShadeResponse.model_json_schema()
+    write_json(ROOT / "src/shade-response.schema.json", shade_schema)
+    shade_client_schema = {
+        **shade_schema,
+        "$defs": {
+            **shade_schema.get("$defs", {}),
+            "ShadeRequest": ShadeRequest.model_json_schema(),
+        },
+    }
+    (ROOT / "src/shade-interfaces.ts").write_text(
+        typescript_contract(shade_client_schema, "LV95 (EPSG:2056) processing metres"),
+        encoding="utf-8",
     )
     write_json(
         ROOT / ".cache/fixture-snapshot.json",

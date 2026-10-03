@@ -1,0 +1,10 @@
+{
+  "cache_bytes": 134217728,
+  "workers": 2,
+  "maximum_viewport_side_metres": 1000,
+  "halo_metres": 1500,
+  "maximum_grid_cells": 16000000,
+  "receiver_policy": "building-shadow-approximation",
+  "horizon_ceiling_metres": null,
+  "source": "User-approved building-cast shadow approximation along route paths, explicitly labelled with unknown input gaps. Exact timestamps; no time buckets. The finite building model does not certify physical sunlight beyond its 1500m reach."
+}

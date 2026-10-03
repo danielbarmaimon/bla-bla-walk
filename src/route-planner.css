@@ -112,7 +112,7 @@
 .route-app .intro,
 .route-app .helper,
 .route-app .prototype-note,
-.route-app .quick-heading > p,
+.route-app .quick-heading>p,
 .route-app #origin-status {
   color: var(--poc-muted);
 }
@@ -126,7 +126,7 @@
   position: relative;
 }
 
-.route-app .field-block > label,
+.route-app .field-block>label,
 .route-app .route-mode legend {
   display: block;
   margin-bottom: var(--space-2);
@@ -286,7 +286,7 @@
   letter-spacing: -0.035em;
 }
 
-.route-app .quick-heading > p {
+.route-app .quick-heading>p {
   margin: 0;
   white-space: nowrap;
   font-size: 0.875rem;
@@ -392,7 +392,7 @@
   border-top: 1px solid var(--poc-line);
 }
 
-.route-app .inspector > p,
+.route-app .inspector>p,
 .route-app #details {
   color: var(--poc-label);
   font-size: 0.875rem;
@@ -507,7 +507,7 @@
   color: var(--poc-ink);
 }
 
-.route-app .map-view-switch button + button {
+.route-app .map-view-switch button+button {
   border-left: 1px solid var(--poc-line);
 }
 
@@ -676,11 +676,26 @@
   outline: 1px solid var(--poc-ink);
 }
 
-.route-app .fountain-dot { background: var(--poc-teal); }
-.route-app .sensor-dot { background: var(--poc-white); }
-.route-app .landmark-dot { background: var(--poc-landmark); }
-.route-app .cool-dot { background: var(--poc-cool-place); }
-.route-app .shadow-dot { background: var(--poc-shadow-example-fill); outline-color: var(--poc-shadow-example-stroke); }
+.route-app .fountain-dot {
+  background: var(--poc-teal);
+}
+
+.route-app .sensor-dot {
+  background: var(--poc-white);
+}
+
+.route-app .landmark-dot {
+  background: var(--poc-landmark);
+}
+
+.route-app .cool-dot {
+  background: var(--poc-cool-place);
+}
+
+.route-app .shadow-dot {
+  background: var(--poc-shadow-example-fill);
+  outline-color: var(--poc-shadow-example-stroke);
+}
 
 .route-app .map-pick-banner {
   bottom: auto;
@@ -708,7 +723,7 @@
   font-size: 1.35rem;
 }
 
-.route-app .steps-head > p:last-child {
+.route-app .steps-head>p:last-child {
   color: var(--poc-muted);
   font-size: 0.875rem;
 }
@@ -907,7 +922,7 @@
     font-size: 1.9rem;
   }
 
-  .route-app .quick-heading > p {
+  .route-app .quick-heading>p {
     display: none;
   }
 

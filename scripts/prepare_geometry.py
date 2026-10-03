@@ -10,12 +10,15 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
 from bla_bla_walk.geometry import (  # noqa: E402
+    compact_pair_flags,
     geometry_settings,
     prepare_raster,
+    read_heights,
     sha256_file,
 )
 
@@ -111,14 +114,30 @@ def prepare_one(tile, kind, directory, previous, version):
     key = f"{tile['tile']}-{kind}"
     target = directory / f"{key}.tif"
     record = previous.get(key)
+    partial = directory / ".downloads" / f"{key}.part"
+    flag_path = directory / f"{tile['tile']}-flags.npy"
+    other_kind = "terrain" if kind == "surface" else "surface"
+    source_evidence_available = (
+        tile[other_kind]["status"] != "catalog_available"
+        or (
+            partial.is_file()
+            and record
+            and sha256_file(partial) == record["source"]["sha256"]
+        )
+        or (
+            flag_path.is_file()
+            and record
+            and record.get("pair_flags_sha256") == sha256_file(flag_path)
+        )
+    )
     if (
         record
         and record.get("preparation_version") == version
         and target.exists()
         and sha256_file(target) == record["sha256"]
+        and source_evidence_available
     ):
         return key, record
-    partial = directory / ".downloads" / f"{key}.part"
     partial.parent.mkdir(parents=True, exist_ok=True)
     for attempt in range(3):
         try:
@@ -135,7 +154,9 @@ def prepare_one(tile, kind, directory, previous, version):
                 survey_year_mismatch=tile.get("survey_year_mismatch", False),
             )
             # This path is constructed within the fixed geometry directory only.
-            partial.unlink()
+            # Keep the verified source until its pair's source flags are saved.
+            if tile[other_kind]["status"] != "catalog_available":
+                partial.unlink()
             return key, record
         except (httpx.HTTPError, OSError, ValueError) as error:
             if attempt == 2:
@@ -143,7 +164,42 @@ def prepare_one(tile, kind, directory, previous, version):
             time.sleep(attempt + 1)
 
 
-def prepare_geometry(workers=2, limit=None):
+def prepare_pair_flags(tile_id, directory, assets, version):
+    """Preserve source evidence before temporary native source files disappear."""
+    records = [assets.get(f"{tile_id}-{kind}") for kind in ("surface", "terrain")]
+    paths = [
+        directory / ".downloads" / f"{tile_id}-{kind}.part"
+        for kind in ("surface", "terrain")
+    ]
+    if not all(
+        record and record["preparation_version"] == version for record in records
+    ):
+        return None
+    if not all(path.is_file() for path in paths):
+        return None
+    if any(
+        sha256_file(path) != record["source"]["sha256"]
+        for path, record in zip(paths, records)
+    ):
+        raise ValueError("Source flag input checksum mismatch")
+    flags = compact_pair_flags(*(read_heights(path) for path in paths))
+    target = directory / f"{tile_id}-flags.npy"
+    temporary = target.with_suffix(".tmp")
+    with temporary.open("wb") as stream:
+        np.save(stream, flags, allow_pickle=False)
+    temporary.replace(target)
+    record = {
+        "file": target.name,
+        "sha256": sha256_file(target),
+        "bytes": target.stat().st_size,
+        "preparation_version": version,
+    }
+    for asset in records:
+        asset["pair_flags_sha256"] = record["sha256"]
+    return record
+
+
+def prepare_geometry(workers=2, limit=None, tiles=None):
     """Checkpoint each asset; preserve inventory gaps instead of synthesising data."""
     inventory_path = ROOT / "data/tile-inventory.json"
     inventory = json.loads(inventory_path.read_text())
@@ -153,7 +209,7 @@ def prepare_geometry(workers=2, limit=None):
     # Increment the algorithm revision when encoding/resampling semantics change.
     # Formatting and documentation changes must not trigger full re-downloads.
     version = hashlib.sha256(
-        b"compact-height-pipeline-revision-1"
+        b"compact-height-pipeline-revision-2-source-subcell-flags"
         + json.dumps(settings, sort_keys=True).encode()
         + inventory_path.read_bytes()
     ).hexdigest()
@@ -166,13 +222,17 @@ def prepare_geometry(workers=2, limit=None):
         for kind in ("surface", "terrain")
         if tile[kind]["status"] == "catalog_available"
     ]
-    selected = jobs[:limit] if limit else jobs
+    selected = [
+        (tile, kind) for tile, kind in jobs if tiles is None or tile["tile"] in tiles
+    ]
+    selected = selected[:limit] if limit else selected
     manifest = {
         "settings": settings,
         "preparation_version": version,
         "inventory_sha256": sha256_file(inventory_path),
         "attribution": "© swisstopo",
         "assets": assets,
+        "pair_flags": old.get("pair_flags", {}),
         "gaps": [
             {"tile": tile["tile"], "role": tile["role"], "kind": kind}
             for tile in inventory["tiles"]
@@ -188,9 +248,14 @@ def prepare_geometry(workers=2, limit=None):
             for tile, kind in selected
         ]
         for index, future in enumerate(as_completed(futures), 1):
+            flags = None
             try:
                 key, record = future.result()
                 assets[key] = record
+                tile_id = record["tile"]
+                flags = prepare_pair_flags(tile_id, directory, assets, version)
+                if flags:
+                    manifest["pair_flags"][tile_id] = flags
                 print(
                     f"[{index}/{len(selected)}] {key}: {record['bytes']} bytes",
                     flush=True,
@@ -206,12 +271,32 @@ def prepare_geometry(workers=2, limit=None):
                 print(str(error), file=sys.stderr, flush=True)
             manifest["prepared_at"] = datetime.now(UTC).isoformat()
             write_json(manifest_path, manifest)
+            if flags:
+                for kind in ("surface", "terrain"):
+                    (directory / ".downloads" / f"{tile_id}-{kind}.part").unlink(
+                        missing_ok=True
+                    )
+                flags = None
     current = [r for r in assets.values() if r["preparation_version"] == version]
     manifest["complete_available_inventory"] = (
-        len(current) == len(jobs) and not manifest["errors"]
+        len(current) == len(jobs)
+        and not manifest["errors"]
+        and all(
+            manifest["pair_flags"].get(tile["tile"], {}).get("preparation_version")
+            == version
+            for tile in inventory["tiles"]
+            if all(
+                tile[kind]["status"] == "catalog_available"
+                for kind in ("surface", "terrain")
+            )
+        )
     )
     manifest["source_bytes"] = sum(r["source"]["bytes"] for r in current)
-    manifest["prepared_bytes"] = sum(r["bytes"] for r in current)
+    manifest["prepared_bytes"] = sum(r["bytes"] for r in current) + sum(
+        record["bytes"]
+        for record in manifest["pair_flags"].values()
+        if record.get("preparation_version") == version
+    )
     write_json(manifest_path, manifest)
     print(
         json.dumps(
@@ -234,7 +319,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--limit", type=int, help="Prepare a bounded validation batch")
+    parser.add_argument(
+        "--tiles", help="Comma-separated inventory tiles for a bounded route halo"
+    )
     args = parser.parse_args()
     if args.limit is not None and args.limit < 1:
         parser.error("--limit must be positive")
-    raise SystemExit(0 if prepare_geometry(args.workers, args.limit) else 1)
+    raise SystemExit(
+        0
+        if prepare_geometry(
+            args.workers, args.limit, set(args.tiles.split(",")) if args.tiles else None
+        )
+        else 1
+    )

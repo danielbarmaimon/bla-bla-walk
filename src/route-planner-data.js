@@ -20,12 +20,21 @@ export function routeGeometry(coordinates) {
       points[index][1] - points[index - 1][1],
     ));
   }
-  return { coordinates, points, cumulative, length: cumulative.at(-1), latitude };
+  return {
+    coordinates,
+    points,
+    cumulative,
+    length: cumulative.at(-1),
+    latitude
+  };
 }
 
 export function positionAlongRoute(route, coordinates) {
   const point = metrePoint(coordinates, route.latitude);
-  let closest = { distance: Infinity, fraction: 0 };
+  let closest = {
+    distance: Infinity,
+    fraction: 0
+  };
   for (let index = 1; index < route.points.length; index += 1) {
     const a = route.points[index - 1];
     const b = route.points[index];
@@ -48,7 +57,10 @@ export function nearbyFeatures(route, features, metres) {
   return features.flatMap((feature) => {
     if (feature.geometry?.type !== 'Point') return [];
     const position = positionAlongRoute(route, feature.geometry.coordinates);
-    return position.distance <= metres ? [{ feature, ...position }] : [];
+    return position.distance <= metres ? [{
+      feature,
+      ...position
+    }] : [];
   }).sort((a, b) => a.fraction - b.fraction);
 }
 

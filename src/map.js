@@ -55,16 +55,16 @@ export function createMap(
     attributions: '<a href="https://api.geo.bs.ch/stac/v1/collections/VSBS">Geodaten Kanton Basel-Stadt</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>',
   });
   const petSource = new ImageWMS({
-      url: PET_WMS_URL,
-      params: {
-        LAYERS: 'KL_HumanbioklimaSituation',
-        STYLES: '',
-        FORMAT: 'image/png',
-        TRANSPARENT: true,
-      },
-      ratio: 1,
-      attributions: '<a href="https://geo.bs.ch/stadtklima">Quelle: Geodaten Kanton Basel-Stadt</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>',
-    });
+    url: PET_WMS_URL,
+    params: {
+      LAYERS: 'KL_HumanbioklimaSituation',
+      STYLES: '',
+      FORMAT: 'image/png',
+      TRANSPARENT: true,
+    },
+    ratio: 1,
+    attributions: '<a href="https://geo.bs.ch/stadtklima">Quelle: Geodaten Kanton Basel-Stadt</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>',
+  });
   petSource.on('imageloadend', () => onPetStatus('Historical PET map loaded · fixed 14:00 summer scenario.'));
   petSource.on('imageloaderror', () => onPetStatus('Historical PET map unavailable · route cells without data stay unknown.'));
   const petLayer = new ImageLayer({
@@ -116,7 +116,10 @@ export function createMap(
         fill: new Fill({
           color: theme.getPropertyValue(marker.get('pinKind') === 'origin' ? '--poc-origin' : '--poc-destination').trim(),
         }),
-        stroke: new Stroke({ color: theme.getPropertyValue('--marker-outline').trim(), width: 3 }),
+        stroke: new Stroke({
+          color: theme.getPropertyValue('--marker-outline').trim(),
+          width: 3
+        }),
       }),
     }),
   });
@@ -127,15 +130,24 @@ export function createMap(
     style: (marker) => new Style({
       image: new CircleStyle({
         radius: marker.get('kind') === 'rest' || marker.get('kind') === 'pause' ? 8 : 6,
-        fill: new Fill({ color: theme.getPropertyValue('--poc-teal').trim() }),
-        stroke: new Stroke({ color: theme.getPropertyValue('--marker-outline').trim(), width: 2 }),
+        fill: new Fill({
+          color: theme.getPropertyValue('--poc-teal').trim()
+        }),
+        stroke: new Stroke({
+          color: theme.getPropertyValue('--marker-outline').trim(),
+          width: 2
+        }),
       }),
       text: new window.ol.style.Text({
         text: marker.get('label'),
         offsetY: -17,
         font: '700 12px sans-serif',
-        fill: new Fill({ color: theme.getPropertyValue('--text-primary').trim() }),
-        backgroundFill: new Fill({ color: '#ffffff' }),
+        fill: new Fill({
+          color: theme.getPropertyValue('--text-primary').trim()
+        }),
+        backgroundFill: new Fill({
+          color: '#ffffff'
+        }),
         padding: [2, 4, 2, 4],
       }),
     }),
@@ -148,7 +160,10 @@ export function createMap(
       const kind = picking.kind;
       const callback = picking.callback;
       picking = null;
-      callback(kind, { lon: longitude, lat: latitude });
+      callback(kind, {
+        lon: longitude,
+        lat: latitude
+      });
       return;
     }
     map.forEachFeatureAtPixel(event.pixel, (feature) => {
@@ -244,7 +259,10 @@ export function createMap(
       });
     },
     setPicking: (kind, callback) => {
-      picking = kind ? { kind, callback } : null;
+      picking = kind ? {
+        kind,
+        callback
+      } : null;
     },
     focusCoordinates: (coordinates) => {
       if (!coordinates?.length) return;
