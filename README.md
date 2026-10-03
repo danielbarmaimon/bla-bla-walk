@@ -91,6 +91,14 @@ Slot E's T10 calculation checkpoint has analytic and independent numerical check
 python scripts/validate_shade_sample.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --output .hack/t10/shade-validation.json
 ```
 
+To reproduce the compact sensitivity check, supply the same pinned surface/native-0.5m terrain pair plus the matching native 2m terrain asset (same tile/year, replace `_0.5_2056_` with `_2_2056_` in its URL). The 2m SHA-256 pins for all three checked tiles are recorded in [compact validation evidence](data/fixtures/compact-shade-validation.json). The script makes no external requests, writes scaled compact rasters and compressed pre-encoding receiver evidence to the local work directory, and checks both representations independently:
+
+```sh
+python scripts/validate_compact_shade.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --terrain-2m .hack/t10/terrain-2m.tif --work-directory .hack/t10/compact --output .hack/t10/compact-validation.json
+```
+
+Repeat for route tiles 2611-1266 and 2611-1267 using `--tile` and `--terrain-2m-sha256` from the evidence, with their matching source paths and separate work/output paths. Each per-tile report uses the full route denominator and marks outside-tile samples unknown. Across these disjoint receiver tiles, sum shaded/changed-state metres; aggregate unknown metres equal the full route length minus summed shaded metres. The preserved-evidence case retains source flags and numerical ground candidates; it does not certify walking surfaces. Existing compact height files alone cannot reconstruct this evidence. Slot F must version and verify the companion files before cache/API use; see the handoff.
+
 Activate the environment and run from the repository root:
 
 ```sh
