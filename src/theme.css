@@ -6,6 +6,7 @@
   --accent: #17656d;
   --route-a: #17656d;
   --route-b: #68518d;
+  --route-stroke-width: 5;
   --shade: #446856;
   --exposed: #946222;
   --unknown: #5b6470;
@@ -133,6 +134,39 @@ aside section {
   min-height: var(--control-height);
   padding-top: var(--space);
   cursor: pointer;
+}
+
+.pet-legend {
+  margin: var(--space-sm) 0 var(--space);
+}
+
+.pet-legend summary {
+  min-height: var(--control-height);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+#pet-legend-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  padding-left: 0;
+  list-style: none;
+}
+
+#pet-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-sm);
+}
+
+.pet-swatch {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 1px solid var(--marker-outline);
+  border-radius: var(--radius-control);
+  flex: none;
 }
 
 input[type="checkbox"] {

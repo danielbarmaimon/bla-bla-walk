@@ -19,6 +19,15 @@ app.innerHTML = `
         <p class="notice" id="mode-notice">Loading selected data mode…</p>
         <p id="api-status" role="status">Loading fixture API…</p>
         <button id="reload" type="button">Reload layers</button>
+        <label class="layer-control" for="pet-layer-toggle">
+          <input id="pet-layer-toggle" type="checkbox">
+          <span><strong>Historical PET heat layer</strong><small>Fixed 14:00 summer scenario · Geodaten Kanton Basel-Stadt · CC BY 4.0</small></span>
+        </label>
+        <p id="pet-status" role="status">PET map is shown in online mode.</p>
+        <details class="pet-legend">
+          <summary>PET class legend</summary>
+          <ul id="pet-legend-list" aria-label="Physiological Equivalent Temperature classes"></ul>
+        </details>
         <div id="layers"></div>
       </section>
       <section aria-labelledby="features-title">
@@ -33,7 +42,7 @@ app.innerHTML = `
     <section class="map-panel" aria-label="Basel map">
       <div id="map" tabindex="0" role="region" aria-label="Interactive Basel map. Arrow keys pan; plus and minus zoom."></div>
       <p id="basemap-status" role="status">Loading Basel basemap…</p>
-      <p class="map-note">Squares: temperature sensors · Circles: fountains.<br>Shade, routes and calculation coverage are not connected yet.</p>
+      <p class="map-note">PET colours show the canton’s modelled 14:00 summer scenario, not today’s weather. Route details show estimated distance in each PET class; unknown map cells remain unknown.</p>
     </section>
   </main>`;
 
@@ -42,13 +51,27 @@ const layerControls = document.querySelector('#layers');
 const featureList = document.querySelector('#features');
 const details = document.querySelector('#details');
 const reload = document.querySelector('#reload');
+const petToggle = document.querySelector('#pet-layer-toggle');
 const map = createMap(
   document.querySelector('#map'),
   showFeature,
   (message) => {
     document.querySelector('#basemap-status').textContent = message;
   },
+  (message) => {
+    document.querySelector('#pet-status').textContent = message;
+  },
 );
+const dataMode = new URLSearchParams(location.search).get('mode') || 'fixture';
+petToggle.checked = dataMode === 'online';
+petToggle.disabled = dataMode !== 'online';
+document.querySelector('#pet-status').textContent = dataMode === 'offline'
+  ? 'PET map needs internet; saved route classes, when available, are stale.'
+  : dataMode === 'online'
+    ? 'Loading the historical PET map…'
+    : 'Open Online mode to load the historical PET map and route classes.';
+map.setPetVisible(petToggle.checked);
+petToggle.addEventListener('change', () => map.setPetVisible(petToggle.checked));
 
 /** Render untrusted feature text as text nodes, including timestamps and gaps. */
 /** @param {import('./interfaces').MapFeature} feature */
@@ -64,6 +87,7 @@ function showFeature(feature) {
     ['Value', feature.value == null ? 'Unknown / no value' : `${feature.value} ${feature.unit ?? ''}`],
     ['Meaning', feature.explanation],
     ['Drinking water', feature.drinking_water ?? 'Not applicable'],
+    ['Route distance', feature.route ? `${Math.round(feature.route.distance_m)} m · ${Math.round(feature.route.duration_s / 60)} min walking estimate` : 'Not applicable'],
     ['Provider', source.provider],
     ['Attribution', source.attribution],
     ['Licence', source.licence],
@@ -79,6 +103,22 @@ function showFeature(feature) {
     list.append(term, description);
   });
   details.append(list);
+  if (feature.pet) {
+    const petTitle = document.createElement('h3');
+    petTitle.textContent = 'Historical PET along this route';
+    const petNote = document.createElement('p');
+    petNote.textContent = `${feature.pet.scenario}. ${Math.round(feature.pet.known_distance_m)} m classified; ${Math.round(feature.pet.unknown_distance_m)} m unknown, sampled at ${feature.pet.resolution_m} m.`;
+    const petBands = document.createElement('ul');
+    Object.entries(feature.pet.class_distances_m).forEach(([band, distance]) => {
+      const item = document.createElement('li');
+      item.textContent = `${band}: ${Math.round(distance)} m`;
+      petBands.append(item);
+    });
+    details.append(petTitle, petNote, petBands);
+    const petSource = document.createElement('p');
+    petSource.textContent = `${feature.pet.provenance.attribution} · ${feature.pet.provenance.licence} · ${feature.pet.availability} · retrieved ${formatTime(feature.pet.provenance.retrieved_at)}`;
+    details.append(petSource);
+  }
   if (source.source_url?.startsWith('https://')) {
     const link = document.createElement('a');
     link.href = source.source_url;
@@ -91,6 +131,27 @@ function formatTime(value) {
   return value ? new Date(value).toLocaleString('en-GB', {
     timeZone: 'UTC'
   }) + ' UTC' : 'Unknown / not supplied';
+}
+
+async function renderPetLegend() {
+  const list = document.querySelector('#pet-legend-list');
+  try {
+    const response = await fetch('/config/pet-classes.json');
+    if (!response.ok) throw new Error('Legend unavailable');
+    const config = await response.json();
+    config.classes.forEach((petClass) => {
+      const item = document.createElement('li');
+      const swatch = document.createElement('span');
+      swatch.className = 'pet-swatch';
+      swatch.style.backgroundColor = `rgb(${petClass.rgb.join(',')})`;
+      const label = document.createElement('span');
+      label.textContent = petClass.label;
+      item.append(swatch, label);
+      list.append(item);
+    });
+  } catch {
+    list.textContent = 'PET class legend unavailable.';
+  }
 }
 
 /** @param {import('./interfaces').MapLayer[]} layers */
@@ -116,7 +177,9 @@ function renderLayers(layers) {
     layer.features.forEach((feature) => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.textContent = `${feature.label} · ${feature.availability}`;
+      button.textContent = feature.route && feature.pet
+        ? `${feature.label} · ${Math.round(feature.route.distance_m)} m · PET ${feature.pet.availability} · ${Math.round(feature.pet.known_distance_m)} m classified · ${Math.round(feature.pet.unknown_distance_m)} m unknown`
+        : `${feature.label} · ${feature.availability}`;
       button.addEventListener('click', () => {
         showFeature(feature);
         map.focus(feature);
@@ -161,4 +224,5 @@ async function refresh() {
 }
 
 reload.addEventListener('click', () => void refresh());
+void renderPetLegend();
 void refresh();

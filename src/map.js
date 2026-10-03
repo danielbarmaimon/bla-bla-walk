@@ -7,6 +7,7 @@ const {
   GeoJSON
 } = window.ol.format;
 const {
+  Image: ImageLayer,
   Tile: TileLayer,
   Vector: VectorLayer
 } = window.ol.layer;
@@ -15,6 +16,7 @@ const {
   transformExtent
 } = window.ol.proj;
 const {
+  ImageWMS,
   Vector: VectorSource,
   XYZ
 } = window.ol.source;
@@ -31,15 +33,18 @@ const configResponse = await fetch('/config/basemap.json');
 if (!configResponse.ok) throw new Error('Basemap configuration unavailable.');
 const basemapConfig = await configResponse.json();
 const offline = new URLSearchParams(location.search).get('mode') === 'offline';
+const online = new URLSearchParams(location.search).get('mode') === 'online';
 const BASEMAP_URL = offline ? '/tiles/{z}/{x}/{y}.png' : basemapConfig.url;
 const BASEMAP_EXTENT = basemapConfig.bounds_wgs84;
 const BASEL_CENTRE = [7.5886, 47.5596];
+const PET_WMS_URL = 'https://wms.geo.bs.ch/';
 
 /** Build the real basemap; fixture layers can be replaced independently. */
 export function createMap(
   target,
   onSelect,
   onBasemapStatus,
+  onPetStatus,
 ) {
   const source = new XYZ({
     url: BASEMAP_URL,
@@ -48,6 +53,25 @@ export function createMap(
     crossOrigin: 'anonymous',
     wrapX: false,
     attributions: '<a href="https://api.geo.bs.ch/stac/v1/collections/VSBS">Geodaten Kanton Basel-Stadt</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>',
+  });
+  const petSource = new ImageWMS({
+      url: PET_WMS_URL,
+      params: {
+        LAYERS: 'KL_HumanbioklimaSituation',
+        STYLES: '',
+        FORMAT: 'image/png',
+        TRANSPARENT: true,
+      },
+      ratio: 1,
+      attributions: '<a href="https://geo.bs.ch/stadtklima">Quelle: Geodaten Kanton Basel-Stadt</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>',
+    });
+  petSource.on('imageloadend', () => onPetStatus('Historical PET map loaded · fixed 14:00 summer scenario.'));
+  petSource.on('imageloaderror', () => onPetStatus('Historical PET map unavailable · route cells without data stay unknown.'));
+  const petLayer = new ImageLayer({
+    source: petSource,
+    visible: online,
+    opacity: 0.68,
+    zIndex: 1,
   });
   let hadTileError = false;
   source.on('tileloadend', () => {
@@ -64,6 +88,7 @@ export function createMap(
         source,
         extent: transformExtent(BASEMAP_EXTENT, 'EPSG:4326', 'EPSG:3857'),
       }),
+      petLayer,
     ],
     view: new View({
       center: fromLonLat(BASEL_CENTRE),
@@ -132,11 +157,17 @@ export function createMap(
             return marker;
           }),
         }),
-        style: new Style({
-          image,
-          stroke,
-          fill
-        }),
+        style: (marker) => {
+          const routeColor = marker.getId() === 'demo-route-b' ? '--route-b' : '--route-a';
+          return new Style({
+            image,
+            stroke: layer.kind === 'route' ? new Stroke({
+              color: theme.getPropertyValue(routeColor).trim(),
+              width: Number(theme.getPropertyValue('--route-stroke-width')),
+            }) : stroke,
+            fill
+          });
+        },
       });
       layers.set(layer.id, vector);
       map.addLayer(vector);
@@ -145,6 +176,7 @@ export function createMap(
 
   return {
     replaceLayers,
+    setPetVisible: (visible) => petLayer.setVisible(visible && !offline),
     setVisible: (id, visible) => layers.get(id)?.setVisible(visible),
     focus: (feature) => {
       const geometry = new GeoJSON().readGeometry(feature.geometry, {

@@ -19,6 +19,8 @@ def schema_type(schema: dict) -> str:
         if "prefixItems" in schema:
             return "[" + ", ".join(map(schema_type, schema["prefixItems"])) + "]"
         return f"({schema_type(schema['items'])})[]"
+    if kind == "object" and isinstance(schema.get("additionalProperties"), dict):
+        return f"Record<string, {schema_type(schema['additionalProperties'])}>"
     primitives = {
         "string": "string",
         "integer": "number",

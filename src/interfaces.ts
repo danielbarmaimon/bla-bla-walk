@@ -19,6 +19,7 @@ export interface MapFeature {
   drinking_water?: "yes" | "no" | "unknown" | null;
   shade?: ShadeMetadata | null;
   route?: RouteMetrics | null;
+  pet?: PetRouteMetrics | null;
 }
 
 export interface MapLayer {
@@ -28,6 +29,16 @@ export interface MapLayer {
   availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
   explanation: string;
   features: (MapFeature)[];
+}
+
+export interface PetRouteMetrics {
+  availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
+  scenario: string;
+  resolution_m: number;
+  known_distance_m: number;
+  unknown_distance_m: number;
+  class_distances_m: Record<string, number>;
+  provenance: Provenance;
 }
 
 export interface PointGeometry {
