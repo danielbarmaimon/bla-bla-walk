@@ -1097,3 +1097,26 @@
   min-width: 0;
   max-width: 100%;
 }
+
+.map-stop-menu {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  max-height: 240px;
+  overflow: auto;
+  min-width: 130px;
+  background: white;
+  border: 2px solid var(--poc-teal);
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #0003;
+}
+
+.map-stop-menu button {
+  padding: 6px 10px;
+  text-align: left;
+  background: white;
+  color: var(--text-primary);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+}

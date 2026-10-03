@@ -97,3 +97,5 @@ No visual references were supplied for this draft. If the team adds examples lat
 ## Map badge update — 2026-10-04
 
 The user chose equal-size title-only tap buttons, no layer checkboxes. Six active primary badges: Temperature, Fast route, Recommended, Water, Bench, Rest. More contains six inactive optional badges and starts collapsed. Native buttons expose aria-pressed, support keyboard activation and retain a focus outline; active text is underlined as well as filled. Theme tokens and badge sizing live in src/theme.css. Keep badge text free of source metadata. Information sources is a collapsed footer containing all provider/method/limit details; the map keeps concise journey instructions. Stop markers project onto the route without moving their source records; planned rest labels include walking-minute milestones.
+
+Route stop circles use droplets, rocking-chair and clock-fading, with no permanent word labels. Same-type stops cluster within 38 screen pixels; a count indicates multiple members. Tap to inspect members; zoom to separate them. Keep clusters anchored on an actual route member. Other optional markers retain their labels.

@@ -21,10 +21,12 @@ const {
 } = window.ol.proj;
 const {
   ImageWMS,
+  Cluster,
   Vector: VectorSource,
   XYZ
 } = window.ol.source;
 const {
+  Icon,
   Circle: CircleStyle,
   Fill,
   RegularShape,
@@ -159,6 +161,102 @@ export function createMap(
     }),
   });
   map.addLayer(contextLayer);
+  const stopSources = new globalThis.Map();
+  const stopStyles = new globalThis.Map();
+  const stopIcons = {
+    water: 'droplets',
+    bench: 'rocking-chair',
+    rest: 'clock-fading'
+  };
+  for (const [kind, icon] of Object.entries(stopIcons)) {
+    const members = new VectorSource();
+    stopSources.set(kind, members);
+    const clusters = new Cluster({
+      distance: 38,
+      source: members,
+      // Anchor to a real member, preserving its position on the route.
+      createCluster: (_point, grouped) => new Feature({
+        geometry: grouped[0].getGeometry().clone(),
+        features: grouped,
+        stopKind: kind,
+      }),
+    });
+    map.addLayer(new VectorLayer({
+      source: clusters,
+      zIndex: 8,
+      style: cluster => {
+        const count = cluster.get('features').length;
+        const key = `${kind}:${count}`;
+        if (!stopStyles.has(key)) stopStyles.set(key, [
+          new Style({
+            image: new CircleStyle({
+              radius: 15,
+              fill: new Fill({
+                color: '#ffffff'
+              }),
+              stroke: new Stroke({
+                color: theme.getPropertyValue('--poc-teal').trim(),
+                width: 2
+              }),
+            })
+          }),
+          new Style({
+            image: new Icon({
+              src: `/src/icons/${icon}.svg`,
+              width: 20,
+              height: 20
+            })
+          }),
+          ...(count > 1 ? [new Style({
+            text: new window.ol.style.Text({
+              text: String(count),
+              offsetX: 13,
+              offsetY: -13,
+              font: '700 12px sans-serif',
+              fill: new Fill({
+                color: '#ffffff'
+              }),
+              backgroundFill: new Fill({
+                color: theme.getPropertyValue('--poc-teal').trim()
+              }),
+              padding: [2, 4, 2, 4],
+            })
+          })] : []),
+        ]);
+        return stopStyles.get(key);
+      },
+    }));
+  }
+  const stopMenu = document.createElement('div');
+  stopMenu.className = 'map-stop-menu';
+  stopMenu.setAttribute('role', 'group');
+  stopMenu.setAttribute('aria-label', 'Stops at this location');
+  const stopPopup = new window.ol.Overlay({
+    element: stopMenu,
+    positioning: 'bottom-center',
+    offset: [0, -20],
+    stopEvent: true
+  });
+  map.addOverlay(stopPopup);
+
+  function inspectStops(grouped, coordinate) {
+    stopMenu.replaceChildren();
+    const close = document.createElement('button');
+    close.textContent = 'Close';
+    close.onclick = () => stopPopup.setPosition(undefined);
+    stopMenu.append(close);
+    for (const member of grouped) {
+      const button = document.createElement('button');
+      button.textContent = member.get('label');
+      const original = member.get('sourceFeature');
+      button.onclick = () => {
+        if (original) onSelect(original);
+        stopPopup.setPosition(undefined);
+      };
+      stopMenu.append(button);
+    }
+    stopPopup.setPosition(coordinate);
+  }
   const shadeFeatures = new VectorSource();
   const shadeLayer = new VectorLayer({
     source: shadeFeatures,
@@ -214,6 +312,13 @@ export function createMap(
       return;
     }
     map.forEachFeatureAtPixel(event.pixel, (feature) => {
+      const grouped = feature.get('features');
+      if (grouped) {
+        if (grouped.length > 1 || !grouped[0].get('sourceFeature')) inspectStops(grouped, feature.getGeometry().getCoordinates());
+        else onSelect(grouped[0].get('sourceFeature'));
+        return true;
+      }
+      stopPopup.setPosition(undefined);
       if (feature.get('temperatureSample')) {
         onTemperatureSelect?.(feature.get('temperatureSample'));
         return true;
@@ -334,6 +439,8 @@ export function createMap(
     },
     setContextMarkers: (markers) => {
       contextFeatures.clear();
+      stopSources.forEach(source => source.clear());
+      stopPopup.setPosition(undefined);
       markers.forEach((item) => {
         const marker = new Feature({
           geometry: new window.ol.geom.Point(fromLonLat(item.coordinates)),
@@ -341,7 +448,8 @@ export function createMap(
         marker.set('kind', item.kind);
         marker.set('label', item.label);
         marker.set('sourceFeature', item.sourceFeature);
-        contextFeatures.addFeature(marker);
+        const stopKind = ['park', 'pause', 'rest'].includes(item.kind) ? 'rest' : item.kind;
+        (stopSources.get(stopKind) ?? contextFeatures).addFeature(marker);
       });
     },
     setTemperatureProfile: (route, profile, colours, visible) => {
