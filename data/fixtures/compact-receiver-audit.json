@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "scope": "vertical encoding information-loss audit at native 0.5m spacing",
+  "attribution": "\u00a9 swisstopo",
+  "height_step_metres": 2,
+  "scenes": [
+    {
+      "scene": "urban_centre",
+      "tile": "2610-1266",
+      "source_sha256": {
+        "surface": "7e2f118c72b6b3813a0342fcc276b5842f894673be913d7a37e64d353dc01d03",
+        "terrain": "bb59e26e6adcddb165274415c7b4f73368cf40a127705316ee1729e1a3ee8bbe"
+      },
+      "source_cell_metres": 0.5,
+      "cells": 4000000,
+      "valid_pairs": 4000000,
+      "missing_pairs": 0,
+      "source_below_terrain": 1045158,
+      "encoded_equal_pairs": 1854493,
+      "encoded_equal_but_source_unequal": 1849029,
+      "erased_below_terrain": 1041683,
+      "surface_max_encoding_error_metres": 1.0,
+      "terrain_max_encoding_error_metres": 1.0
+    },
+    {
+      "scene": "vegetation_lange_erlen",
+      "tile": "2613-1269",
+      "source_sha256": {
+        "surface": "045ab2f707d0519addd12863db315a9ee07b04a9dc18bf8ceb8a699126ed72c6",
+        "terrain": "02423d98857b18365d3c44e29065dab37550d1c75ca230fb32409c88c3fb42da"
+      },
+      "source_cell_metres": 0.5,
+      "cells": 4000000,
+      "valid_pairs": 4000000,
+      "missing_pairs": 0,
+      "source_below_terrain": 281662,
+      "encoded_equal_pairs": 1954836,
+      "encoded_equal_but_source_unequal": 1950073,
+      "erased_below_terrain": 278083,
+      "surface_max_encoding_error_metres": 1.0,
+      "terrain_max_encoding_error_metres": 1.0
+    },
+    {
+      "scene": "tall_building_roche",
+      "tile": "2612-1267",
+      "source_sha256": {
+        "surface": "b59e159c3d0096a8e1e28afcd9f05c3a7c86c9068c1b1f05f33ec631ce71b46e",
+        "terrain": "40f663cf4f1dcfa3015887afcac5f3df3b89634059cfc6a5f89cb28472a5d3b7"
+      },
+      "source_cell_metres": 0.5,
+      "cells": 4000000,
+      "valid_pairs": 4000000,
+      "missing_pairs": 0,
+      "source_below_terrain": 1192572,
+      "encoded_equal_pairs": 1433029,
+      "encoded_equal_but_source_unequal": 1429593,
+      "erased_below_terrain": 1190161,
+      "surface_max_encoding_error_metres": 1.0,
+      "terrain_max_encoding_error_metres": 1.0
+    },
+    {
+      "scene": "border_kleinhuningen",
+      "tile": "2611-1270",
+      "source_sha256": {
+        "surface": "f7c7308e2b8aca3be820d6f429d52ec6b275f7e77e8ed88646ea95f4309041cb",
+        "terrain": "299e77f0dd119db4c1ef45ea38d9a53c01c3c76201ecbf89a566b19545344676"
+      },
+      "source_cell_metres": 0.5,
+      "cells": 4000000,
+      "valid_pairs": 4000000,
+      "missing_pairs": 0,
+      "source_below_terrain": 417635,
+      "encoded_equal_pairs": 2819222,
+      "encoded_equal_but_source_unequal": 2816935,
+      "erased_below_terrain": 413427,
+      "surface_max_encoding_error_metres": 1.0,
+      "terrain_max_encoding_error_metres": 1.0
+    }
+  ],
+  "production_receiver_admission": false,
+  "limits": "No horizontal resampling, physical receiver, horizon, route or city-performance acceptance. Native 2m terrain and actual compact assets must be checked separately. Equal encoded heights cannot establish supported receivers; preserve source inversion flags."
+}

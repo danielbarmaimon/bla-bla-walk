@@ -1,12 +1,34 @@
 # T10 · Slot E shade calculation
 
-Status: calculation checkpoint ready for review; T10 remains open · Branch: feat/t10-shade-calculation · Owner: @sergimos
+Status: receiver validation resumed; T10 remains open · Branch: feat/t10-receiver-validation · Owner: @ltorrecilla
 
 ## State
 
-T8 PR #27 is merged. Native preparation and compact preparation coexist; the plan still lists compact spatial/scene validation as open. This calculation consumes decoded metre arrays and accepts native T8 flags, so it does not select or rewrite either pipeline. T10 is not done.
+T8 PR #27 and E's calculation PR #29 are merged. The continuation branch starts
+from F's cache/API checkpoint (9a802cc), which remains subject to review/merge.
+Native preparation and compact preparation coexist; compact spatial/scene
+validation remains open. No production receivers have been admitted. T10 is not
+done.
 
 ## Done
+
+- Resumed E validation with four local, catalogue-checksum-verified T0 native
+  raster pairs: centre, vegetation, tall building and border. Added
+  scripts/audit_compact_receivers.py and data/fixtures/compact-receiver-audit.json.
+  The controlled vertical-only audit found 1041683 / 278083 / 1190161 / 413427
+  erased surface-below-terrain flags respectively. It isolates the 2m height step
+  at native 0.5m spacing; it does not represent the production 1m/2m-terrain
+  resampling pipeline and cannot admit ground receivers.
+- Reproduced the existing 48 independent reference matches with the local centre
+  pair: 37 shaded, 11 unknown. No new physical reference claim.
+- Six audit tests cover erased inversions, false equality, masked/NaN inputs and
+  invalid encoding steps. Backend regression: 107 passed, five browser tests
+  deselected. Backend and audit lint/format checks pass. Local source-manifest
+  line endings were normalized to the already-configured LF policy, restoring
+  its pinned checksum without changing Git content.
+- This checkout lacks data/geometry and the native prepared arrays. T0 native
+  0.5m samples are available under ignored .hack/t0; the missing project NumPy
+  and Rasterio packages were restored to their declared versions in .venv.
 
 - Implemented offline geometric solar bearings and batched cell-prism ray traversal in `backend/bla_bla_walk/solar.py` and `backend/bla_bla_walk/shade.py`.
 - Added 33 passing calculation checks: analytic shadow direction/length, an independent rectangle-intersection tracer, timestamps, unknown halo/missing/bridge cells, canopy receiver limits, night/low sun/zenith, overlapping halo consistency, and compact-height sensitivity.
@@ -16,7 +38,12 @@ T8 PR #27 is merged. Native preparation and compact preparation coexist; the pla
 
 ## Next
 
-1. Review this calculation-only PR and merge only after explicit approval. Slot F starts its portion after this checkpoint merges.
+1. Obtain/reproduce the checksum-pinned actual compact assets (including native
+   2m terrain), and compare aligned 1m ground/corridor samples with unquantized
+   reference scenes. Source inversion evidence must survive preparation; never
+   infer receiver support from equal height codes. Locate independently checked
+   ground/bridge/canopy receiver and physical shade evidence; the user has been
+   asked whether the team already has it.
 2. Slot E/T8: complete compact real-scene accuracy and route-sample sensitivity acceptance against unquantized reference scenes. The 0.5m numerical spot check is not a physical shade/ground/foliage survey and does not close those checks.
 3. Slot F: load aligned metre grids and flags across receiver viewports/corridors plus halos. Compact inputs use geometry.read_heights, including masks/scales; native inputs require masking NoData and passing pair flags. Provide verified supported receiver masks/elevations and each request's true/grid-north rotation. Missing tiles/buffer, unsupported terrain and unresolved canopy/bridge receivers stay unknown.
 4. Reuse calculate_shade through the additive ShadeCalculator processing protocol and ShadeState enum in interfaces.py, plus the existing ShadeMetadata. Browser JSON payload fields are unchanged; server arrays are not wire data. Preserve night separately from shaded route metres. Effective time currently equals requested time. Do not silently add five-minute buckets.
@@ -29,4 +56,9 @@ Unblocked rays require an externally verified absolute horizon ceiling to become
 
 ## Resume prompt
 
-Continue T10 cache/API for Slot F after the calculation PR merges. Read this handoff, the calculator docstrings, data/fixtures/shade-validation.json and T10's full acceptance check. Reuse the calculation, preserve explicit unknown/night states and finish the remaining geometry, accuracy, cache, API and performance work before marking T10 done.
+Continue E/T10 receiver validation on feat/t10-receiver-validation. Read this
+handoff, F's handoff, the calculator docstrings and the encoding audit. E's
+calculation is merged; F's checkpoint is included in this branch but requires
+its own merge approval. Audit actual compact assets and checked physical
+receivers next. Preserve unknown/night states and complete geometry accuracy,
+route sensitivity, horizon and performance acceptance before marking T10 done.

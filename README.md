@@ -117,6 +117,19 @@ Slot E's T10 calculation checkpoint has analytic and independent numerical check
 python scripts/validate_shade_sample.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --output .hack/t10/shade-validation.json
 ```
 
+Audit vertical encoding loss using the four checksum-pinned native source pairs
+from T0, saved as `<scene>-surface.tif` and `<scene>-terrain.tif`:
+
+```sh
+python scripts/audit_compact_receivers.py --source-directory .hack/t0 --output .hack/compact-receiver-audit.json
+```
+
+[Recorded encoding audit](data/fixtures/compact-receiver-audit.json) isolates the
+2m height step at native 0.5m spacing. It measures erased inversion flags and
+false equal pairs; it does not validate horizontal resampling or admit physical
+receivers. The actual compact 1m grid and native 2m terrain still need separate
+scene checks. See [E's handoff](handoff/t10-shade-calculation.md).
+
 Activate the environment and run from the repository root:
 
 ```sh
