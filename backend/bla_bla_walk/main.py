@@ -16,6 +16,7 @@ app = FastAPI(title="Bla Bla Walk", version="0.1.0")
 ROOT = Path(__file__).resolve().parents[2]
 app.mount("/src", StaticFiles(directory=ROOT / "src"), name="browser")
 app.mount("/config", StaticFiles(directory=ROOT / "config"), name="configuration")
+app.mount("/poc-assets", StaticFiles(directory=ROOT / "poc"), name="route-poc-assets")
 app.mount(
     "/vendor",
     StaticFiles(directory=ROOT / ".cache/browser-assets", check_dir=False),
@@ -27,6 +28,12 @@ app.mount(
 def index() -> FileResponse:
     """Serve the map and API from one origin, without a JavaScript build step."""
     return FileResponse(ROOT / "index.html")
+
+
+@app.get("/poc", include_in_schema=False)
+def route_poc() -> FileResponse:
+    """Show an isolated, interactive route design preview."""
+    return FileResponse(ROOT / "poc/index.html")
 
 
 @app.get("/api/map", response_model=MapSnapshot)

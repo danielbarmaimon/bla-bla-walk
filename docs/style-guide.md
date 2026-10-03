@@ -48,6 +48,11 @@ highlights; check contrast before using it for text. Keep icon labels visible.
 Use large, clearly separated touch controls for the grocery trip and route
 choice.
 
+The isolated `/poc` route preview applies this proposal for review. It is not
+the accepted main-screen design. The preview uses `src/theme.css` tokens,
+large labelled controls, and Lucide icons. Place search and route steps use
+clearly marked examples until route/shade integration in T6.
+
 ## Principles
 
 1. **The map is the shared reference.** Toggling a layer changes the map and its legend together.

@@ -37,6 +37,10 @@ python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --por
 
 Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .venv` and run the Activate.ps1 script inside the environment's Scripts folder in PowerShell instead of the first two commands.
 
+## Route screen preview
+
+Open [the interactive route PoC](http://127.0.0.1:8000/poc) with the same local server. It previews GPS or manual starts, destination search, nearby category shortcuts, Fastest/More shade preferences, map pinning, and a map with example journey steps. Add `?mode=offline` after preparing offline tiles to preview without external map requests. The small place catalog only illustrates interaction. Its nearest shortcut searches that catalog, not all Basel places. The dashed connector is schematic; route geometry, times, shade, transit service, benches and water stops are not verified. The main map and API remain the foundation for T6 integration.
+
 The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL selects synthetic fixtures; use the links in the app to choose a mode.
 
 ## Download data before offline use

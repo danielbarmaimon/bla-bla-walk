@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bla Bla Walk · Route preview</title>
+  <link rel="stylesheet" href="/vendor/ol.css">
+  <link rel="stylesheet" href="/src/theme.css">
+  <link rel="stylesheet" href="/poc-assets/poc.css">
+  <script src="/vendor/ol.js" defer></script>
+  <script type="module" src="/poc-assets/poc.js"></script>
+</head>
+<body class="poc" data-view="plan">
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="/poc" aria-label="Bla Bla Walk home">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Bla Bla Walk</span>
+      </a>
+      <span class="preview-label">INTERACTIVE CONCEPT</span>
+    </header>
+
+    <main class="route-layout">
+      <section class="planner" aria-labelledby="planner-title">
+        <div class="section-heading">
+          <p class="kicker">BASEL, SWITZERLAND</p>
+          <h1 id="planner-title">Where are you going?</h1>
+          <p class="intro">Find a route that fits your day.</p>
+        </div>
+
+        <div class="journey-fields">
+          <div class="field-block">
+            <label for="origin-input">Starting point</label>
+            <div class="input-wrap">
+              <span class="input-icon" data-icon="map-pin" aria-hidden="true"></span>
+              <input id="origin-input" autocomplete="off" list="origin-options" placeholder="Enter a starting point">
+              <datalist id="origin-options"></datalist>
+              <button class="inside-button" id="gps-button" type="button">Use GPS</button>
+            </div>
+            <div class="field-actions">
+              <button class="text-button" id="pick-origin" type="button">Choose start on map</button>
+              <span id="origin-status" role="status">Finding your location…</span>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <label for="destination-input">Destination</label>
+            <div class="input-wrap">
+              <span class="input-icon" data-icon="search" aria-hidden="true"></span>
+              <input id="destination-input" autocomplete="off" placeholder="Search for a place">
+              <button class="inside-button" id="pick-destination" type="button">Pin on map</button>
+            </div>
+            <div class="suggestions" id="suggestions" role="listbox" aria-label="Suggested destinations" hidden></div>
+          </div>
+        </div>
+
+        <fieldset class="route-mode">
+          <legend>What matters most?</legend>
+          <div class="segmented">
+            <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest</button>
+            <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
+          </div>
+          <p class="helper">Shade is illustrated here. Calculated shade arrives later.</p>
+        </fieldset>
+
+        <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
+          <div class="journey-card-heading"><span class="journey-tag">ROUTE PREVIEW</span><span id="journey-mode"></span></div>
+          <h2 id="journey-title"></h2>
+          <p id="journey-summary"></p>
+          <button class="primary-button" id="show-route" type="button">See route and steps <span data-icon="arrow-right" aria-hidden="true"></span></button>
+        </section>
+
+        <div class="quick-heading">
+          <div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div>
+          <p>Closest sample place</p>
+        </div>
+        <div class="quick-grid" id="quick-grid"></div>
+        <p class="prototype-note">Illustrative route only. Times, shade, transit, and stops are not live guidance.</p>
+      </section>
+
+      <section class="map-screen" aria-label="Route map and directions">
+        <div class="map-topline">
+          <div><p class="kicker">YOUR JOURNEY</p><h2 id="map-title">Explore Basel</h2></div>
+          <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
+        </div>
+        <div class="map-and-steps">
+          <div class="map-wrap">
+            <div id="poc-map" tabindex="0" role="region" aria-label="Interactive Basel map. Select a map pin to set a place."></div>
+            <div class="map-overlay" id="map-overlay">Schematic connection · not a walking path</div>
+            <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
+          </div>
+          <aside class="steps" aria-labelledby="steps-title">
+            <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to preview directions.</p></div>
+            <ol id="step-list"></ol>
+            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Example guidance only. Transit service and rest stops need verification.</p></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

@@ -50,6 +50,28 @@
   --font-body: var(--text-body);
   --font-heading: var(--text-heading);
   --font-subheading: 1.125rem;
+  --poc-ink: #030712;
+  --poc-muted: #667085;
+  --poc-teal: #0d9488;
+  --poc-teal-dark: #0f766e;
+  --poc-teal-light: #f0fdfa;
+  --poc-canvas: #f8fafc;
+  --poc-line: #e5e7eb;
+  --poc-white: #ffffff;
+  --poc-label: #475467;
+  --poc-map-tint: rgba(17, 24, 39, 0.82);
+  --poc-map-white: rgba(255, 255, 255, 0.96);
+  --poc-route: #0d9488;
+  --poc-origin: #030712;
+  --poc-destination: #0d9488;
+  --poc-shadow: rgba(17, 24, 39, 0.12);
+  --poc-basemap-opacity: 0.62;
+  --poc-heading: 2.25rem;
+  --poc-mark: 2.25rem;
+  --poc-content-width: 90rem;
+  --poc-planner-width: 29rem;
+  --poc-steps-width: 20rem;
+  --poc-map-height: 41rem;
 }
 
 * {
