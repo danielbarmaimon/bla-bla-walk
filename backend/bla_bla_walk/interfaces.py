@@ -1,13 +1,22 @@
-"""Canonical wire models. Generate browser types; never edit client copies.
+"""Canonical wire models and server processing contracts.
 
 Coordinates are WGS84 longitude/latitude (GeoJSON), not LV95 processing metres.
 Unknown values stay null. Source times are distinct from calculation times.
 Feature tasks extend these models with a decision line before regeneration.
 """
 
-from typing import Annotated, Literal
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import datetime
+from enum import IntEnum
+from typing import TYPE_CHECKING, Annotated, Any, Literal, Protocol
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    import numpy as np
+    from numpy.typing import ArrayLike, NDArray
 
 Longitude = Annotated[float, Field(ge=-180, le=180)]
 Latitude = Annotated[float, Field(ge=-90, le=90)]
@@ -62,6 +71,56 @@ class ShadeMetadata(ContractModel):
     effective_time: AwareDatetime
     geometry_version: str
     resolution_m: Annotated[float, Field(gt=0)]
+
+
+class ShadeState(IntEnum):
+    """Server raster values; night must never count as daytime shaded metres."""
+
+    UNKNOWN = 0
+    SUNLIT = 1
+    SHADED = 2
+    NIGHT = 3
+
+
+@dataclass(frozen=True)
+class CompactReceiverEvidence:
+    """Server evidence recorded before quantization; never a browser payload.
+
+    Flags use native T8 bits 1/2/4, aggregated conservatively across each compact
+    cell. ground_candidates requires all source samples within the explicitly
+    supplied numerical ground-envelope tolerance; it does not prove walkability.
+    surface_elevations retains unrounded source maxima in absolute metres.
+    Slot F must intersect candidates with verified receiver support and retain
+    source checksums, grid alignment and evidence version in preparation/cache keys.
+    """
+
+    cell_flags: NDArray[np.uint8]
+    ground_candidates: NDArray[np.bool_]
+    surface_elevations: NDArray[np.float32]
+    maximum_surface_gap_m: float
+
+
+class ShadeCalculator(Protocol):
+    """Slot E/F processing boundary; metre grids enter, states and metadata leave.
+
+    Arrays are server processing data, not JSON/browser payloads. Result states
+    follow ShadeState. Exact requested time is retained as effective time until
+    a later explicitly validated policy introduces temporal approximation.
+    """
+
+    def __call__(
+        self,
+        surface: ArrayLike,
+        terrain: ArrayLike,
+        *,
+        requested_time: datetime,
+        geometry_version: str,
+        latitude: float,
+        longitude: float,
+        cell_size_m: float,
+        grid_north_rotation_deg: float,
+        **ray_options: Any,
+    ) -> tuple[NDArray[np.uint8], ShadeMetadata]: ...
 
 
 class RouteMetrics(ContractModel):

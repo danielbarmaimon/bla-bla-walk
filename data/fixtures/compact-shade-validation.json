@@ -1,0 +1,1540 @@
+{
+  "schema_version": 1,
+  "scope": "numerical compact encoding and preserved-evidence validation; full T10 remains open",
+  "independent_matches": 576,
+  "tiles": [
+    {
+      "schema_version": 1,
+      "tile": "2610-1266",
+      "attribution": "\u00a9 swisstopo; \u00a9 OpenStreetMap contributors",
+      "settings": {
+        "schema_version": 1,
+        "cell_size_metres": 1,
+        "height_step_metres": 2,
+        "terrain_source_cell_size_metres": 2,
+        "surface_resampling": "max",
+        "terrain_resampling": "nearest",
+        "nodata_code": -32768,
+        "horizontal_crs": "EPSG:2056",
+        "vertical_reference": "LN02 / EPSG:5728",
+        "geometry_directory": "data/geometry"
+      },
+      "source_sha256": {
+        "surface": "7e2f118c72b6b3813a0342fcc276b5842f894673be913d7a37e64d353dc01d03",
+        "terrain_native": "bb59e26e6adcddb165274415c7b4f73368cf40a127705316ee1729e1a3ee8bbe",
+        "terrain_2m": "10db3f33bef59d7fd4018aeeb1c7d47d787a396d2f69274d75e3473d06ad3bb5"
+      },
+      "prepared_sha256": {
+        "surface": "10b277ce1b2167b4da2e783bea432e9f43005488c7643fcdb0d7d9e64177a402",
+        "terrain": "686c7d2ffc190bf07d296efe890c31898bf11111ac85e7619476d2ba96c2f686"
+      },
+      "receiver_evidence_sha256": "9b2c2da1ccf387dd96f468863973ccfa5437c08bad5013c9899d61b69cc1511e",
+      "receiver_evidence_bytes": 1919629,
+      "preserved_ground_candidates": 12870,
+      "numerical_surface_gap_metres": 0.1,
+      "route_fixture_sha256": "995686b97052beac9af018cb3fe7f517147375898e368c86fc1b07b914ab0e25",
+      "independent_matches": 216,
+      "compact_ground_candidates_hiding_native_invalid": 391014,
+      "scene_checks": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 8,
+          "unknown": 4
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 11,
+          "unknown": 1
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 11,
+          "unknown": 1
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 10,
+          "unknown": 2
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 11,
+          "unknown": 1
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 7,
+          "unknown": 5
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 2,
+          "unknown": 10
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 2,
+          "unknown": 10
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 8,
+          "unknown": 4
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 7,
+          "unknown": 5
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 5,
+          "unknown": 7
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 5,
+          "unknown": 7
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 9,
+          "unknown": 3
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 1,
+          "unknown": 11
+        }
+      ],
+      "scene_edge_changes": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 197.5,
+          "native_shaded_square_m": 0.5,
+          "compact_shaded_square_m": 198.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 305.0,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 306.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 327.0,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 328.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 399.5,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 400.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 247.75,
+          "native_shaded_square_m": 0.25,
+          "compact_shaded_square_m": 248.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 320.5,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 321.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 431.5,
+          "native_shaded_square_m": 2.0,
+          "compact_shaded_square_m": 433.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 343.5,
+          "native_shaded_square_m": 1.5,
+          "compact_shaded_square_m": 344.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 332.5,
+          "native_shaded_square_m": 2.5,
+          "compact_shaded_square_m": 334.0
+        }
+      ],
+      "route_sensitivity": [
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1322.7747426925791,
+          "compact_unknown_m": 1322.7747426925791,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1322.7747426925791,
+          "compact_unknown_m": 1322.7747426925791,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1322.7747426925791,
+          "compact_unknown_m": 1322.7747426925791,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1319.2210660457483,
+          "compact_unknown_m": 1319.2210660457483,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1319.2210660457483,
+          "compact_unknown_m": 1319.2210660457483,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 0.0,
+          "compact_shaded_m": 0.0,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 0.0,
+          "native_unknown_m": 1319.2210660457483,
+          "compact_unknown_m": 1319.2210660457483,
+          "changed_state_m": 0.0,
+          "compact_shade_native_unknown_m": 0.0
+        }
+      ],
+      "limits": [
+        "Numerical surface-envelope candidates do not prove walkability or canopy interiors.",
+        "Cell centres differ by up to 0.354m; state changes combine grid, height and terrain-source effects.",
+        "No verified horizon ceiling: unblocked rays and samples outside this tile remain unknown.",
+        "Route samples every <=2m use departure plus proportional saved routing duration; no route score or ranking.",
+        "No physical shade accuracy, encoding tolerance, city-wide or cache/API acceptance is claimed.",
+        "Raw compact values demonstrate the unsafe case; compact_preserved uses native pair flags and all-four-sample ground candidates.",
+        "The 0.1m envelope is a numerical validation selection, not adopted pedestrian or canopy support evidence."
+      ]
+    },
+    {
+      "schema_version": 1,
+      "tile": "2611-1266",
+      "attribution": "\u00a9 swisstopo; \u00a9 OpenStreetMap contributors",
+      "settings": {
+        "schema_version": 1,
+        "cell_size_metres": 1,
+        "height_step_metres": 2,
+        "terrain_source_cell_size_metres": 2,
+        "surface_resampling": "max",
+        "terrain_resampling": "nearest",
+        "nodata_code": -32768,
+        "horizontal_crs": "EPSG:2056",
+        "vertical_reference": "LN02 / EPSG:5728",
+        "geometry_directory": "data/geometry"
+      },
+      "source_sha256": {
+        "surface": "d01542c8ce768fab73284381f40a3baf07c8b159fc8f792bbbbfee6c144d8e7b",
+        "terrain_native": "780554300f9a262e7737beb3a1607d1efe876f43c5dce34387318f9f8bf1aa0e",
+        "terrain_2m": "a76fe265544ed3ecd906b3492db2e1b179a216e5b11f68012c38baffde7a15de"
+      },
+      "prepared_sha256": {
+        "surface": "1da9da37a27f0e6f2bda65a9bf0b5bd171f01d98108abcc6093e50ea3a060e06",
+        "terrain": "d57cd0525c312c6d2320355a6f5a5ef88669eba3929912e2333452d9af491671"
+      },
+      "receiver_evidence_sha256": "8e54c451f06f7e0fe61759f85f0d4be55ae9817fe23a07e9f8881fb6e71d327c",
+      "receiver_evidence_bytes": 1810108,
+      "preserved_ground_candidates": 6009,
+      "numerical_surface_gap_metres": 0.1,
+      "route_fixture_sha256": "995686b97052beac9af018cb3fe7f517147375898e368c86fc1b07b914ab0e25",
+      "independent_matches": 216,
+      "compact_ground_candidates_hiding_native_invalid": 389446,
+      "scene_checks": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 1,
+          "unknown": 11
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 2,
+          "unknown": 10
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 3,
+          "unknown": 9
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 3,
+          "unknown": 9
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 8,
+          "unknown": 4
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 7,
+          "unknown": 5
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 9,
+          "unknown": 3
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 10,
+          "unknown": 2
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 9,
+          "unknown": 3
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 10,
+          "unknown": 2
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 11,
+          "unknown": 1
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 10,
+          "unknown": 2
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 2,
+          "unknown": 10
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 11,
+          "unknown": 1
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 0,
+          "unknown": 12
+        }
+      ],
+      "scene_edge_changes": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 116.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 116.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 104.75,
+          "native_shaded_square_m": 0.25,
+          "compact_shaded_square_m": 105.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 215.25,
+          "native_shaded_square_m": 0.75,
+          "compact_shaded_square_m": 216.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 211.5,
+          "native_shaded_square_m": 0.5,
+          "compact_shaded_square_m": 212.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 211.5,
+          "native_shaded_square_m": 0.5,
+          "compact_shaded_square_m": 212.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 235.5,
+          "native_shaded_square_m": 0.5,
+          "compact_shaded_square_m": 236.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 437.0,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 438.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 385.0,
+          "native_shaded_square_m": 1.0,
+          "compact_shaded_square_m": 386.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 54.75,
+          "native_shaded_square_m": 0.25,
+          "compact_shaded_square_m": 55.0
+        }
+      ],
+      "route_sensitivity": [
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 131.88043842376138,
+          "compact_shaded_m": 500.6973384798679,
+          "preserved_shaded_m": 1.7819005105601236,
+          "preserved_unknown_m": 1320.992842182019,
+          "preserved_changed_state_m": 133.6623389343215,
+          "native_unknown_m": 1190.894304268818,
+          "compact_unknown_m": 822.0774042127111,
+          "changed_state_m": 390.36439898989045,
+          "compact_shade_native_unknown_m": 379.5906495229985
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 109.0841610496361,
+          "compact_shaded_m": 382.1880959371344,
+          "preserved_shaded_m": 5.292791820583232,
+          "preserved_unknown_m": 1317.481950871996,
+          "preserved_changed_state_m": 103.79136922905286,
+          "native_unknown_m": 1213.690581642943,
+          "compact_unknown_m": 940.5866467554447,
+          "changed_state_m": 294.6514338212822,
+          "compact_shade_native_unknown_m": 283.8776843543902
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 155.94626326754732,
+          "compact_shaded_m": 553.6348969762169,
+          "preserved_shaded_m": 5.292791820583232,
+          "preserved_unknown_m": 1317.481950871996,
+          "preserved_changed_state_m": 150.6534714469641,
+          "native_unknown_m": 1166.828479425032,
+          "compact_unknown_m": 769.1398457163624,
+          "changed_state_m": 419.23613264245336,
+          "compact_shade_native_unknown_m": 408.4623831755614
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 144.67487793151045,
+          "compact_shaded_m": 551.0876641689738,
+          "preserved_shaded_m": 1.5780561760449554,
+          "preserved_unknown_m": 1317.6430098697033,
+          "preserved_changed_state_m": 143.09682175546553,
+          "native_unknown_m": 1174.5461881142378,
+          "compact_unknown_m": 768.1334018767745,
+          "changed_state_m": 417.6067588898985,
+          "compact_shade_native_unknown_m": 412.00977256368094
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 36.44160981010672,
+          "compact_shaded_m": 166.34456672313323,
+          "preserved_shaded_m": 1.5780561760449554,
+          "preserved_unknown_m": 1317.6430098697033,
+          "preserved_changed_state_m": 34.863553634061766,
+          "native_unknown_m": 1282.7794562356416,
+          "compact_unknown_m": 1152.8764993226152,
+          "changed_state_m": 137.5117202123969,
+          "compact_shade_native_unknown_m": 133.70733856271173
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 165.7410710188717,
+          "compact_shaded_m": 583.6349739393054,
+          "preserved_shaded_m": 1.5780561760449554,
+          "preserved_unknown_m": 1317.6430098697033,
+          "preserved_changed_state_m": 164.16301484282675,
+          "native_unknown_m": 1153.4799950268766,
+          "compact_unknown_m": 735.5860921064432,
+          "changed_state_m": 425.1643208109399,
+          "compact_shade_native_unknown_m": 421.5291118656868
+        }
+      ],
+      "limits": [
+        "Numerical surface-envelope candidates do not prove walkability or canopy interiors.",
+        "Cell centres differ by up to 0.354m; state changes combine grid, height and terrain-source effects.",
+        "No verified horizon ceiling: unblocked rays and samples outside this tile remain unknown.",
+        "Route samples every <=2m use departure plus proportional saved routing duration; no route score or ranking.",
+        "No physical shade accuracy, encoding tolerance, city-wide or cache/API acceptance is claimed.",
+        "Raw compact values demonstrate the unsafe case; compact_preserved uses native pair flags and all-four-sample ground candidates.",
+        "The 0.1m envelope is a numerical validation selection, not adopted pedestrian or canopy support evidence."
+      ]
+    },
+    {
+      "schema_version": 1,
+      "tile": "2611-1267",
+      "attribution": "\u00a9 swisstopo; \u00a9 OpenStreetMap contributors",
+      "settings": {
+        "schema_version": 1,
+        "cell_size_metres": 1,
+        "height_step_metres": 2,
+        "terrain_source_cell_size_metres": 2,
+        "surface_resampling": "max",
+        "terrain_resampling": "nearest",
+        "nodata_code": -32768,
+        "horizontal_crs": "EPSG:2056",
+        "vertical_reference": "LN02 / EPSG:5728",
+        "geometry_directory": "data/geometry"
+      },
+      "source_sha256": {
+        "surface": "04e20e16aa50c039779cc8c0f1d416112c6b9805878e848d7a7067f832030a04",
+        "terrain_native": "189c58348c814182aa9a77b8b4caf918c65935c6c2481e2d2cb0c114c92f9265",
+        "terrain_2m": "4bb4ae42648f0530f7e02e4e13b54cec03487250a740626443a08ced03184f6f"
+      },
+      "prepared_sha256": {
+        "surface": "da06a70a9d3611eba3686b369f931921be619a9be359079d1ee099e1c83d103e",
+        "terrain": "f4c5ff8f55e1dd41dee55dc2c19354accf7998e7fea80869ffbc5b04966731d7"
+      },
+      "receiver_evidence_sha256": "121427462f39a107e06af09d3eebe8fcd2c6b05a5d228518dff01fefe208167c",
+      "receiver_evidence_bytes": 1646556,
+      "preserved_ground_candidates": 505,
+      "numerical_surface_gap_metres": 0.1,
+      "route_fixture_sha256": "995686b97052beac9af018cb3fe7f517147375898e368c86fc1b07b914ab0e25",
+      "independent_matches": 144,
+      "compact_ground_candidates_hiding_native_invalid": 256935,
+      "scene_checks": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 0,
+          "shaded": 0,
+          "unknown": 0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 7,
+          "unknown": 5
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 3,
+          "unknown": 9
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 2,
+          "unknown": 10
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 0,
+          "unknown": 12
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 6,
+          "unknown": 6
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "native",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 4,
+          "unknown": 8
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T08:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 0,
+          "unknown": 12
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T12:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 9,
+          "unknown": 3
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "representation": "compact",
+          "time": "2026-10-03T15:00:00+00:00",
+          "comparisons": 12,
+          "shaded": 9,
+          "unknown": 3
+        }
+      ],
+      "scene_edge_changes": [
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 0.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 0.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 0.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 0.0
+        },
+        {
+          "window_native": [
+            970,
+            970,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 0.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 0.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 284.0,
+          "native_shaded_square_m": 0.5,
+          "compact_shaded_square_m": 284.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 88.25,
+          "native_shaded_square_m": 0.25,
+          "compact_shaded_square_m": 88.0
+        },
+        {
+          "window_native": [
+            1300,
+            1000,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 101.25,
+          "native_shaded_square_m": 0.25,
+          "compact_shaded_square_m": 101.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T08:00:00+00:00",
+          "changed_state_square_m": 0.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 0.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T12:00:00+00:00",
+          "changed_state_square_m": 46.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 46.0
+        },
+        {
+          "window_native": [
+            500,
+            500,
+            64,
+            64
+          ],
+          "time": "2026-10-03T15:00:00+00:00",
+          "changed_state_square_m": 49.0,
+          "native_shaded_square_m": 0.0,
+          "compact_shaded_square_m": 49.0
+        }
+      ],
+      "route_sensitivity": [
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 95.50163630317729,
+          "compact_shaded_m": 440.3274563843794,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 95.50163630317729,
+          "native_unknown_m": 1227.2731063894018,
+          "compact_unknown_m": 882.4472863081996,
+          "changed_state_m": 352.68149456318565,
+          "compact_shade_native_unknown_m": 348.7536573221939
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 82.43386883533793,
+          "compact_shaded_m": 432.7896228366719,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 82.43386883533793,
+          "native_unknown_m": 1240.3408738572411,
+          "compact_unknown_m": 889.9851198559073,
+          "changed_state_m": 354.25874504652563,
+          "compact_shade_native_unknown_m": 352.30724952392984
+        },
+        {
+          "route_id": "demo-route-a",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 707,
+          "projected_length_m": 1322.7747426925794,
+          "native_shaded_m": 113.23366477109549,
+          "compact_shaded_m": 511.9125162506364,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1322.7747426925791,
+          "preserved_changed_state_m": 113.23366477109549,
+          "native_unknown_m": 1209.5410779214837,
+          "compact_unknown_m": 810.8622264419427,
+          "changed_state_m": 406.5345259615243,
+          "compact_shade_native_unknown_m": 402.60668872053265
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T08:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 95.55633239024944,
+          "compact_shaded_m": 568.6958853896415,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 95.55633239024944,
+          "native_unknown_m": 1223.6647336554988,
+          "compact_unknown_m": 750.5251806561068,
+          "changed_state_m": 477.1000197829192,
+          "compact_shade_native_unknown_m": 475.1197863911556
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T12:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 111.33550416275551,
+          "compact_shaded_m": 599.0925337876129,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 111.33550416275551,
+          "native_unknown_m": 1207.885561882993,
+          "compact_unknown_m": 720.1285322581355,
+          "changed_state_m": 491.7174964083845,
+          "compact_shade_native_unknown_m": 489.7372630166209
+        },
+        {
+          "route_id": "demo-route-b",
+          "departure": "2026-10-03T15:00:00+00:00",
+          "samples": 718,
+          "projected_length_m": 1319.2210660457486,
+          "native_shaded_m": 115.12256375743587,
+          "compact_shaded_m": 607.0775998942172,
+          "preserved_shaded_m": 0.0,
+          "preserved_unknown_m": 1319.2210660457483,
+          "preserved_changed_state_m": 115.12256375743587,
+          "native_unknown_m": 1204.0985022883126,
+          "compact_unknown_m": 712.1434661515311,
+          "changed_state_m": 495.9155029203084,
+          "compact_shade_native_unknown_m": 493.93526952854495
+        }
+      ],
+      "limits": [
+        "Numerical surface-envelope candidates do not prove walkability or canopy interiors.",
+        "Cell centres differ by up to 0.354m; state changes combine grid, height and terrain-source effects.",
+        "No verified horizon ceiling: unblocked rays and samples outside this tile remain unknown.",
+        "Route samples every <=2m use departure plus proportional saved routing duration; no route score or ranking.",
+        "No physical shade accuracy, encoding tolerance, city-wide or cache/API acceptance is claimed.",
+        "Raw compact values demonstrate the unsafe case; compact_preserved uses native pair flags and all-four-sample ground candidates.",
+        "The 0.1m envelope is a numerical validation selection, not adopted pedestrian or canopy support evidence."
+      ]
+    }
+  ],
+  "route_sensitivity": [
+    {
+      "route_id": "demo-route-a",
+      "departure": "2026-10-03T08:00:00+00:00",
+      "samples": 707,
+      "length_m": 1322.7747426925794,
+      "native_shaded_m": 227.38207472693867,
+      "compact_shaded_m": 941.0247948642473,
+      "preserved_shaded_m": 1.7819005105601236,
+      "changed_state_m": 743.0458935530761,
+      "preserved_changed_state_m": 229.1639752374988,
+      "compact_shade_native_unknown_m": 728.3443068451924,
+      "native_unknown_m": 1095.3926679656406,
+      "compact_unknown_m": 381.7499478283321,
+      "preserved_unknown_m": 1320.9928421820193
+    },
+    {
+      "route_id": "demo-route-a",
+      "departure": "2026-10-03T12:00:00+00:00",
+      "samples": 707,
+      "length_m": 1322.7747426925794,
+      "native_shaded_m": 191.51802988497403,
+      "compact_shaded_m": 814.9777187738064,
+      "preserved_shaded_m": 5.292791820583232,
+      "changed_state_m": 648.9101788678079,
+      "preserved_changed_state_m": 186.2252380643908,
+      "compact_shade_native_unknown_m": 636.1849338783201,
+      "native_unknown_m": 1131.2567128076053,
+      "compact_unknown_m": 507.797023918773,
+      "preserved_unknown_m": 1317.481950871996
+    },
+    {
+      "route_id": "demo-route-a",
+      "departure": "2026-10-03T15:00:00+00:00",
+      "samples": 707,
+      "length_m": 1322.7747426925794,
+      "native_shaded_m": 269.1799280386428,
+      "compact_shaded_m": 1065.5474132268532,
+      "preserved_shaded_m": 5.292791820583232,
+      "changed_state_m": 825.7706586039776,
+      "preserved_changed_state_m": 263.8871362180596,
+      "compact_shade_native_unknown_m": 811.0690718960941,
+      "native_unknown_m": 1053.5948146539365,
+      "compact_unknown_m": 257.22732946572614,
+      "preserved_unknown_m": 1317.481950871996
+    },
+    {
+      "route_id": "demo-route-b",
+      "departure": "2026-10-03T08:00:00+00:00",
+      "samples": 718,
+      "length_m": 1319.2210660457486,
+      "native_shaded_m": 240.23121032175987,
+      "compact_shaded_m": 1119.7835495586153,
+      "preserved_shaded_m": 1.5780561760449554,
+      "changed_state_m": 894.7067786728178,
+      "preserved_changed_state_m": 238.65315414571495,
+      "compact_shade_native_unknown_m": 887.1295589548365,
+      "native_unknown_m": 1078.9898557239887,
+      "compact_unknown_m": 199.43751648713328,
+      "preserved_unknown_m": 1317.6430098697035
+    },
+    {
+      "route_id": "demo-route-b",
+      "departure": "2026-10-03T12:00:00+00:00",
+      "samples": 718,
+      "length_m": 1319.2210660457486,
+      "native_shaded_m": 147.77711397286222,
+      "compact_shaded_m": 765.4371005107461,
+      "preserved_shaded_m": 1.5780561760449554,
+      "changed_state_m": 629.2292166207814,
+      "preserved_changed_state_m": 146.19905779681727,
+      "compact_shade_native_unknown_m": 623.4446015793326,
+      "native_unknown_m": 1171.4439520728863,
+      "compact_unknown_m": 553.7839655350025,
+      "preserved_unknown_m": 1317.6430098697035
+    },
+    {
+      "route_id": "demo-route-b",
+      "departure": "2026-10-03T15:00:00+00:00",
+      "samples": 718,
+      "length_m": 1319.2210660457486,
+      "native_shaded_m": 280.86363477630755,
+      "compact_shaded_m": 1190.7125738335226,
+      "preserved_shaded_m": 1.5780561760449554,
+      "changed_state_m": 921.0798237312483,
+      "preserved_changed_state_m": 279.2855786002626,
+      "compact_shade_native_unknown_m": 915.4643813942317,
+      "native_unknown_m": 1038.357431269441,
+      "compact_unknown_m": 128.50849221222597,
+      "preserved_unknown_m": 1317.6430098697035
+    }
+  ],
+  "scene_detail_note": "Public scene checks summarize deterministic local point reports; reproduce point coordinates/states with the validator."
+}
