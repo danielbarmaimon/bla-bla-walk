@@ -1,16 +1,22 @@
 """Save sanitized OSM building footprints around the two checked demo routes."""
 
 import argparse
-import hashlib
 import json
 import re
-from datetime import UTC, datetime
+import sys
 from pathlib import Path
 
 import httpx
 from rasterio.warp import transform
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "backend"))
+
+from bla_bla_walk.building_acquisition import (  # noqa: E402
+    acquire_buildings,
+    building_queries,
+    cached_buildings,
+)
 
 
 def height_metres(value):
@@ -133,7 +139,19 @@ def sanitized_features(elements):
     return features
 
 
-def prepare(geometry=False):
+def download_buildings(endpoint, query, polygon, directory, *, refresh=False):
+    """Apply the caster-only parser to resumable acquisition."""
+    return acquire_buildings(
+        endpoint,
+        query,
+        polygon,
+        directory,
+        sanitize=sanitized_features,
+        refresh=refresh,
+    )
+
+
+def prepare(geometry=False, *, offline=False, refresh=False, endpoint=None):
     settings = json.loads((ROOT / "config/building-shade.json").read_text())
     routes = json.loads((ROOT / "data/routes/demo.geojson").read_text())
     points = [p for f in routes["features"] for p in f["geometry"]["coordinates"]]
@@ -150,46 +168,24 @@ def prepare(geometry=False):
     longitude, latitude = transform(
         2056, 4326, [west, east, east, west], [south, south, north, north]
     )
-    bbox = f"{min(latitude)},{min(longitude)},{max(latitude)},{max(longitude)}"
-    query = (
-        f'[out:json][timeout:90];(way["building"]({bbox});'
-        f'relation["building"]({bbox});way["building:part"]({bbox});'
-        f'relation["building:part"]({bbox}););out geom;'
+    query = building_queries(
+        (min(latitude), min(longitude), max(latitude), max(longitude)),
+        settings["query_cell_degrees"],
     )
-    with httpx.Client(timeout=120, follow_redirects=True) as client:
-        response = client.post(settings["endpoint"], data={"data": query})
-        response.raise_for_status()
-        data = response.json()
-    if data.get("remark") or "elements" not in data:
-        raise ValueError("Building query was incomplete")
-    features = sanitized_features(data["elements"])
     directory = ROOT / ".cache/buildings"
-    directory.mkdir(parents=True, exist_ok=True)
-    content = json.dumps(features, separators=(",", ":")).encode()
-    (directory / "buildings.json").write_bytes(content)
-    metadata = {
-        "version": hashlib.sha256(content).hexdigest(),
-        "sha256": hashlib.sha256(content).hexdigest(),
-        "file": "buildings.json",
-        "coverage": polygon,
-        "retrieved_at": datetime.now(UTC).isoformat(),
-        "provider_timestamp": data.get("osm3s", {}).get("timestamp_osm_base"),
-        "attribution": (
-            "© OpenStreetMap contributors · ODbL 1.0; roof heights © swisstopo"
-        ),
-        "endpoint": settings["endpoint"],
-        "feature_count": len(features),
-        "unresolved_geometries": sum(f["unresolved_geometry"] for f in features),
-        "scope": (
-            "Building-only flat-ground approximation; no tree shadows, terrain "
-            "relief, measured cooling or verified walking ground"
-        ),
-    }
-    (directory / "manifest.json").write_text(
-        json.dumps(metadata, indent=2) + "\n", encoding="utf-8"
-    )
+    metadata = None if refresh else cached_buildings(directory, polygon)
+    if metadata:
+        print(f"Reusing verified building cache saved {metadata['retrieved_at']}")
+    elif offline:
+        raise ValueError(
+            "No verified same-coverage building cache; prepare online first"
+        )
+    else:
+        metadata = download_buildings(
+            endpoint or settings["endpoint"], query, polygon, directory, refresh=refresh
+        )
     print(
-        f"Saved {len(features)} building footprints; "
+        f"Available {metadata['feature_count']} building footprints; "
         f"{metadata['unresolved_geometries']} unresolved extents stay unknown"
     )
     inventory = json.loads((ROOT / "data/tile-inventory.json").read_text())
@@ -208,6 +204,7 @@ def prepare(geometry=False):
 
         if not prepare_geometry(workers=2, tiles=set(tiles)):
             raise RuntimeError("Route geometry preparation did not complete")
+    return metadata
 
 
 if __name__ == "__main__":
@@ -215,4 +212,32 @@ if __name__ == "__main__":
     parser.add_argument(
         "--geometry", action="store_true", help="Also prepare route-halo survey tiles"
     )
-    prepare(parser.parse_args().geometry)
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="Validate/reuse saved buildings without network calls",
+    )
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="Fetch fresh buildings instead of reusing the saved cache",
+    )
+    parser.add_argument(
+        "--endpoint", help="Public HTTPS Overpass mirror; recorded as provenance"
+    )
+    args = parser.parse_args()
+    if args.offline and (args.refresh or args.geometry or args.endpoint):
+        parser.error("--offline validates saved buildings only; omit download options")
+    try:
+        prepare(
+            args.geometry,
+            offline=args.offline,
+            refresh=args.refresh,
+            endpoint=args.endpoint,
+        )
+    except (httpx.HTTPError, OSError, ValueError, RuntimeError) as error:
+        print(
+            f"Preparation failed: {error}. Existing saved buildings were retained.",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
