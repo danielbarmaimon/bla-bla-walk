@@ -33,10 +33,10 @@
               <label for="origin-input">Starting point</label>
               <div class="input-wrap">
                 <span class="input-icon" data-icon="map-pin" aria-hidden="true"></span>
-                <input id="origin-input" autocomplete="off" list="origin-options" placeholder="Enter a sample starting point">
-                <datalist id="origin-options"></datalist>
+                <input id="origin-input" disabled autocomplete="off" placeholder="Search a Basel street and number" role="combobox" aria-autocomplete="list" aria-controls="origin-suggestions" aria-expanded="false">
                 <button class="inside-button" id="gps-button" type="button">Use GPS</button>
               </div>
+              <div class="suggestions" id="origin-suggestions" role="listbox" aria-label="Suggested starting addresses" hidden></div>
               <div class="field-actions">
                 <button class="text-button" id="pick-origin" type="button">Choose start on map</button>
                 <span id="origin-status" role="status">Using Basel SBB demo start</span>
@@ -46,12 +46,15 @@
               <label for="destination-input">Destination</label>
               <div class="input-wrap">
                 <span class="input-icon" data-icon="search" aria-hidden="true"></span>
-                <input id="destination-input" autocomplete="off" placeholder="Search the sample places">
+                <input id="destination-input" disabled autocomplete="off" placeholder="Search a Basel street and number" role="combobox" aria-autocomplete="list" aria-controls="suggestions" aria-expanded="false">
                 <button class="inside-button" id="pick-destination" type="button">Pin on map</button>
               </div>
               <div class="suggestions" id="suggestions" role="listbox" aria-label="Suggested destinations" hidden></div>
+              <p id="destination-status" role="status">Search Basel-Stadt addresses or pin on map.</p>
             </div>
           </div>
+
+          <p class="helper">Online address search: © swisstopo. Queries are sent to geo.admin.ch; this app does not save them. Offline: use map pins or sample places.</p>
 
           <fieldset class="route-mode">
             <legend>What matters most?</legend>

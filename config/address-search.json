@@ -1,0 +1,8 @@
+{
+  "endpoint": "https://api3.geo.admin.ch/rest/services/ech/SearchServer",
+  "timeout_seconds": 8,
+  "provider_limit": 50,
+  "result_limit": 8,
+  "max_response_bytes": 262144,
+  "debounce_ms": 400
+}

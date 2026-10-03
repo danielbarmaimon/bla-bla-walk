@@ -331,6 +331,30 @@ class TripComparison(ContractModel):
     transit_status: Literal["unavailable"] = "unavailable"
 
 
+class AddressSearchRequest(ContractModel):
+    """Ephemeral address query; offline requests never contact a provider."""
+
+    query: str = Field(min_length=3, max_length=120)
+    mode: Literal["fixture", "online", "offline"] = "online"
+
+
+class AddressPlace(ContractModel):
+    """Plain-text official building address within the pinned Basel boundary."""
+
+    id: str
+    name: str
+    lon: float = Field(ge=-180, le=180)
+    lat: float = Field(ge=-90, le=90)
+
+
+class AddressSearchResponse(ContractModel):
+    """Provider search results confer no route or pedestrian-access validation."""
+
+    places: list[AddressPlace] = Field(default_factory=list)
+    status: Literal["available", "unavailable"] = "available"
+    attribution: str = "© swisstopo — official building address directory"
+
+
 class ComparisonPreferences(ContractModel):
     """Rescore complete cached evidence; preferences never change sample times."""
 
