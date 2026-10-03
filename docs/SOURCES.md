@@ -1,5 +1,43 @@
 # Sources
 
+## Approved building-shadow route model
+
+The user chose a building-cast shadow approximation to finish the T10 continuation.
+[Preparation](../scripts/prepare_building_shade.py) uses the public Overpass
+instance configured in [building settings](../config/building-shade.json),
+queries building/building-part polygons around the two saved routes plus 1500m,
+and saves only feature identifiers, geometry, explicit metre heights and an
+unresolved-geometry flag. Names, addresses, user metadata and other tags are
+omitted. No floor-count-to-height guesses are used. OpenStreetMap data is under
+[ODbL 1.0, with attribution to OpenStreetMap contributors](https://www.openstreetmap.org/copyright).
+The [Overpass instance listing](https://wiki.openstreetmap.org/wiki/Overpass_API)
+documents public endpoints; preparation is an explicit network operation, not
+part of API serving. Retrieved/provider times and footprint checksum are in the
+local model manifest; summarized provenance is in the recorded validation.
+
+Survey-derived roof heights retain the swisstopo attribution and source versions
+described below. Footprints restrict surveyed casters to buildings. Roof-minus-
+terrain heights or explicit mapped metre heights form prisms on flat ground.
+Overlapping surveyed building parts remain approximations; dated footprints and
+survey years may differ. Incomplete relation extents and missing roof heights
+stay unknown. Outside footprints, valid paired source flags and a 0–2m compact
+height difference admit a plausible ground proxy; no physical walkability is
+claimed. Trees and terrain relief do not cast shadows in this model.
+
+The ray reach is explicitly finite: sunlit means no modeled building occlusion
+within 1500m, with valid model coverage throughout the ray. Missing coverage does
+not imply clear sunlight. Below 10 degrees remains unknown; night is separate.
+This finite model does not use a pretend global horizon ceiling. The original
+strict survey algorithm below retains its physical-horizon requirement.
+
+[Recorded building validation](../data/fixtures/building-shade-validation.json)
+covers both complete route polylines, cold/cache/concurrent requests, a shared
+prepared-tile seam, night and zero external HTTP transport calls. Numerical and
+analytic tests cover model selection, roof failures and shadow direction.
+Raster-cell counts are not route distances or physical shade observations.
+README owns preparation and reproduction commands. T5/T6 integration, observed
+ground/shade accuracy and full-city coverage remain separate work.
+
 ## Slot E shade calculation checkpoint
 
 The offline [solar bearing implementation](../backend/bla_bla_walk/solar.py) uses the NOAA/Meeus Julian-century equations with geometric sun-centre elevation, without atmospheric refraction. [NOAA's calculation details](https://gml.noaa.gov/grad/solcalc/calcdetails.html) describe the approximation; this implementation restricts dates to 1800–2100. The independent [NREL SPA report, appendix A.5](https://www.nlr.gov/docs/fy08osti/34302.pdf) supplies the 2003-10-17 Colorado reference example. Geometric elevation and azimuth match that case within 0.01 degrees. SPA software is not bundled.
@@ -8,6 +46,7 @@ The [shade calculator](../backend/bla_bla_walk/shade.py) traces grid-cell prisms
 
 The limits in [config/shade.json](../config/shade.json) reuse T0's 10-degree/1500m engineering envelope. An unblocked ray becomes sunlit only after crossing an externally verified absolute horizon ceiling within valid geometry and the ray limit. A maximum from a cropped scene cannot certify distant terrain or missing buffer cells. Rays lacking that evidence remain unknown; a known blocker can still prove occlusion.
 
+[Calculation validation evidence](../data/fixtures/shade-validation.json) records a checksum-pinned native 0.5m Basel centre window: 48 receiver/time combinations match an independent ray/rectangle-intersection reference, with 37 shaded and 11 unknown. Candidate receivers compare numerical geometry; no observed pedestrian shade or walkability is claimed. The synthetic compact-grid check changes a 5m object to 6m and its 45-degree shadow from 5m to 6m, demonstrating that quantization can change route samples. Compact real-scene accuracy, canopy/bridge receiver support, city-scale performance and route-score sensitivity remain future physical/city-wide acceptance beyond the approved route approximation. README owns the reproduction command.
 [Calculation validation evidence](../data/fixtures/shade-validation.json) records a checksum-pinned native 0.5m Basel centre window: 48 receiver/time combinations match an independent ray/rectangle-intersection reference, with 37 shaded and 11 unknown. Candidate receivers compare numerical geometry; no observed pedestrian shade or walkability is claimed. The synthetic compact-grid check changes a 5m object to 6m and its 45-degree shadow from 5m to 6m, demonstrating that quantization can change route samples. [Compact sensitivity evidence](../data/fixtures/compact-shade-validation.json) adds independent numerical scene checks and full-denominator samples of the two saved demo routes at three departure times. It separates raw compact heights from compact heights with pre-encoding validity/receiver evidence. Rounding can hide survey mismatch and ground/canopy distinctions; the preserved case rejects unsupported receiver credit. Its numerical 0.1m ground envelope is a validation selection, not a walkability or canopy rule. All four source samples must qualify, and unrounded surface maxima remain available for explicitly supported receiver heights. The native 0.5m reference and compact 2m terrain differ in resolution; changed states combine terrain-source, pooling, height and receiver-support effects. The spot checks measure surveyed-envelope behaviour, not physical shade accuracy. Canopy/bridge support, city-scale integration/performance and accepted route scoring remain open. README owns the reproduction commands.
 
 ## T0 admission audit — 2026-10-03
@@ -96,13 +135,13 @@ Surface input remains the pinned native 0.5m swissSURFACE3D Raster. Each 2×2 in
 
 After horizontal resampling, elevation values round to the nearest 2m step (half-step ties toward positive infinity). Quantization contributes at most 1m error per absolute height and up to 2m to a difference between two independently rounded heights. This is storage precision, **not surveyed vertical accuracy**. At low solar elevations, height error can displace shadow boundaries by multiple metres; T10 must quantify that against unquantized references before route recommendations rely on it. Missing buffer inputs, bridge/tunnel/canopy semantics and negative surface-minus-terrain differences still require T8/T10 validation.
 
-Downloads are bounded to at most four concurrent assets, resume interrupted source transfers, validate source size and SHA-256, then decode/prepare one tile per worker. Outputs are tiled 256×256 internal blocks with DEFLATE/predictor compression. Manifest checkpoints and output hashes permit verified reuse. Verified temporary source rasters are discarded after conversion; the full provider transfer is still required on a new setup. All 225 int16 output grids require 450MB uncompressed before masks/overhead. At a 1m shade output grid, two one-byte full-buffer masks would require 278MB per time bucket, four times the old 2m estimate. Historical 2m timings are not new 1m latency results; the existing memory/cache/latency budgets remain acceptance targets.
+Downloads are bounded to at most four concurrent assets, resume interrupted source transfers, validate source size and SHA-256, then decode/prepare one tile per worker. Outputs are tiled 256×256 internal blocks with DEFLATE/predictor compression. Manifest checkpoints and output hashes permit verified reuse. Preparation revision 2 retains verified source pairs until 1m subcell validity/inversion flags are saved with pinned hashes, then discards the temporaries. Missing flag evidence stays unknown. The pair_flags registry adds one byte per 1m cell and is checked by offline verification; the full provider transfer is still required on a new setup. All 225 int16 output grids require 450MB uncompressed before masks/overhead. At a 1m shade output grid, two one-byte full-buffer masks would require 278MB per time bucket, four times the old 2m estimate. Historical 2m timings are not new 1m latency results; the existing memory/cache/latency budgets remain acceptance targets.
 
 [Offline preparation](../scripts/prepare_offline.py) saves the finite basemap extent/zoom range from [config/basemap.json](../config/basemap.json), retaining **Geodaten Kanton Basel-Stadt / CC BY 4.0** attribution, plus sanitized T4 provider output with its observation/retrieval times and source licences. Its local manifests record image checksums and retrieval time; map retrieval date does not establish an underlying survey date. Snapshot temperatures remain raw uncorrected observations, and IWB reuse remains noncommercial. Photos/contact fields are excluded by the T4 adapters.
 
 Offline API reads saved bytes only, marks previously current features/layers stale, preserves missing/unknown states, and never refreshes providers. Local tile misses return 404 without a remote fallback; a missing/invalid provider snapshot returns 503. Online API uses the existing hourly/daily adapter caches and last-good stale behavior. Both modes retain visible source times and uncertainty. Geometry ingestion alone does not supply a working shade/evaluation API. [README](../README.md) owns local offline and external-server run instructions.
 
-No claim that the prototype meets these API targets. T10 must optimise or revisit targets with the team if measurements fail. No whole-city recalculation in the request path. Five-minute cache buckets and 2m shade remain candidates; validate accuracy before adopting them. Preserve geometry version, requested/effective time, resolution and explicit unknowns in any derived outputs. Distinguish geometric occlusion from observed cloud cover and measured temperature.
+The historical T0 preflight did not establish these API targets; the current route-model measurements are recorded above. T10 must optimise or revisit targets with the team if measurements fail. No whole-city recalculation in the request path. Five-minute cache buckets and 2m shade remain candidates; validate accuracy before adopting them. Preserve geometry version, requested/effective time, resolution and explicit unknowns in any derived outputs. Distinguish geometric occlusion from observed cloud cover and measured temperature.
 
 ## Optional sources: checked and deliberately deferred
 

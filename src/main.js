@@ -431,11 +431,13 @@ const map = createMap($('#map'), showFeature, (message) => {
 }, (message) => {
   $('#pet-status').textContent = message;
 });
+$('#pet-layer-toggle').checked = mode === 'online';
 $('#pet-layer-toggle').disabled = mode !== 'online';
 $('#pet-layer-toggle').addEventListener('change', (event) => {
   map.setPetVisible(event.target.checked);
   updateMapDetailsSummary();
 });
+map.setPetVisible(mode === 'online');
 
 async function refresh() {
   $('#mode-notice').textContent = 'Loading selected data mode…';

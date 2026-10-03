@@ -80,6 +80,7 @@ def shadow_mask(
     receivers=None,
     receiver_elevations=None,
     receiver_surface_elevations=None,
+    finite_model: bool = False,
 ):
     """Trace ground-to-sun rays through every intersected raster cell.
 
@@ -98,6 +99,9 @@ def shadow_mask(
     raster maxima alone. Without it, an unblocked finite ray stays UNKNOWN.
     Missing cells invalidate sunlit evidence, but a later known blocker still
     proves SHADED. NIGHT is separate from daytime shade. Low sun stays UNKNOWN.
+    finite_model permits SUNLIT after a fully known ray reaches the model's
+    declared distance limit. This means outside modeled shadows, not certified
+    direct sunlight; use only with an explicitly labelled approximation.
     """
     surface = np.ma.asarray(surface, dtype="float32").filled(np.nan)
     terrain = np.ma.asarray(terrain, dtype="float32").filled(np.nan)
@@ -172,6 +176,7 @@ def shadow_mask(
             cell_size_m,
             max_distance_m,
             horizon_ceiling_m,
+            finite_model,
         )
     return output
 
@@ -195,7 +200,17 @@ def _validate_inputs(
 
 
 def _trace_batch(
-    surface, terrain, valid, rows, columns, elevation, azimuth, cell, extent, ceiling
+    surface,
+    terrain,
+    valid,
+    rows,
+    columns,
+    elevation,
+    azimuth,
+    cell,
+    extent,
+    ceiling,
+    finite_model=False,
 ):
     """Vectorized grid-boundary traversal; each entry tests a whole cell prism."""
     radians = math.radians(azimuth)
@@ -228,6 +243,9 @@ def _trace_batch(
         )
         result[clear] = SUNLIT
         active[clear] = False
+        finished = active & (entry > extent)
+        if finite_model:
+            result[finished & ~uncertain] = SUNLIT
         active &= entry <= extent
         # Treat roundoff at an exact corner as diagonal entry, not a spurious
         # intersection with a neighbouring prism of zero traversal length.

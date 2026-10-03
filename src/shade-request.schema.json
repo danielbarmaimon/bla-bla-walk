@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "description": "LV95 viewport, optionally limited to a walking corridor; exact aware time.\n\nBounds are west/south/east/north in metres. Corridor points also use LV95,\nunlike the map's GeoJSON. Responses snap bounds outward to the stored grid.",
+  "properties": {
+    "bounds": {
+      "maxItems": 4,
+      "minItems": 4,
+      "prefixItems": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "number"
+        }
+      ],
+      "title": "Bounds",
+      "type": "array"
+    },
+    "requested_time": {
+      "format": "date-time",
+      "title": "Requested Time",
+      "type": "string"
+    },
+    "corridor": {
+      "anyOf": [
+        {
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array"
+          },
+          "maxItems": 128,
+          "minItems": 2,
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Corridor"
+    },
+    "corridor_width_m": {
+      "default": 10,
+      "exclusiveMinimum": 0,
+      "maximum": 100,
+      "title": "Corridor Width M",
+      "type": "number"
+    }
+  },
+  "required": [
+    "bounds",
+    "requested_time"
+  ],
+  "title": "ShadeRequest",
+  "type": "object"
+}

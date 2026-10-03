@@ -119,6 +119,33 @@ def prepare_raster(source: Path, target: Path, tile: dict, kind: str) -> dict:
     }
 
 
+def compact_pair_flags(surface, terrain):
+    """Preserve source subcell inconsistencies before pooling and quantization.
+
+    Inputs are aligned 0.5m surface and 2m terrain metre arrays. The 1m output
+    uses native flag bits: all samples must be valid; any inverted subcell
+    invalidates support even if max pooling or rounding hides it. Flags alone
+    do not establish a walking receiver.
+    """
+    surface = np.ma.masked_invalid(surface)
+    terrain = np.ma.masked_invalid(terrain)
+    if (
+        surface.ndim != 2
+        or terrain.ndim != 2
+        or surface.size == 0
+        or surface.shape != tuple(size * 4 for size in terrain.shape)
+    ):
+        raise ValueError("Expected aligned 0.5m surface and 2m terrain grids")
+    terrain = terrain.repeat(4, axis=0).repeat(4, axis=1)
+    valid = ~(np.ma.getmaskarray(surface) | np.ma.getmaskarray(terrain))
+    difference = surface.filled(0) - terrain.filled(0)
+    shape = (surface.shape[0] // 2, 2, surface.shape[1] // 2, 2)
+    flags = valid.reshape(shape).all(axis=(1, 3)).astype("uint8")
+    flags[(valid & (difference < 0)).reshape(shape).any(axis=(1, 3))] |= 2
+    flags[(valid & (difference < -1)).reshape(shape).any(axis=(1, 3))] |= 4
+    return flags
+
+
 def read_heights(path: Path, window=None):
     """Return masked elevation metres; raw stored codes are not metre heights."""
     with rasterio.open(path) as dataset:
