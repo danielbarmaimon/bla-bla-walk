@@ -19,6 +19,7 @@ from .shade_geometry import (
     city_cells,
     corridor_cells,
     load_metre_grids,
+    load_pair_flags,
     snapped_bounds,
 )
 
@@ -65,6 +66,15 @@ class ShadeService:
             raise ValueError("A verified horizon ceiling has not been admitted")
         inventory = self._json("data/tile-inventory.json")
         paths = asset_paths(self.root / "data/geometry", manifest)
+        paths.update(
+            {
+                f"flags-{name}": path
+                for name, path in asset_paths(
+                    self.root / "data/geometry",
+                    {"assets": manifest.get("pair_flags", {})},
+                ).items()
+            }
+        )
         stamps = {}
         for name, path in paths.items():
             stamps[name] = (
@@ -126,6 +136,7 @@ class ShadeService:
         surface, terrain = load_metre_grids(
             self.root / "data/geometry", manifest, halo_bounds
         )
+        flags = load_pair_flags(self.root / "data/geometry", manifest, halo_bounds)
         city = city_cells(boundary, bounds, cell)
         corridor = corridor_cells(request, bounds, cell)
         # Quantized equality alone cannot verify a ground receiver. Do not turn
@@ -142,6 +153,7 @@ class ShadeService:
             cell_size_m=cell,
             grid_north_rotation_deg=rotation,
             receivers=receivers,
+            cell_flags=flags,
             minimum_elevation_deg=ray_policy["minimum_elevation_degrees"],
             max_distance_m=ray_policy["maximum_ray_distance_metres"],
         )

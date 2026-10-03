@@ -11,6 +11,7 @@ from prepare_geometry import ROOT, sha256_file, write_json
 
 sys.path.insert(0, str(ROOT / "backend"))
 from bla_bla_walk.geometry import geometry_settings  # noqa: E402
+from bla_bla_walk.shade_geometry import load_pair_flags  # noqa: E402
 from bla_bla_walk.snapshots import offline_snapshot  # noqa: E402
 
 
@@ -60,6 +61,15 @@ def verify_prepared_data():
     for key, record in basemap["tiles"].items():
         if sha256_file(basemap_path / key) != record["sha256"]:
             raise ValueError(f"Basemap checksum mismatch: {key}")
+    flag_bytes = 0
+    for tile_id, record in geometry.get("pair_flags", {}).items():
+        if record.get("preparation_version") != geometry["preparation_version"]:
+            raise ValueError("Source flags have an outdated preparation version")
+        path = directory / record["file"]
+        if not path.is_file():
+            raise ValueError("Prepared source flags are missing")
+        load_pair_flags(directory, geometry, tiles[tile_id]["bounds_epsg2056"])
+        flag_bytes += path.stat().st_size
     snapshot = offline_snapshot()
     summary = {
         "checked_at": datetime.now(UTC).isoformat(),
@@ -72,6 +82,8 @@ def verify_prepared_data():
             "source_download_bytes": dict(source_bytes),
             "prepared_raster_bytes": dict(prepared_bytes),
             "prepared_raster_total_bytes": sum(prepared_bytes.values()),
+            "source_pair_flags_verified": len(geometry.get("pair_flags", {})),
+            "source_pair_flag_bytes": flag_bytes,
             "manifest_bytes": (directory / "manifest.json").stat().st_size,
             "unknown_cells_in_available_rasters": dict(unknown),
             "missing_inventory_assets": geometry["gaps"],

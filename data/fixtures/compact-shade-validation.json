@@ -1,0 +1,359 @@
+{
+  "schema_version": 1,
+  "settings": {
+    "schema_version": 1,
+    "cell_size_metres": 1,
+    "height_step_metres": 2,
+    "terrain_source_cell_size_metres": 2,
+    "surface_resampling": "max",
+    "terrain_resampling": "nearest",
+    "nodata_code": -32768,
+    "horizontal_crs": "EPSG:2056",
+    "vertical_reference": "LN02 / EPSG:5728",
+    "geometry_directory": "data/geometry"
+  },
+  "tiles": [
+    {
+      "tile": "2610-1266",
+      "source_sha256": {
+        "surface": "7e2f118c72b6b3813a0342fcc276b5842f894673be913d7a37e64d353dc01d03",
+        "terrain_2m": "10db3f33bef59d7fd4018aeeb1c7d47d787a396d2f69274d75e3473d06ad3bb5"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2610-1266-surface.tif",
+          "sha256": "3d25f8af2342cdcae822d6a77b26cc46e4205d8831e7180549aa90c31390854e",
+          "bytes": 300840,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2610-1266-terrain.tif",
+          "sha256": "d3dc36a94276bddc7b0353439430430523e7c95a4f0329724356b2e8b010ca23",
+          "bytes": 41436,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2610-1266-flags.npy",
+          "sha256": "273e792bd14bc4e86b1b76d7c04702a2569d0ee96f22b68e365eae4ae1d13ead",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 105687,
+      "source_subcell_inversion_cells": 363885,
+      "max_encoding_error_metres": [
+        1.0,
+        1.0
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 12,
+      "invalid_receiver_unknown_checks": 12,
+      "changed_scene_states": 0
+    },
+    {
+      "tile": "2613-1269",
+      "source_sha256": {
+        "surface": "045ab2f707d0519addd12863db315a9ee07b04a9dc18bf8ceb8a699126ed72c6",
+        "terrain_2m": "1581a57ccd971d5d7741ac3202208c9277c00ca80ee4172081fd13f5bf7d91c2"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2613-1269-surface.tif",
+          "sha256": "831e8244a6427b7a628f2153f76a1a4146f62da3fa124c303b597116abb2b657",
+          "bytes": 336980,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2613-1269-terrain.tif",
+          "sha256": "f0b8c292f09b982dfb6529ac678277c0728aef86624846521d7538b6a44341da",
+          "bytes": 28352,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2613-1269-flags.npy",
+          "sha256": "55d06dc50be1ec18eae800ecd59524e0c1d26637ae7d56d2ffbbbd09986430c7",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 89376,
+      "source_subcell_inversion_cells": 344556,
+      "max_encoding_error_metres": [
+        1.0,
+        1.0
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 18,
+      "invalid_receiver_unknown_checks": 6,
+      "changed_scene_states": 1
+    },
+    {
+      "tile": "2612-1267",
+      "source_sha256": {
+        "surface": "b59e159c3d0096a8e1e28afcd9f05c3a7c86c9068c1b1f05f33ec631ce71b46e",
+        "terrain_2m": "b538a423b3b34454ea997f6769b3c077e145d0779c15348c8a7f29f10a09294f"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2612-1267-surface.tif",
+          "sha256": "12f00ec4112884b27b4444728f2d826f97c845c4dcd169a405bb9319ec3bcf13",
+          "bytes": 231650,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2612-1267-terrain.tif",
+          "sha256": "5425de2c1feca4faf06ba128c49b4994617d9b716db5862edd64b500a655dba3",
+          "bytes": 36630,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2612-1267-flags.npy",
+          "sha256": "bb3d56425d7d842b81644c052025ba89cc4278e20d21885e5617ebf4b246fb8d",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 95381,
+      "source_subcell_inversion_cells": 285873,
+      "max_encoding_error_metres": [
+        1.0,
+        1.0
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 6,
+      "invalid_receiver_unknown_checks": 18,
+      "changed_scene_states": 0
+    },
+    {
+      "tile": "2611-1270",
+      "source_sha256": {
+        "surface": "f7c7308e2b8aca3be820d6f429d52ec6b275f7e77e8ed88646ea95f4309041cb",
+        "terrain_2m": "ec34777a5cbcdd52a2f78062c5a39612d6a858f093e943e10cca930b9b03168a"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2611-1270-surface.tif",
+          "sha256": "ef8eba6d2be029ae0ee5bdcb0c2c607ae8cbf479093257f6bf023b71eb8fc614",
+          "bytes": 149262,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2611-1270-terrain.tif",
+          "sha256": "8f4a25192be6d92c0db2bcb71225c603fe0ec4a3473e5c911c1f8bc6c54b53a2",
+          "bytes": 30516,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2611-1270-flags.npy",
+          "sha256": "bdef4feef6f181d1a7737715441a76b3e808c4d32b9afcfd0d4c633c5b532f5b",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 94141,
+      "source_subcell_inversion_cells": 305011,
+      "max_encoding_error_metres": [
+        1.0,
+        0.999985
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 0,
+      "invalid_receiver_unknown_checks": 24,
+      "changed_scene_states": 0
+    },
+    {
+      "tile": "2611-1266",
+      "source_sha256": {
+        "surface": "d01542c8ce768fab73284381f40a3baf07c8b159fc8f792bbbbfee6c144d8e7b",
+        "terrain_2m": "a76fe265544ed3ecd906b3492db2e1b179a216e5b11f68012c38baffde7a15de"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2611-1266-surface.tif",
+          "sha256": "97663a3abfc82858067dc786df6d1e3def4dfa4163c9c98e1c15b8f3e19d510c",
+          "bytes": 248118,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2611-1266-terrain.tif",
+          "sha256": "884bd830a57719d9b6926c922e6711a16ed936616a66ceb7cfe656f11a648588",
+          "bytes": 38968,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2611-1266-flags.npy",
+          "sha256": "b77bceb9d9ed75fd31df5bb60f96f0d8b3c5222a14903ff5bd34007ed5f0a758",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 108447,
+      "source_subcell_inversion_cells": 345319,
+      "max_encoding_error_metres": [
+        1.0,
+        1.0
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 6,
+      "invalid_receiver_unknown_checks": 18,
+      "changed_scene_states": 3
+    },
+    {
+      "tile": "2611-1267",
+      "source_sha256": {
+        "surface": "04e20e16aa50c039779cc8c0f1d416112c6b9805878e848d7a7067f832030a04",
+        "terrain_2m": "4bb4ae42648f0530f7e02e4e13b54cec03487250a740626443a08ced03184f6f"
+      },
+      "prepared": {
+        "surface": {
+          "file": "2611-1267-surface.tif",
+          "sha256": "ee0235fbc894e01fb7cd22121be80cbb4878344cbb0855a9d53c5ca5cef6b0f4",
+          "bytes": 245890,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 0.5
+        },
+        "terrain": {
+          "file": "2611-1267-terrain.tif",
+          "sha256": "41eed47053c357b05df4edfcfc96843cbcb332b4ed4742f9eb8f21885b598ead",
+          "bytes": 38624,
+          "shape": [
+            1000,
+            1000
+          ],
+          "unknown_cells": 0,
+          "source_cell_size_metres": 2.0
+        },
+        "pair_flags": {
+          "file": "2611-1267-flags.npy",
+          "sha256": "30ff499bea690036d296ce0b71be09561898b6432c7d0a0e0a5318895900cdb2",
+          "bytes": 1000128
+        }
+      },
+      "valid_pairs": 1000000,
+      "erased_inversions": 76169,
+      "source_subcell_inversion_cells": 240073,
+      "max_encoding_error_metres": [
+        1.0,
+        1.0
+      ],
+      "numerical_scene_comparisons": 12,
+      "receiver_policy_and_reference_matches": 24,
+      "independent_ray_reference_matches": 24,
+      "invalid_receiver_unknown_checks": 0,
+      "changed_scene_states": 0
+    }
+  ],
+  "route_sensitivity": [
+    {
+      "route_id": "demo-route-a",
+      "samples": 187,
+      "sampled_length_metres": 1322.774743,
+      "times": [
+        {
+          "time": "2026-10-03T08:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 301.167072,
+          "encoded_upper_envelope_shaded_metres": 301.167072,
+          "changed_state_metres": 0.0
+        },
+        {
+          "time": "2026-10-03T12:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 209.477598,
+          "encoded_upper_envelope_shaded_metres": 222.625555,
+          "changed_state_metres": 16.293826
+        },
+        {
+          "time": "2026-10-03T15:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 351.715904,
+          "encoded_upper_envelope_shaded_metres": 339.098561,
+          "changed_state_metres": 30.30371
+        }
+      ]
+    },
+    {
+      "route_id": "demo-route-b",
+      "samples": 197,
+      "sampled_length_metres": 1319.221066,
+      "times": [
+        {
+          "time": "2026-10-03T08:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 324.10647,
+          "encoded_upper_envelope_shaded_metres": 316.986827,
+          "changed_state_metres": 7.119642
+        },
+        {
+          "time": "2026-10-03T12:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 264.3361,
+          "encoded_upper_envelope_shaded_metres": 255.8182,
+          "changed_state_metres": 8.5179
+        },
+        {
+          "time": "2026-10-03T15:00:00+00:00",
+          "control_upper_envelope_shaded_metres": 360.555486,
+          "encoded_upper_envelope_shaded_metres": 344.917943,
+          "changed_state_metres": 15.637543
+        }
+      ]
+    }
+  ],
+  "production_receiver_admission": false,
+  "limits": "Numerical upper-envelope receivers only; no walking ground or physical shade acceptance. 128m windows omit distant blockers, so unresolved rays remain unknown. Same-grid unquantized control isolates encoding. No route recommendation or horizon ceiling is admitted."
+}

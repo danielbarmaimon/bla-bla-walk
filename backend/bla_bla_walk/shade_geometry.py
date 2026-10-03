@@ -90,6 +90,45 @@ def city_cells(boundary, bounds, cell):
     )
 
 
+def load_pair_flags(directory, manifest, bounds):
+    """Load pinned source flags; absent evidence invalidates the whole cell."""
+    cell = manifest["settings"]["cell_size_metres"]
+    west, south, east, north = bounds
+    result = np.zeros(
+        (round((north - south) / cell), round((east - west) / cell)), dtype="uint8"
+    )
+    records = manifest.get("pair_flags", {})
+    paths = asset_paths(directory, {"assets": records})
+    for tile, record in records.items():
+        if record.get("preparation_version") != manifest["preparation_version"]:
+            continue
+        tile_west, tile_south = (int(part) * 1000 for part in tile.split("-"))
+        left, bottom = max(west, tile_west), max(south, tile_south)
+        right, top = min(east, tile_west + 1000), min(north, tile_south + 1000)
+        path = paths[tile]
+        if left >= right or bottom >= top or not path.is_file():
+            continue
+        if sha256_file(path) != record["sha256"]:
+            raise ValueError("Prepared source flag checksum mismatch")
+        values = np.load(path, mmap_mode="r", allow_pickle=False)
+        if (
+            values.dtype != np.uint8
+            or values.shape != (1000, 1000)
+            or np.any(values > 7)
+        ):
+            raise ValueError("Invalid compact source flag encoding")
+        row, col = round((north - top) / cell), round((left - west) / cell)
+        r0, c0 = (
+            round((tile_south + 1000 - top) / cell),
+            round((left - tile_west) / cell),
+        )
+        height, width = round((top - bottom) / cell), round((right - left) / cell)
+        result[row : row + height, col : col + width] = values[
+            r0 : r0 + height, c0 : c0 + width
+        ]
+    return result
+
+
 def corridor_cells(request, bounds, cell):
     """Limit a request to cell centres within half the corridor's full width."""
     west, south, east, north = bounds

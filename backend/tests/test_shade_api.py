@@ -9,7 +9,11 @@ import rasterio
 from bla_bla_walk import main
 from bla_bla_walk.geometry import sha256_file
 from bla_bla_walk.interfaces import ShadeRequest, ShadeResponse
-from bla_bla_walk.shade_geometry import corridor_cells, load_metre_grids
+from bla_bla_walk.shade_geometry import (
+    corridor_cells,
+    load_metre_grids,
+    load_pair_flags,
+)
 from bla_bla_walk.shade_service import ROOT, ShadeService, solar_location
 from fastapi.testclient import TestClient
 from rasterio.transform import from_origin
@@ -89,6 +93,66 @@ def request(**updates):
     }
     value.update(updates)
     return value
+
+
+def install_flags(service, manifest):
+    path = service.root / "data/geometry/2610-1266-flags.npy"
+    flags = np.ones((1000, 1000), dtype="uint8")
+    flags[499, 500] = 7
+    np.save(path, flags)
+    manifest["pair_flags"] = {
+        "2610-1266": {
+            "file": path.name,
+            "sha256": sha256_file(path),
+            "preparation_version": manifest["preparation_version"],
+        }
+    }
+    (path.parent / "manifest.json").write_text(json.dumps(manifest))
+    return path
+
+
+def test_source_flags_keep_inverted_cell_and_absent_halo_invalid(prepared):
+    service, manifest = prepared
+    assert np.all(
+        load_pair_flags(service.root / "data/geometry", manifest, request()["bounds"])
+        == 0
+    )
+    install_flags(service, manifest)
+    flags = load_pair_flags(
+        service.root / "data/geometry", manifest, request()["bounds"]
+    )
+    assert flags[1, 2] == 7
+    assert flags[2, 2] == 1
+    halo = load_pair_flags(
+        service.root / "data/geometry", manifest, (2609998, 1266998, 2610002, 1267002)
+    )
+    assert np.all(halo[:2] == 0)
+    assert np.all(halo[:, :2] == 0)
+
+
+def test_corrupt_source_flags_invalidate_a_previously_cached_request(prepared):
+    service, manifest = prepared
+    path = install_flags(service, manifest)
+    shade_request = ShadeRequest.model_validate(request())
+    _, hit = service.respond(shade_request)
+    assert not hit
+    _, hit = service.respond(shade_request)
+    assert hit
+    data = bytearray(path.read_bytes())
+    data[-1] ^= 1
+    path.write_bytes(data)
+    with pytest.raises(ValueError, match="flag checksum"):
+        service.respond(shade_request)
+
+
+def test_old_source_flag_version_is_not_reused(prepared):
+    service, manifest = prepared
+    install_flags(service, manifest)
+    manifest["pair_flags"]["2610-1266"]["preparation_version"] = "old"
+    assert np.all(
+        load_pair_flags(service.root / "data/geometry", manifest, request()["bounds"])
+        == 0
+    )
 
 
 def test_scaled_windows_and_missing_halo_are_not_filled(prepared):

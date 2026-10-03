@@ -130,6 +130,20 @@ false equal pairs; it does not validate horizontal resampling or admit physical
 receivers. The actual compact 1m grid and native 2m terrain still need separate
 scene checks. See [E's handoff](handoff/t10-shade-calculation.md).
 
+Reproduce the actual 1m compact pipeline and saved-route encoding sensitivity:
+
+```sh
+python scripts/validate_compact_shade.py --download --output .hack/compact-shade-validation.json
+```
+
+This downloads six checksum-pinned source pairs to `.hack/e-t10`, prepares local
+compact rasters and source flags, and compares the encoded grids with an
+unquantized 1m control. Omit `--download` to repeat offline with those files.
+[Recorded compact comparison](data/fixtures/compact-shade-validation.json)
+separates independent ray checks from invalid-receiver policy checks. Its route
+samples are numerical upper-surface comparisons in 128m windows, with unknown
+unresolved rays; they are not walking-shade metrics or route recommendations.
+
 Activate the environment and run from the repository root:
 
 ```sh

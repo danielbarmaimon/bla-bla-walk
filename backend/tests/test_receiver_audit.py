@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from bla_bla_walk.geometry import compact_pair_flags
 
 sys.path.insert(0, str(Path(__file__).parents[2] / "scripts"))
 from audit_compact_receivers import audit_heights  # noqa: E402
@@ -40,3 +41,26 @@ def test_all_missing_has_no_measured_error():
 def test_invalid_encoding_step_rejected(step):
     with pytest.raises(ValueError):
         audit_heights(np.zeros((2, 2)), np.zeros((2, 2)), step)
+
+
+def test_subcell_inversion_survives_a_higher_surface_maximum():
+    surface = np.full((4, 4), 100.0)
+    surface[0, 0] = 98.5
+    surface[0, 1] = 110
+    flags = compact_pair_flags(surface, np.array([[100.0]]))
+    assert flags.tolist() == [[7, 1], [1, 1]]
+
+
+def test_missing_subcell_invalidates_only_its_output_cell():
+    surface = np.ma.array(np.full((4, 4), 100.0), mask=False)
+    surface.mask[0, 0] = True
+    assert compact_pair_flags(surface, np.array([[100.0]])).tolist() == [[0, 1], [1, 1]]
+
+
+def test_terrain_missingness_is_preserved_over_its_entire_footprint():
+    assert np.all(compact_pair_flags(np.ones((4, 4)), np.array([[np.nan]])) == 0)
+
+
+def test_pair_flags_reject_misaligned_source_shapes():
+    with pytest.raises(ValueError):
+        compact_pair_flags(np.zeros((4, 6)), np.zeros((1, 1)))
