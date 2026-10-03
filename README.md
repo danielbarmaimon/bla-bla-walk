@@ -10,7 +10,7 @@ The shortest walk may involve exposed streets, few places to rest, or inaccessib
 
 ## Project status
 
-The map supports online provider observations/fountain locations, a historical PET heat layer with route-class distances, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. The PET map overlay needs internet; saved route classes remain visible offline with a stale label. PET describes a fixed 14:00 summer scenario. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Current-time shade and the full weighted route comparison remain later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
+The map supports online provider observations/fountain locations, a historical PET heat layer with route-class distances, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. The PET map overlay needs internet; saved route classes remain visible offline with a stale label. PET describes a fixed 14:00 summer scenario. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Exact-time route shade and weighted comparison are connected through background jobs; local geometry and building preparation are required. Downloading heights alone does not enable shade. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
 
 - [Design and demo proposal](docs/design.md)
 - [Build tasks and acceptance checks](docs/plan.md)
@@ -39,9 +39,27 @@ Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .ve
 
 ## Route planner
 
-The root page now combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, sample-place search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Only that endpoint pair has checked route geometry; choosing other sample places shows that no checked route is available. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Fountain and sensor summaries come from the selected fixture, online, or offline snapshot. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. Current shade is not calculated, so “More shade” does not rank routes. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
+The root page now combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, sample-place search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Only that endpoint pair has checked route geometry; choosing other sample places shows that no checked route is available. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Fountain and sensor summaries come from the selected fixture, online, or offline snapshot. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. Choose Now or a departure time (device local timezone), then Calculate this departure. The server samples exact traversal times in the background and displays progress; a cold calculation can take around 20 minutes. Fastest overall, More shade and Balanced use T5 eligibility and evidence rules. Unknown access prevents choosing the saved routes as eligible journeys; Show on map still permits inspection. The optional five-minute limit tightens More shade only. Balanced weights and mode changes rescore cached evidence without shade calls. Departure changes clear old credit and cancel superseded work. No planned stops are included by the screen; the API accepts an explicit stop plan. Solid/dashed/dotted route overlays distinguish approximate shaded/sunlit/unknown or night samples. Calculation detail retains requested/effective sample times, model limits, geometry identity and source attribution; historical PET and sensor times remain separate. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
 
 The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL selects synthetic fixtures; use the links in the app to choose a mode.
+
+### Route calculation API
+
+`POST /api/comparison` accepts an aware `departure_time` and optional route-indexed
+`stops` (`at_metres`, `minutes`). It returns a job ID; poll
+`GET /api/comparison/{id}` until ready or failed. Identical requests share one job.
+`POST /api/comparison/{id}/rescore` accepts `weights` (shade, duration, water) and
+an optional `extra_time_limit_minutes: 5`. `DELETE /api/comparison/{id}` cancels
+a superseded calculation after the active bounded sample finishes.
+One route job runs at a time; four results are retained in server memory.
+Restart discards jobs. Cache identity includes exact departure, full stop plan,
+route geometry/provenance, speed, source-file stamps, policy and implementation.
+Changed prepared inputs invalidate results; missing inputs return a visible 503.
+All route calculation and rescoring use local inputs in every mode. Online mode
+refreshes provider layers independently; offline mode makes no external requests.
+No transit service is admitted. Local geometry/buildings and actual external-server
+acceptance still need validation on the target machine; see the
+[T6 handoff](handoff/t6-journey-integration.md).
 
 ## Download data before offline use
 
@@ -99,7 +117,7 @@ For example, POST this JSON to the running local or external server:
 {"bounds":[2610000,1266000,2611000,1267000],"requested_time":"2026-06-21T12:00:00Z"}
 ```
 
-The response contains north-first, row-major uint8 raster bytes encoded as base64, snapped bounds, dimensions, per-state counts and requested/effective time plus preparation version. States are 0 unknown, 1 sunlit, 2 shaded and 3 night. The default model is the user-approved **building-shadow approximation along the saved demo routes**: dated OpenStreetMap footprints, explicit mapped metre heights or survey-derived roof heights cast onto flat ground within a declared 1500m reach. `model` identifies this approximation and `availability` is approximate when any supported cells are calculated. Sunlit means no modeled building shadow within that reach. Trees, terrain relief and physically verified walking ground are excluded; missing heights, source flags and coverage remain unknown. Counts describe raster cells, not walking distances or route scores. T5/T6 still own route evaluation and browser integration.
+The response contains north-first, row-major uint8 raster bytes encoded as base64, snapped bounds, dimensions, per-state counts and requested/effective time plus preparation version. States are 0 unknown, 1 sunlit, 2 shaded and 3 night. The default model is the user-approved **building-shadow approximation along the saved demo routes**: dated OpenStreetMap footprints, explicit mapped metre heights or survey-derived roof heights cast onto flat ground within a declared 1500m reach. `model` identifies this approximation and `availability` is approximate when any supported cells are calculated. Sunlit means no modeled building shadow within that reach. Trees, terrain relief and physically verified walking ground are excluded; missing heights, source flags and coverage remain unknown. Counts describe raster cells, not walking distances or route scores. T5 evaluation and T6 browser integration consume exact-time samples through the route calculation API above.
 
 Prepare the model and route-halo survey inputs once while connected (about 347MB of survey source transfer in the recorded preparation):
 
@@ -117,7 +135,7 @@ python scripts/prepare_building_shade.py --offline
 
 This validates buildings only; prepared survey grids/flags must already be present for the offline shade API. Use `--refresh` to acquire fresh footprints, or `--endpoint` with a public HTTPS Overpass mirror if the configured endpoint is unavailable. The actual endpoint, earliest batch retrieval time and provider timestamps are recorded in the manifest. Endpoint URLs containing credentials or query parameters are rejected. Offline validation cannot be combined with download options. A failed acquisition retains the previous complete cache; an incomplete cache cannot produce a shadow layer.
 
-The sanitized footprint cache stays local under `.cache/buildings/`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
+The sanitized footprint cache stays local under `.cache/buildings`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
 
 Reproduce full-polyline, cold/warm, concurrent, seam, night and offline API checks:
 

@@ -17,7 +17,7 @@ def format_files(check: bool) -> bool:
     css_options = cssbeautifier.default_options()
     css_options.indent_size = 2
     for path in sorted((ROOT / "src").glob("*")):
-        if path.name.startswith("snapshot.schema") or path.suffix not in {
+        if ".schema" in path.name or path.suffix not in {
             ".js",
             ".css",
         }:

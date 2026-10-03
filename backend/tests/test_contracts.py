@@ -107,3 +107,18 @@ def test_contract_accepts_later_route_and_shade_geometry(geometry):
     payload["geometry"] = geometry
     payload["kind"] = "route" if geometry["type"] == "LineString" else "shade"
     assert MapFeature.model_validate(payload).geometry.type == geometry["type"]
+
+
+def test_generated_comparison_contract_matches_canonical_models():
+    from bla_bla_walk.interfaces import ComparisonJob
+
+    schema = ComparisonJob.model_json_schema()
+    module = (ROOT / "src/comparison.schema.js").read_text()
+    assert (
+        json.loads(module.split("export const comparisonJobSchema = ", 1)[1][:-2])
+        == schema
+    )
+    declarations = (ROOT / "src/comparison-interfaces.ts").read_text()
+    assert "export type ShadeState = 0 | 1 | 2 | 3;" in declarations
+    assert "export interface WalkingStop" in declarations
+    assert "Record<string, unknown>" in declarations

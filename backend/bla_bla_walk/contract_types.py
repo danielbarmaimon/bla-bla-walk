@@ -11,6 +11,8 @@ def schema_type(schema: dict) -> str:
         return json.dumps(schema["const"])
     if "enum" in schema:
         return " | ".join(json.dumps(value) for value in schema["enum"])
+    if not schema:
+        return "unknown"
     for key in ("anyOf", "oneOf"):
         if key in schema:
             return " | ".join(schema_type(part) for part in schema[key])
@@ -21,6 +23,8 @@ def schema_type(schema: dict) -> str:
         return f"({schema_type(schema['items'])})[]"
     if kind == "object" and isinstance(schema.get("additionalProperties"), dict):
         return f"Record<string, {schema_type(schema['additionalProperties'])}>"
+    if kind == "object" and schema.get("additionalProperties") is True:
+        return "Record<string, unknown>"
     primitives = {
         "string": "string",
         "integer": "number",
@@ -44,6 +48,9 @@ def typescript_contract(
     ]
     models = {**schema.get("$defs", {}), schema["title"]: schema}
     for name, model in models.items():
+        if "properties" not in model:
+            lines.extend(["", f"export type {name} = {schema_type(model)};"])
+            continue
         lines.extend(["", f"export interface {name} {{"])
         required = model.get("required", [])
         for field, definition in model["properties"].items():
