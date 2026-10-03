@@ -5,6 +5,7 @@ import math
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 
+import rasterio
 from rasterio.warp import transform
 
 from .evaluation import load_rules
@@ -121,9 +122,10 @@ def calculate_walking_evidence(
     if any(s.at_metres > distance for s in stops):
         raise ValueError("Stops must lie on the route; include diversions in geometry")
     coordinates = route.geometry.coordinates
-    x, y = transform(
-        4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
-    )
+    with rasterio.Env(PROJ_NETWORK="OFF"):
+        x, y = transform(
+            4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
+        )
     segments = list(intervals(list(zip(x, y)), distance, maximum, stops))
     if len(segments) > policy["maximum_route_samples"]:
         raise ValueError("Route exceeds sampling budget; use a bounded route")

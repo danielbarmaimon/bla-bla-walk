@@ -1,3 +1,7 @@
+import {
+  routeGeometry,
+  coordinateAtFraction
+} from './route-planner-data.js';
 const {
   Feature,
   Map,
@@ -107,6 +111,26 @@ export function createMap(
     }
   });
   const features = new globalThis.Map();
+  const shadeSamples = new VectorSource();
+  const shadeLayer = new VectorLayer({
+    source: shadeSamples,
+    zIndex: 3,
+    style: (feature) => new Style({
+      image: new CircleStyle({
+        radius: 5,
+        fill: new Fill({
+          color: theme.getPropertyValue(
+            feature.get('state') === 2 ? '--shade' : feature.get('state') === 1 ? '--exposed' : '--text-muted'
+          ).trim()
+        }),
+        stroke: new Stroke({
+          color: theme.getPropertyValue('--marker-outline').trim(),
+          width: 1
+        })
+      })
+    })
+  });
+  map.addLayer(shadeLayer);
   const pinFeatures = new VectorSource();
   const pinLayer = new VectorLayer({
     source: pinFeatures,
@@ -234,6 +258,43 @@ export function createMap(
 
   return {
     replaceLayers,
+    setShadeVisible: (visible) => shadeLayer.setVisible(visible),
+    setShadeSamples: (routes, evidence) => {
+      shadeSamples.clear();
+      [...features.keys()].filter((id) => id.startsWith('sample-')).forEach((id) => features.delete(id));
+      evidence.forEach((result) => {
+        const route = routes.find((item) => item.id === result.id);
+        if (!route) return;
+        const line = routeGeometry(route.geometry.coordinates);
+        result.samples.forEach((sample, index) => {
+          const coordinates = coordinateAtFraction(line, (sample.start_metres + sample.end_metres) / 2 / result.distance_metres);
+          const id = `sample-${route.id}-${index}`;
+          const stateLabel = ['Unknown', 'Sunlit approximation', 'Shaded approximation', 'Night · no shade credit'][sample.state];
+          const value = {
+            id,
+            label: `${route.label} · ${stateLabel}`,
+            kind: 'shade',
+            geometry: {
+              type: 'Point',
+              coordinates
+            },
+            availability: sample.state === 0 ? 'unknown' : 'current',
+            value: null,
+            unit: null,
+            provenance: route.provenance,
+            shade: sample.metadata,
+            explanation: `Traversal midpoint sample, not area coverage or observed cooling. ${sample.explanation}`
+          };
+          features.set(id, value);
+          const marker = new Feature({
+            geometry: new window.ol.geom.Point(fromLonLat(coordinates))
+          });
+          marker.setId(id);
+          marker.set('state', sample.state);
+          shadeSamples.addFeature(marker);
+        });
+      });
+    },
     updateSize: () => map.updateSize(),
     setPetVisible: (visible) => petLayer.setVisible(visible && !offline),
     setVisible: (id, visible) => layers.get(id)?.setVisible(visible),

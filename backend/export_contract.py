@@ -5,7 +5,12 @@ from pathlib import Path
 
 from bla_bla_walk.contract_types import typescript_contract
 from bla_bla_walk.demo_fixture import fixture_snapshot
-from bla_bla_walk.interfaces import MapSnapshot, ShadeRequest, ShadeResponse
+from bla_bla_walk.interfaces import (
+    JourneyResponse,
+    MapSnapshot,
+    ShadeRequest,
+    ShadeResponse,
+)
 from bla_bla_walk.main import app
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +23,14 @@ def write_json(path: Path, value: object) -> None:
 
 
 if __name__ == "__main__":
+    journey_schema = JourneyResponse.model_json_schema()
+    (ROOT / "src/journey.schema.js").write_text(
+        "// Generated from canonical Python models. Do not edit by hand.\n"
+        + "export const journeySchema = "
+        + json.dumps(journey_schema, indent=2)
+        + ";\n",
+        encoding="utf-8",
+    )
     schema = MapSnapshot.model_json_schema()
     write_json(ROOT / ".cache/openapi.json", app.openapi())
     write_json(ROOT / "src/snapshot.schema.json", schema)

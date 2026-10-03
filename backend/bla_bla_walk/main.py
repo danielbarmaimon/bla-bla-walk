@@ -9,7 +9,14 @@ from fastapi.staticfiles import StaticFiles
 
 from .basemap import tile_path
 from .demo_fixture import fixture_snapshot
-from .interfaces import MapSnapshot, ShadeRequest, ShadeResponse
+from .interfaces import (
+    JourneyRequest,
+    JourneyResponse,
+    MapSnapshot,
+    ShadeRequest,
+    ShadeResponse,
+)
+from .journey import JourneyService
 from .shade_cache import ShadeBusy
 from .shade_service import ShadeService
 from .snapshots import offline_snapshot, online_snapshot
@@ -17,6 +24,7 @@ from .snapshots import offline_snapshot, online_snapshot
 app = FastAPI(title="Bla Bla Walk", version="0.1.0")
 ROOT = Path(__file__).resolve().parents[2]
 shade_service = ShadeService()
+journey_service = JourneyService(shade_service)
 app.mount("/src", StaticFiles(directory=ROOT / "src"), name="browser")
 app.mount("/config", StaticFiles(directory=ROOT / "config"), name="configuration")
 app.mount("/poc-assets", StaticFiles(directory=ROOT / "poc"), name="route-poc-assets")
@@ -80,6 +88,22 @@ def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
     response.headers["X-Shade-Cache"] = "HIT" if hit else "MISS"
     response.headers["Cache-Control"] = "no-store"
     return result
+
+
+@app.post("/api/comparison", response_model=JourneyResponse)
+def journey_comparison(request: JourneyRequest, response: Response) -> JourneyResponse:
+    """Start/poll exact-time local sampling; detour changes reuse the evidence."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return journey_service.respond(request)
+    except ShadeBusy as error:
+        raise HTTPException(503, str(error), headers={"Retry-After": "2"}) from error
+    except (OSError, ValueError, KeyError, OverflowError) as error:
+        raise HTTPException(
+            503,
+            "Comparison unavailable: verify saved routes and "
+            "local shade inputs; no provider fallback",
+        ) from error
 
 
 @app.get("/tiles/{zoom}/{x}/{y}.png", include_in_schema=False)

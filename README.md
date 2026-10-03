@@ -10,7 +10,7 @@ The shortest walk may involve exposed streets, few places to rest, or inaccessib
 
 ## Project status
 
-The map supports online provider observations/fountain locations, a historical PET heat layer with route-class distances, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. The PET map overlay needs internet; saved route classes remain visible offline with a stale label. PET describes a fixed 14:00 summer scenario. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Current-time shade and the full weighted route comparison remain later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
+The map supports online provider observations/fountain locations, a historical PET heat layer with route-class distances, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. Exact-departure building-shadow route estimates and T5 comparison are connected through a bounded local background API; full T6 external-server acceptance remains open in [the integration handoff](handoff/t6-integration.md). The PET overlay needs internet; saved route classes retain a stale label and describe a fixed 14:00 summer scenario. FastAPI serves the browser and API without a JavaScript build step. Geometry downloads alone do not enable shade: the building model also needs its prepared footprints and survey flags. See [preparation](handoff/data-compact-offline.md) and [T8's validation handoff](handoff/t8.md).
 
 - [Design and demo proposal](docs/design.md)
 - [Build tasks and acceptance checks](docs/plan.md)
@@ -39,7 +39,7 @@ Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .ve
 
 ## Route planner
 
-The root page now combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, sample-place search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Only that endpoint pair has checked route geometry; choosing other sample places shows that no checked route is available. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Fountain and sensor summaries come from the selected fixture, online, or offline snapshot. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. Current shade is not calculated, so “More shade” does not rank routes. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
+The root page combines route planning with the map, checked SBB → Marktplatz alternatives, source details and layer controls. Other endpoint pairs explicitly have no checked route. In online/offline mode, select a departure (device timezone) and press Calculate / retry local route evidence. Now or a changed departure starts exact traversal-time sampling; a cold run can take approximately 20 minutes. Pending or failed calculations withhold earlier results. Fastest overall and More shade reuse the evidence; the optional five-minute extra-time limit rescores without shade calls. Show on map inspects any route, while Choose route requires T5 eligibility. Saved route access is unknown, so current prepared routes have no eligible recommendation. Rest/pause cues are unplanned examples, not added stops in these metrics. The toggleable shade samples are route midpoint approximations with requested/effective times, unknown/night and model limits; they do not provide city-wide shade or measured cooling. Fountain operation and transit remain unavailable/unverified. Historical PET stays separate, with an online-only overlay and dated saved route summaries. The former `/poc` concept retains synthetic visuals separately.
 
 The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL selects synthetic fixtures; use the links in the app to choose a mode.
 
@@ -203,6 +203,18 @@ zero shade calls and unknown route access withholds all recommendations.
 These are building-shadow midpoint approximations, with unknown/night retained;
 see [routing rules](docs/routing-rules.md) for limits and T6's integration boundary.
 
+`POST /api/comparison` accepts online/offline `mode`, an aware exact `departure`
+and `extra_time_limit_minutes` (null or 5). Repeat the same request while its
+status is pending. One departure calculates at a time; four completed evidence
+sets are retained per server process, pinned to route/source, policy, code and
+prepared-file identity. Restart clears them. Busy or missing/failed inputs return
+503; retry after checking inputs. Offline additionally requires the saved provider
+route snapshot, with no network fallback. Transit remains explicitly unavailable.
+With prepared resources, `python scripts/validate_journey.py` checks the real
+offline comparison API, exact-time sampling and cached online/detour reuse with
+outbound HTTP blocked. It retains detailed output locally under `.hack/` and
+does not establish external deployment or physical shade accuracy.
+
 Format Python with `python -m ruff format backend scripts/fetch_browser_assets.py scripts/format_browser.py` and browser code with `python scripts/format_browser.py`. [backend/bla_bla_walk/interfaces.py](backend/bla_bla_walk/interfaces.py) is canonical; regeneration writes [src/interfaces.ts](src/interfaces.ts) for editor/JSDoc use and the browser validation schema. Include a decision line with model changes and never edit generated files by hand. Consumer ownership is listed in [ROADMAP.md](ROADMAP.md); the map modules now use .js filenames.
 
 ## Data sources
@@ -211,7 +223,7 @@ See [docs/SOURCES.md](docs/SOURCES.md).
 
 ## Limits
 
-Fixture mode uses invented overlays. Online/offline provider modes use admitted sources with timestamps and uncertainty; offline data never claims a live refresh. Prepared geometry has coverage gaps and mismatched survey years; 1m grid spacing does not make native 2m terrain more detailed, and 2m elevation quantization can change shadows. Physical shade accuracy, city-wide throughput and route comparison are not established; the route building approximation has bounded numerical and performance checks. Scope, unknowns, and demo fallback are documented in the [design brief](docs/design.md).
+Fixture mode uses invented overlays. Online/offline provider modes retain source timestamps and uncertainty; offline never claims a live refresh. Geometry has coverage gaps and mismatched survey years; grid spacing does not improve native terrain detail, and elevation quantization can change shadows. Route comparison preserves these unknowns and does not certify safety, passability or measured cooling. Physical shade accuracy and city-wide throughput remain unestablished. Full journey acceptance remains in [T6's handoff](handoff/t6-integration.md); scope and fallback are in the [design brief](docs/design.md).
 
 ## Team
 

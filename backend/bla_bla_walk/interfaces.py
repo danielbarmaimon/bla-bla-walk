@@ -329,3 +329,21 @@ class TripComparison(ContractModel):
     manual_choices: list[str] = Field(default_factory=list)
     explanation: str = ""
     transit_status: Literal["unavailable"] = "unavailable"
+
+
+class JourneyRequest(ContractModel):
+    """Exact departure for the saved demo pair; detour changes only rescore."""
+
+    mode: Literal["online", "offline"]
+    departure: AwareDatetime
+    extra_time_limit_minutes: Literal[5] | None = None
+
+
+class JourneyResponse(ContractModel):
+    """Poll the same request while pending; evidence is local model output."""
+
+    status: Literal["pending", "complete"]
+    departure: AwareDatetime
+    explanation: str
+    evidence: list[WalkingEvidence] = Field(default_factory=list)
+    comparison: dict[str, TripComparison] = Field(default_factory=dict)

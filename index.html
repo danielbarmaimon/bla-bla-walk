@@ -68,9 +68,9 @@
             <h2 id="journey-title"></h2><p id="journey-summary"></p>
             <div class="comparison-controls" aria-label="Trip comparison settings">
               <div class="departure-control">
-                <label for="departure-time">Departure time</label>
+                <label for="departure-time">Departure time (your device timezone)</label>
                 <div class="departure-input-row">
-                  <input id="departure-time" type="datetime-local" aria-describedby="comparison-control-status" disabled>
+                  <input id="departure-time" type="datetime-local" step="1" aria-describedby="comparison-control-status" disabled>
                   <button id="departure-now" type="button" disabled>Now</button>
                 </div>
               </div>
@@ -82,7 +82,10 @@
                 </select>
               </div>
             </div>
-            <p class="comparison-control-status" id="comparison-control-status" role="status">Departure and detour controls are shown; their calculation connection is pending.</p>
+            <button id="calculate-comparison" type="button" disabled>Calculate / retry local route evidence</button>
+            <p class="comparison-control-status" id="comparison-control-status" role="status">Choose a departure and calculate local route evidence.</p>
+            <label><input id="shade-layer-toggle" type="checkbox" checked>Approximate traversal shade samples on map</label>
+            <p class="helper">Samples: green shaded, orange exposed, grey unknown/night. These are traversal-time points along the two routes, not a city-wide shade layer.</p>
             <div id="route-options" class="route-options"></div>
             <button class="primary-button" id="show-route" type="button">See route and evidence <span data-icon="arrow-right" aria-hidden="true"></span></button>
           </section>

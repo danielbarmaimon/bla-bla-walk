@@ -137,17 +137,164 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
         < page.viewport_size["height"]
     )
     assert not external
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.locator("#show-route").click()
+    assert not page.evaluate("document.documentElement.scrollWidth > innerWidth")
 
 
 def test_missing_offline_tiles_explain_saved_coverage(browser_page):
     page = browser_page
     page.route("**/tiles/**", lambda route: route.fulfill(status=404))
     page.goto(page.base_url + "/?mode=offline")
+    page.locator("#show-route").click()
     page.wait_for_function(
         "document.querySelector('#basemap-status').textContent"
         ".includes('not downloaded')"
     )
     page.unroute("**/tiles/**")
+
+
+def test_offline_missing_resources_never_request_external_urls(browser_page):
+    page = browser_page
+    external = []
+
+    def inspect(request):
+        if not request.url.startswith(page.base_url + "/"):
+            external.append(request.url)
+
+    page.on("request", inspect)
+    page.route("**/api/map**", lambda route: route.fulfill(status=503))
+    page.route("**/tiles/**", lambda route: route.fulfill(status=404))
+    try:
+        page.goto(page.base_url + "/?mode=offline")
+        page.wait_for_function(
+            "document.querySelector('#mode-notice').textContent"
+            ".includes('Map data unavailable')"
+        )
+        page.locator("#show-route").click()
+        page.wait_for_function(
+            "document.querySelector('#basemap-status').textContent"
+            ".includes('not downloaded')"
+        )
+        assert page.locator("#pet-layer-toggle").is_disabled()
+        assert page.locator("#calculate-comparison").is_disabled()
+        assert not external
+    finally:
+        page.remove_listener("request", inspect)
+        page.unroute("**/api/map**")
+        page.unroute("**/tiles/**")
+
+
+@pytest.mark.parametrize("mode", ["online", "offline"])
+def test_comparison_controls_unknowns_failure_and_keyboard(browser_page, mode):
+    """Synthetic calculation responses exercise UI only, not real shade accuracy."""
+    from types import SimpleNamespace
+    from unittest.mock import Mock
+
+    from bla_bla_walk.adapters.routes import load_demo_routes
+    from bla_bla_walk.evaluation import compare_choices
+    from bla_bla_walk.interfaces import JourneyRequest, MapSnapshot
+    from bla_bla_walk.journey import JourneyService
+    from test_journey import completed
+    from test_route_shade import DEPARTURE, response
+
+    service = JourneyService(
+        SimpleNamespace(
+            root=ROOT,
+            context=Mock(return_value=("test",)),
+            respond=Mock(side_effect=lambda request: (response(request), False)),
+        )
+    )
+    result = completed(service, JourneyRequest(mode="online", departure=DEPARTURE))
+    service.executor.shutdown()
+    snapshot = MapSnapshot(
+        mode=mode, generated_at=DEPARTURE, layers=[load_demo_routes()]
+    )
+    page = browser_page
+    calls = []
+    failed = False
+
+    def comparison(route):
+        body = route.request.post_data_json
+        calls.append(body)
+        if failed:
+            route.fulfill(status=503)
+        else:
+            from datetime import datetime
+
+            value = result.model_copy(
+                update={
+                    "departure": datetime.fromisoformat(
+                        body["departure"].replace("Z", "+00:00")
+                    )
+                }
+            )
+            route.fulfill(json=value.model_dump(mode="json"))
+
+    page.route(
+        "**/api/map**",
+        lambda route: route.fulfill(json=snapshot.model_dump(mode="json")),
+    )
+    page.route("**/api/comparison", comparison)
+    try:
+        page.set_viewport_size({"width": 390, "height": 844})
+        page.goto(page.base_url + f"/?mode={mode}")
+        page.locator("#calculate-comparison").wait_for(state="visible")
+        page.wait_for_function(
+            "!document.querySelector('#calculate-comparison').disabled"
+        )
+        assert page.locator(".comparison-primary:disabled").count() == 2
+        page.locator("#departure-time").fill("2026-10-03T12:00")
+        page.locator("#calculate-comparison").focus()
+        page.keyboard.press("Enter")
+        page.wait_for_function(
+            "document.querySelector('#route-options').textContent"
+            ".includes('Locally calculated')"
+        )
+        assert "No eligible route" in page.locator("#route-options").inner_text()
+        assert page.locator(".comparison-primary:disabled").count() == 2
+        assert "Transit" in page.locator("#preference-note").inner_text()
+        assert not page.evaluate("document.documentElement.scrollWidth > innerWidth")
+        page.locator("#shade-mode").click()
+        count = len(calls)
+        page.locator("#fast-mode").click()
+        assert len(calls) == count
+        page.locator("#shade-detour-limit").select_option("5")
+        page.wait_for_function(
+            "document.querySelector('#route-options').textContent"
+            ".includes('Locally calculated')"
+        )
+        assert calls[-1]["extra_time_limit_minutes"] == 5
+        # Explicit synthetic access evidence tests eligible manual actions.
+        checked = [
+            item.model_copy(update={"access_state": "checked_open"})
+            for item in result.evidence
+        ]
+        result.comparison = compare_choices(checked)
+        page.locator("#calculate-comparison").click()
+        page.wait_for_function(
+            "document.querySelectorAll('.comparison-primary:disabled').length === 0"
+        )
+        page.locator(".comparison-primary").last.focus()
+        page.keyboard.press("Enter")
+        assert (
+            page.locator(".comparison-primary[aria-pressed='true']").inner_text()
+            == "Chosen route"
+        )
+        assert page.locator(".comparison-primary[aria-pressed='true']").evaluate(
+            "element => element === document.activeElement"
+        )
+        page.locator("#shade-layer-toggle").uncheck()
+        assert not page.locator("#shade-layer-toggle").is_checked()
+        failed = True
+        page.locator("#departure-now").click()
+        page.wait_for_function(
+            "document.querySelector('#comparison-control-status').textContent.includes('unavailable')"
+        )
+        assert "Locally calculated" not in page.locator("#route-options").inner_text()
+    finally:
+        page.unroute("**/api/map**")
+        page.unroute("**/api/comparison")
 
 
 def test_api_failure_and_recovery(browser_page):

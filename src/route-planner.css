@@ -939,6 +939,11 @@
   color: var(--poc-teal-dark);
 }
 
+.route-app .layer-switches label>span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .route-app .nearby-details ul {
   margin: var(--space-3) 0 0;
   padding-left: var(--space-4);
