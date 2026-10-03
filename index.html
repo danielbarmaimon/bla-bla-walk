@@ -5,10 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="/vendor/ol.css" />
     <link rel="stylesheet" href="/src/theme.css" />
-    <title>Bla Bla Walk · Basel map</title>
+    <link rel="stylesheet" href="/src/route-planner.css" />
+    <title>Bla Bla Walk · Basel routes</title>
   </head>
-  <body>
-    <div id="app"></div>
+  <body class="route-app" data-view="plan">
+    <div class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="/" aria-label="Bla Bla Walk home">
+          <span class="brand-mark" aria-hidden="true">B</span><span>Bla Bla Walk</span>
+        </a>
+        <nav class="mode-nav" aria-label="Data mode">
+          <a href="/?mode=fixture">Example</a><a href="/?mode=online">Online</a><a href="/?mode=offline">Offline</a>
+        </nav>
+      </header>
+
+      <main class="route-layout">
+        <section class="planner" aria-labelledby="planner-title">
+          <div class="section-heading">
+            <p class="kicker">BASEL, SWITZERLAND</p>
+            <h1 id="planner-title">Where are you going?</h1>
+            <p class="intro">Compare checked walking options and the information available along them.</p>
+            <p class="mode-notice" id="mode-notice" role="status">Loading selected data mode…</p>
+          </div>
+
+          <div class="journey-fields">
+            <div class="field-block">
+              <label for="origin-input">Starting point</label>
+              <div class="input-wrap">
+                <span class="input-icon" data-icon="map-pin" aria-hidden="true"></span>
+                <input id="origin-input" autocomplete="off" list="origin-options" placeholder="Enter a sample starting point">
+                <datalist id="origin-options"></datalist>
+                <button class="inside-button" id="gps-button" type="button">Use GPS</button>
+              </div>
+              <div class="field-actions">
+                <button class="text-button" id="pick-origin" type="button">Choose start on map</button>
+                <span id="origin-status" role="status">Using Basel SBB demo start</span>
+              </div>
+            </div>
+            <div class="field-block">
+              <label for="destination-input">Destination</label>
+              <div class="input-wrap">
+                <span class="input-icon" data-icon="search" aria-hidden="true"></span>
+                <input id="destination-input" autocomplete="off" placeholder="Search the sample places">
+                <button class="inside-button" id="pick-destination" type="button">Pin on map</button>
+              </div>
+              <div class="suggestions" id="suggestions" role="listbox" aria-label="Suggested destinations" hidden></div>
+            </div>
+          </div>
+
+          <fieldset class="route-mode">
+            <legend>What matters most?</legend>
+            <div class="segmented">
+              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest</button>
+              <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
+            </div>
+            <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
+            <button class="example-button" id="try-example" type="button">Use Basel SBB → Marktplatz routes</button>
+          </fieldset>
+
+          <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
+            <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
+            <h2 id="journey-title"></h2><p id="journey-summary"></p>
+            <div id="route-options" class="route-options"></div>
+            <button class="primary-button" id="show-route" type="button">See route and evidence <span data-icon="arrow-right" aria-hidden="true"></span></button>
+          </section>
+
+          <div class="quick-heading"><div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div><p>Sample places</p></div>
+          <div class="quick-grid" id="quick-grid"></div>
+          <p class="prototype-note">The quick places are a small interaction sample, not a complete or verified Basel place directory. Checked walking geometry is available only for the SBB → Marktplatz pair.</p>
+
+          <section class="inspector" aria-labelledby="features-title">
+            <h2 id="features-title">Inspect a map feature</h2>
+            <p>Choose a marker or route to see its source, freshness and unknowns.</p>
+            <div id="features"></div>
+            <div id="details" aria-live="polite"><p>Select a feature to see its source and timestamps.</p></div>
+          </section>
+        </section>
+
+        <section class="map-screen" aria-label="Route map and directions">
+          <div class="map-topline">
+            <div><p class="kicker">YOUR JOURNEY</p><h2 id="map-title">Explore Basel</h2></div>
+            <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
+          </div>
+          <div class="map-controls">
+            <div class="map-view-row">
+              <label class="pet-toggle"><input id="pet-layer-toggle" type="checkbox"><span><strong>Historical PET map</strong><small>Fixed 14:00 summer scenario</small></span></label>
+              <details class="pet-legend"><summary>PET class legend</summary><ul id="pet-legend-list"></ul></details>
+            </div>
+            <p id="pet-status" role="status">Historical PET map is available in online mode only.</p>
+            <div class="layer-switches" id="layers" aria-label="Show map layers"></div>
+            <div class="layer-switches" aria-label="Show route context">
+              <label><input id="landmark-toggle" type="checkbox" checked> Wayfinding cues · visibility unverified</label>
+              <label><input id="cool-place-toggle" type="checkbox"> Indoor rest candidate · hours and AC unknown</label>
+            </div>
+            <p id="layer-note">Source layers retain their own provenance and freshness.</p>
+          </div>
+          <div class="map-and-steps">
+            <div class="map-wrap">
+              <div id="map" tabindex="0" role="region" aria-label="Interactive Basel map. Arrow keys pan; plus and minus zoom."></div>
+              <p class="map-overlay" id="basemap-status" role="status">Loading Basel basemap…</p>
+              <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
+            </div>
+            <aside class="steps" aria-labelledby="steps-title">
+              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p><p id="source-status" role="status"></p></div>
+              <ol id="step-list"></ol>
+              <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
+              <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>Route geometry: OpenStreetMap via FOSSGIS. Historical PET is a fixed scenario, not current weather. Fountain operation, access, shade and seating remain unknown unless stated by source data.</p></div>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
     <script src="/vendor/ol.js"></script>
     <script src="/vendor/ajv2020.js"></script>
     <script type="module" src="/src/main.js"></script>

@@ -81,6 +81,7 @@ export function createMap(
     hadTileError = true;
     onBasemapStatus(offline ? 'Offline basemap partly unavailable: tiles not downloaded or outside saved coverage.' : 'Basemap partly unavailable. Check your connection and reload.');
   });
+  const theme = getComputedStyle(document.documentElement);
   const map = new Map({
     target,
     layers: [
@@ -106,7 +107,50 @@ export function createMap(
     }
   });
   const features = new globalThis.Map();
+  const pinFeatures = new VectorSource();
+  const pinLayer = new VectorLayer({
+    source: pinFeatures,
+    style: (marker) => new Style({
+      image: new CircleStyle({
+        radius: 10,
+        fill: new Fill({
+          color: theme.getPropertyValue(marker.get('pinKind') === 'origin' ? '--poc-origin' : '--poc-destination').trim(),
+        }),
+        stroke: new Stroke({ color: theme.getPropertyValue('--marker-outline').trim(), width: 3 }),
+      }),
+    }),
+  });
+  map.addLayer(pinLayer);
+  const contextFeatures = new VectorSource();
+  const contextLayer = new VectorLayer({
+    source: contextFeatures,
+    style: (marker) => new Style({
+      image: new CircleStyle({
+        radius: marker.get('kind') === 'rest' || marker.get('kind') === 'pause' ? 8 : 6,
+        fill: new Fill({ color: theme.getPropertyValue('--poc-teal').trim() }),
+        stroke: new Stroke({ color: theme.getPropertyValue('--marker-outline').trim(), width: 2 }),
+      }),
+      text: new window.ol.style.Text({
+        text: marker.get('label'),
+        offsetY: -17,
+        font: '700 12px sans-serif',
+        fill: new Fill({ color: theme.getPropertyValue('--text-primary').trim() }),
+        backgroundFill: new Fill({ color: '#ffffff' }),
+        padding: [2, 4, 2, 4],
+      }),
+    }),
+  });
+  map.addLayer(contextLayer);
+  let picking = null;
   map.on('singleclick', (event) => {
+    if (picking) {
+      const [longitude, latitude] = window.ol.proj.toLonLat(event.coordinate);
+      const kind = picking.kind;
+      const callback = picking.callback;
+      picking = null;
+      callback(kind, { lon: longitude, lat: latitude });
+      return;
+    }
     map.forEachFeatureAtPixel(event.pixel, (feature) => {
       const selected = features.get(String(feature.getId()));
       if (selected) onSelect(selected);
@@ -118,7 +162,6 @@ export function createMap(
     layers.forEach((layer) => map.removeLayer(layer));
     layers.clear();
     features.clear();
-    const theme = getComputedStyle(document.documentElement);
     snapshotLayers.forEach((layer) => {
       const fill = new Fill({
         color: theme.getPropertyValue(`--${layer.kind}-color`).trim(),
@@ -176,8 +219,42 @@ export function createMap(
 
   return {
     replaceLayers,
+    updateSize: () => map.updateSize(),
     setPetVisible: (visible) => petLayer.setVisible(visible && !offline),
     setVisible: (id, visible) => layers.get(id)?.setVisible(visible),
+    setPins: (origin, destination) => {
+      pinFeatures.clear();
+      [origin, destination].filter(Boolean).forEach((place, index) => {
+        const marker = new Feature({
+          geometry: new window.ol.geom.Point(fromLonLat([place.lon, place.lat])),
+        });
+        marker.set('pinKind', index === 0 ? 'origin' : 'destination');
+        pinFeatures.addFeature(marker);
+      });
+    },
+    setContextMarkers: (markers) => {
+      contextFeatures.clear();
+      markers.forEach((item) => {
+        const marker = new Feature({
+          geometry: new window.ol.geom.Point(fromLonLat(item.coordinates)),
+        });
+        marker.set('kind', item.kind);
+        marker.set('label', item.label);
+        contextFeatures.addFeature(marker);
+      });
+    },
+    setPicking: (kind, callback) => {
+      picking = kind ? { kind, callback } : null;
+    },
+    focusCoordinates: (coordinates) => {
+      if (!coordinates?.length) return;
+      const projected = coordinates.map((coordinate) => fromLonLat(coordinate));
+      map.getView().fit(window.ol.extent.boundingExtent(projected), {
+        maxZoom: 16,
+        duration: 250,
+        padding: [75, 75, 75, 75],
+      });
+    },
     focus: (feature) => {
       const geometry = new GeoJSON().readGeometry(feature.geometry, {
         dataProjection: 'EPSG:4326',
