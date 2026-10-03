@@ -55,6 +55,25 @@ def intervals(points, distance, maximum, stops):
         chainage = end
 
 
+def route_intervals(route, policy, stops):
+    """Plan the bounded distance samples used by calculation and job progress."""
+    coordinates = route.geometry.coordinates
+    x, y = transform(
+        4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
+    )
+    segments = list(
+        intervals(
+            list(zip(x, y)),
+            route.route.distance_m,
+            policy["maximum_sample_metres"],
+            stops,
+        )
+    )
+    if len(segments) > policy["maximum_route_samples"]:
+        raise ValueError("Route exceeds sampling budget; use a bounded route")
+    return segments
+
+
 def sample_state(response, point):
     """Read only the receiver's cell; corridor cell counts are not route metres."""
     west, south, east, north = response.bounds
@@ -120,13 +139,7 @@ def calculate_walking_evidence(
     stops = stops or []
     if any(s.at_metres > distance for s in stops):
         raise ValueError("Stops must lie on the route; include diversions in geometry")
-    coordinates = route.geometry.coordinates
-    x, y = transform(
-        4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
-    )
-    segments = list(intervals(list(zip(x, y)), distance, maximum, stops))
-    if len(segments) > policy["maximum_route_samples"]:
-        raise ValueError("Route exceeds sampling budget; use a bounded route")
+    segments = route_intervals(route, policy, stops)
     samples = []
     supported, matches, succeeded = True, True, True
     model = None

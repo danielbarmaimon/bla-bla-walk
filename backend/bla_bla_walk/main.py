@@ -1,22 +1,44 @@
 """Small foundation API; feature owners add their adapters after T1 merges."""
 
+import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from rasterio.warp import transform_geom
 
+from .adapters.routes import load_demo_routes
 from .basemap import tile_path
+from .comparison_service import ComparisonService
 from .demo_fixture import fixture_snapshot
-from .interfaces import MapSnapshot, ShadeRequest, ShadeResponse
+from .interfaces import (
+    ComparisonJob,
+    ComparisonPreferences,
+    ComparisonRequest,
+    MapLayer,
+    MapSnapshot,
+    PolygonGeometry,
+    ShadeRequest,
+    ShadeResponse,
+)
 from .shade_cache import ShadeBusy
 from .shade_service import ShadeService
 from .snapshots import offline_snapshot, online_snapshot
 
-app = FastAPI(title="Bla Bla Walk", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app):
+    yield
+    comparison_service.close()
+
+
+app = FastAPI(title="Bla Bla Walk", version="0.1.0", lifespan=lifespan)
 ROOT = Path(__file__).resolve().parents[2]
 shade_service = ShadeService()
+comparison_service = ComparisonService(shade_service)
 app.mount("/src", StaticFiles(directory=ROOT / "src"), name="browser")
 app.mount("/config", StaticFiles(directory=ROOT / "config"), name="configuration")
 app.mount("/poc-assets", StaticFiles(directory=ROOT / "poc"), name="route-poc-assets")
@@ -82,6 +104,52 @@ def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
     return result
 
 
+@app.get("/api/walking-routes", response_model=MapLayer)
+def walking_routes() -> MapLayer:
+    """The saved checked pair, also usable beside synthetic source layers."""
+    return load_demo_routes()
+
+
+@app.post("/api/comparison", response_model=ComparisonJob, status_code=202)
+def start_comparison(request: ComparisonRequest, response: Response):
+    """Admit one background journey; preparation is strictly local."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return comparison_service.start(request)
+    except ShadeBusy as error:
+        raise HTTPException(503, str(error), headers={"Retry-After": "5"}) from error
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from error
+    except (OSError, KeyError, OverflowError) as error:
+        raise HTTPException(
+            503,
+            "Prepared shade inputs unavailable; run local "
+            "geometry and building preparation",
+        ) from error
+
+
+@app.get("/api/comparison/{job_id}", response_model=ComparisonJob)
+def comparison_result(job_id: str, response: Response):
+    """Polling never starts shade work or contacts an external provider."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return comparison_service.get(job_id)
+    except KeyError as error:
+        raise HTTPException(404, "Calculation expired; start again") from error
+
+
+@app.post("/api/comparison/{job_id}/rescore", response_model=ComparisonJob)
+def rescore_comparison(
+    job_id: str, preferences: ComparisonPreferences, response: Response
+):
+    """Rescore weights/detour settings with zero new shade calls."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        return comparison_service.get(job_id, preferences)
+    except KeyError as error:
+        raise HTTPException(404, "Calculation expired; start again") from error
+
+
 @app.get("/tiles/{zoom}/{x}/{y}.png", include_in_schema=False)
 def offline_basemap(zoom: int, x: int, y: int) -> FileResponse:
     """Serve downloaded imagery only; a miss never makes an external request."""
@@ -89,3 +157,28 @@ def offline_basemap(zoom: int, x: int, y: int) -> FileResponse:
     if path is None or not path.is_file():
         raise HTTPException(404, "Tile not downloaded or outside offline coverage")
     return FileResponse(path, media_type="image/png")
+
+
+@app.get("/api/coverage", response_model=list[PolygonGeometry])
+def calculation_boundary():
+    """Pinned city boundary; it does not certify prepared inputs inside it."""
+    boundary = json.loads((ROOT / "data/tile-inventory.json").read_text())["boundary"]
+    geometry = transform_geom(boundary["crs"], "EPSG:4326", boundary["geometry"])
+    polygons = (
+        geometry["coordinates"]
+        if geometry["type"] == "MultiPolygon"
+        else [geometry["coordinates"]]
+    )
+    return [
+        PolygonGeometry(type="Polygon", coordinates=coordinates)
+        for coordinates in polygons
+    ]
+
+
+@app.delete("/api/comparison/{job_id}", status_code=204)
+def cancel_comparison(job_id: str):
+    """Cancel a superseded departure after the current bounded sample."""
+    try:
+        comparison_service.cancel(job_id)
+    except KeyError as error:
+        raise HTTPException(404, "Calculation expired") from error

@@ -1,80 +1,20 @@
 """Exercise the actual browser map, independent of live source availability."""
 
-import os
-import shutil
-import socket
-import subprocess
-import sys
-import time
-import urllib.request
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.browser
 
 
-@pytest.fixture(scope="module")
-def browser_page():
-    """Start the documented server and an installed Chromium for interactions."""
-    executable = os.environ.get("CHROMIUM_PATH") or shutil.which("chromium")
-    if not executable:
-        pytest.skip("Browser checks need installed Chromium or CHROMIUM_PATH")
-    with socket.socket() as reservation:
-        reservation.bind(("127.0.0.1", 0))
-        port = reservation.getsockname()[1]
-    server = subprocess.Popen(
-        [
-            sys.executable,
-            "-m",
-            "uvicorn",
-            "bla_bla_walk.main:app",
-            "--app-dir",
-            "backend",
-            "--host",
-            "127.0.0.1",
-            "--port",
-            str(port),
-        ],
-        cwd=ROOT,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    url = f"http://127.0.0.1:{port}"
-    try:
-        for _ in range(100):
-            try:
-                with urllib.request.urlopen(url, timeout=1):
-                    break
-            except OSError:
-                if server.poll() is not None:
-                    raise RuntimeError("Test API failed to start") from None
-                time.sleep(0.05)
-        else:
-            raise RuntimeError("Test API did not become ready")
-        with sync_playwright() as playwright:
-            browser = playwright.chromium.launch(executable_path=executable)
-            page = browser.new_page(viewport={"width": 1280, "height": 900})
-            page.set_default_timeout(10_000)
-            page.base_url = url
-            # Real basemap request is checked separately; failure is deterministic here.
-            page.route("https://wmts.geo.bs.ch/**", lambda route: route.abort())
-            yield page
-            browser.close()
-    finally:
-        server.terminate()
-        server.wait(timeout=5)
-
-
 def open_map(page):
-    """Wait for the actual API round trip and three keyboard sample controls."""
+    """Wait for synthetic sources beside the saved walking pair."""
     page.goto(page.base_url)
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
-    assert page.locator("#features button").count() == 3
+    assert page.locator("#features button").count() == 5
     for summary in page.locator("#features summary").all():
         summary.click()
 
@@ -166,7 +106,7 @@ def test_api_failure_and_recovery(browser_page):
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
-    assert page.locator("#features button").count() == 3
+    assert page.locator("#features button").count() == 5
 
 
 def test_narrow_screen_and_browser_contract(browser_page):

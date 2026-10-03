@@ -1,4 +1,6 @@
-const NUMBER = new Intl.NumberFormat('en-GB', { maximumFractionDigits: 0 });
+const NUMBER = new Intl.NumberFormat('en-GB', {
+  maximumFractionDigits: 0
+});
 
 function textElement(tag, className, text) {
   const element = document.createElement(tag);
@@ -37,6 +39,7 @@ export function renderTripComparison(container, {
   comparison = null,
   preference = 'fastest_overall',
   selectedRouteId,
+  chosenRouteId,
   onChoose = () => {},
   onShow = () => {}
 }) {
@@ -45,7 +48,7 @@ export function renderTripComparison(container, {
   const status = textElement(
     'p',
     'comparison-status',
-    view ? view.explanation : 'Trip scoring is not connected yet. Route shade, eligibility and recommendations remain unknown.'
+    view ? view.explanation : 'No calculated comparison yet. Inspect routes; eligibility and recommendations remain unknown.'
   );
   status.setAttribute('role', 'status');
   container.append(status);
@@ -57,6 +60,7 @@ export function renderTripComparison(container, {
     const heading = document.createElement('div');
     heading.className = 'comparison-card-heading';
     heading.append(textElement('h3', '', route.label));
+    if (view?.winner === route.id) heading.append(textElement('strong', '', 'Recommended'));
     const routeStatus = view?.route_statuses?.[route.id] ?? 'comparison pending';
     heading.append(textElement('span', 'route-eligibility', routeStatus.replaceAll('_', ' ')));
     card.append(heading);
@@ -72,19 +76,35 @@ export function renderTripComparison(container, {
     const reasons = view?.reasons?.[route.id] ?? [];
     if (reasons.length) card.append(textElement('p', 'comparison-reasons', `Cannot recommend: ${reasons.join(', ').replaceAll('_', ' ')}.`));
 
+    const metrics = view?.metrics?.[route.id];
+    const samples = metrics?.samples ?? [];
+    if (samples.length) {
+      const details = document.createElement('details');
+      details.append(textElement('summary', '', 'Calculation times, model and sources'));
+      details.append(textElement('p', '', `Night: ${metres(metrics.night_metres)}. Route source: ${metrics.provenance?.provider ?? 'unknown'}; ${metrics.provenance?.attribution ?? ''}; ${metrics.provenance?.licence ?? ''}. Retrieved ${metrics.provenance?.retrieved_at ?? 'unknown'}.`));
+      const list = document.createElement('ul');
+      samples.forEach((sample) => list.append(textElement('li', '', `${metres(sample.start_metres)}–${metres(sample.end_metres)}: ${['unknown', 'sunlit', 'shaded', 'night'][sample.state]}. Requested ${sample.requested_time}; effective ${sample.metadata?.effective_time ?? 'unavailable'}; geometry ${sample.metadata?.geometry_version ?? 'unavailable'}; ${sample.model}. ${sample.explanation}`)));
+      details.append(list);
+      card.append(details);
+    }
+    if (view?.contributions?.[route.id]) card.append(textElement('p', '', `Weighted contributions: ${Object.entries(view.contributions[route.id]).map(([name, value]) => `${name} ${value.toFixed(3)}`).join(' · ')}`));
     const actions = document.createElement('div');
     actions.className = 'comparison-actions';
     const show = document.createElement('button');
     show.type = 'button';
+    show.dataset.routeId = route.id;
+    show.dataset.action = 'show';
     show.className = 'comparison-secondary';
     show.textContent = 'Show on map';
     show.addEventListener('click', () => onShow(route));
     const choose = document.createElement('button');
     choose.type = 'button';
+    choose.dataset.routeId = route.id;
+    choose.dataset.action = 'choose';
     choose.className = 'comparison-primary';
-    choose.textContent = route.id === selectedRouteId ? 'Chosen route' : 'Choose route';
-    choose.setAttribute('aria-pressed', String(route.id === selectedRouteId));
-    const eligible = view ? view.manual_choices?.includes(route.id) : true;
+    choose.textContent = route.id === chosenRouteId ? 'Chosen route' : 'Choose route';
+    choose.setAttribute('aria-pressed', String(route.id === chosenRouteId));
+    const eligible = view?.manual_choices?.includes(route.id) ?? false;
     choose.disabled = !eligible;
     choose.addEventListener('click', () => onChoose(route));
     actions.append(show, choose);

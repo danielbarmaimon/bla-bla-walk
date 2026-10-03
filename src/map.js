@@ -1,3 +1,7 @@
+import {
+  routeGeometry,
+  coordinateAtFraction
+} from './route-planner-data.js';
 const {
   Feature,
   Map,
@@ -153,6 +157,34 @@ export function createMap(
     }),
   });
   map.addLayer(contextLayer);
+  const shadeFeatures = new VectorSource();
+  const shadeLayer = new VectorLayer({
+    source: shadeFeatures,
+    zIndex: 5,
+    style: (feature) => {
+      const state = feature.get('shadeState');
+      return new Style({
+        stroke: new Stroke({
+          color: theme.getPropertyValue(state === 2 ? '--shade' : state === 1 ? '--exposed' : '--unknown').trim(),
+          width: 7,
+          lineDash: state === 2 ? undefined : state === 1 ? [12, 6] : [2, 6],
+        })
+      });
+    },
+  });
+  map.addLayer(shadeLayer);
+  const coverageFeatures = new VectorSource();
+  map.addLayer(new VectorLayer({
+    source: coverageFeatures,
+    zIndex: 2,
+    style: new Style({
+      stroke: new Stroke({
+        color: theme.getPropertyValue('--unknown').trim(),
+        width: 2,
+        lineDash: [10, 6],
+      })
+    }),
+  }));
   let picking = null;
   map.on('singleclick', (event) => {
     if (picking) {
@@ -234,6 +266,35 @@ export function createMap(
 
   return {
     replaceLayers,
+    setShadeVisible: (visible) => shadeLayer.setVisible(visible),
+    setCoverage: (polygons) => {
+      coverageFeatures.clear();
+      polygons.forEach((polygon) => coverageFeatures.addFeature(new Feature({
+        geometry: new GeoJSON().readGeometry(polygon, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857'
+        }),
+      })));
+    },
+    setShadeSamples: (routes, evidence) => {
+      shadeFeatures.clear();
+      evidence.forEach((item) => {
+        const route = routes.find((route) => route.id === item.id);
+        if (!route) return;
+        const line = routeGeometry(route.geometry.coordinates);
+        item.samples.forEach((sample) => {
+          const start = sample.start_metres / item.distance_metres;
+          const end = sample.end_metres / item.distance_metres;
+          const middle = line.coordinates.filter((_, index) => line.cumulative[index] / line.length > start && line.cumulative[index] / line.length < end);
+          const coordinates = [coordinateAtFraction(line, start), ...middle, coordinateAtFraction(line, end)];
+          const feature = new Feature({
+            geometry: new window.ol.geom.LineString(coordinates.map((point) => fromLonLat(point)))
+          });
+          feature.set('shadeState', sample.state);
+          shadeFeatures.addFeature(feature);
+        });
+      });
+    },
     updateSize: () => map.updateSize(),
     setPetVisible: (visible) => petLayer.setVisible(visible && !offline),
     setVisible: (id, visible) => layers.get(id)?.setVisible(visible),
