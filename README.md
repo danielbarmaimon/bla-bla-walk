@@ -270,3 +270,5 @@ Fixture mode uses invented overlays. Online/offline provider modes use admitted 
 ## Team
 
 The six-person work split is proposed in [ROADMAP.md](ROADMAP.md). Contributors still need to choose role slots and add their GitHub usernames in [TEAM.md](TEAM.md).
+
+Map stop circles use Lucide droplets (Water), rocking-chair (Bench), and clock-fading (Rest). Same-type stops within 38 screen pixels collapse into counted circles; zooming separates them. Tap a count to inspect its members. Cluster anchors remain on a member’s route position, and original source records remain intact.
