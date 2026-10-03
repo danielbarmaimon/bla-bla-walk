@@ -1,0 +1,5 @@
+{
+  "minimum_elevation_degrees": 10,
+  "maximum_ray_distance_metres": 1500,
+  "policy": "T0 engineering envelope only; rays lacking a verified horizon ceiling stay unknown. These values are not accepted city-wide accuracy or performance."
+}

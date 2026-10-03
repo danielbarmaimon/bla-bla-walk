@@ -85,6 +85,12 @@ Keep preparation at two workers or fewer. The full local output is about 3.7 GiB
 
 ## Development checks
 
+Slot E's T10 calculation checkpoint has analytic and independent numerical checks; see [its handoff](handoff/t10-shade-calculation.md) for remaining T10 acceptance work. To reproduce the small real-raster spot check, supply the native source pair for tile 2610-1266 from [the pinned inventory](data/tile-inventory.json), saved locally as .hack/t10/surface.tif and .hack/t10/terrain.tif. The validator verifies both catalogue checksums and does not download files:
+
+```sh
+python scripts/validate_shade_sample.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --output .hack/t10/shade-validation.json
+```
+
 Activate the environment and run from the repository root:
 
 ```sh

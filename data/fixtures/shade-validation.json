@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "scope": "independent numerical real-raster spot check",
+  "tile": "2610-1266",
+  "source_sha256": {
+    "surface": "7e2f118c72b6b3813a0342fcc276b5842f894673be913d7a37e64d353dc01d03",
+    "terrain": "bb59e26e6adcddb165274415c7b4f73368cf40a127705316ee1729e1a3ee8bbe"
+  },
+  "attribution": "\u00a9 swisstopo",
+  "window": [
+    970,
+    970,
+    64,
+    64
+  ],
+  "cell_size_m": 0.5,
+  "grid_north_rotation_degrees": 0.1012307188897853,
+  "comparisons": 48,
+  "shaded": 37,
+  "unknown": 11,
+  "checks": [
+    {
+      "time": "2026-10-03T08:00:00+00:00",
+      "elevation_degrees": 22.576035818577974,
+      "azimuth_degrees": 124.52758489220986,
+      "receivers": [
+        {
+          "row": 0,
+          "column": 23,
+          "state": 0
+        },
+        {
+          "row": 3,
+          "column": 50,
+          "state": 2
+        },
+        {
+          "row": 7,
+          "column": 8,
+          "state": 2
+        },
+        {
+          "row": 9,
+          "column": 38,
+          "state": 0
+        },
+        {
+          "row": 12,
+          "column": 49,
+          "state": 2
+        },
+        {
+          "row": 16,
+          "column": 48,
+          "state": 0
+        },
+        {
+          "row": 20,
+          "column": 29,
+          "state": 2
+        },
+        {
+          "row": 22,
+          "column": 54,
+          "state": 0
+        },
+        {
+          "row": 25,
+          "column": 52,
+          "state": 0
+        },
+        {
+          "row": 29,
+          "column": 28,
+          "state": 2
+        },
+        {
+          "row": 35,
+          "column": 55,
+          "state": 0
+        },
+        {
+          "row": 40,
+          "column": 16,
+          "state": 2
+        },
+        {
+          "row": 43,
+          "column": 56,
+          "state": 0
+        },
+        {
+          "row": 48,
+          "column": 4,
+          "state": 2
+        },
+        {
+          "row": 57,
+          "column": 9,
+          "state": 2
+        },
+        {
+          "row": 63,
+          "column": 12,
+          "state": 2
+        }
+      ]
+    },
+    {
+      "time": "2026-10-03T12:00:00+00:00",
+      "elevation_degrees": 37.58186403565073,
+      "azimuth_degrees": 193.03117567325975,
+      "receivers": [
+        {
+          "row": 0,
+          "column": 23,
+          "state": 2
+        },
+        {
+          "row": 3,
+          "column": 50,
+          "state": 2
+        },
+        {
+          "row": 7,
+          "column": 8,
+          "state": 2
+        },
+        {
+          "row": 9,
+          "column": 38,
+          "state": 2
+        },
+        {
+          "row": 12,
+          "column": 49,
+          "state": 2
+        },
+        {
+          "row": 16,
+          "column": 48,
+          "state": 2
+        },
+        {
+          "row": 20,
+          "column": 29,
+          "state": 2
+        },
+        {
+          "row": 22,
+          "column": 54,
+          "state": 2
+        },
+        {
+          "row": 25,
+          "column": 52,
+          "state": 2
+        },
+        {
+          "row": 29,
+          "column": 28,
+          "state": 2
+        },
+        {
+          "row": 35,
+          "column": 55,
+          "state": 2
+        },
+        {
+          "row": 40,
+          "column": 16,
+          "state": 0
+        },
+        {
+          "row": 43,
+          "column": 56,
+          "state": 2
+        },
+        {
+          "row": 48,
+          "column": 4,
+          "state": 2
+        },
+        {
+          "row": 57,
+          "column": 9,
+          "state": 2
+        },
+        {
+          "row": 63,
+          "column": 12,
+          "state": 0
+        }
+      ]
+    },
+    {
+      "time": "2026-10-03T15:00:00+00:00",
+      "elevation_degrees": 19.261095444553103,
+      "azimuth_degrees": 240.33646790135737,
+      "receivers": [
+        {
+          "row": 0,
+          "column": 23,
+          "state": 2
+        },
+        {
+          "row": 3,
+          "column": 50,
+          "state": 2
+        },
+        {
+          "row": 7,
+          "column": 8,
+          "state": 2
+        },
+        {
+          "row": 9,
+          "column": 38,
+          "state": 2
+        },
+        {
+          "row": 12,
+          "column": 49,
+          "state": 2
+        },
+        {
+          "row": 16,
+          "column": 48,
+          "state": 2
+        },
+        {
+          "row": 20,
+          "column": 29,
+          "state": 2
+        },
+        {
+          "row": 22,
+          "column": 54,
+          "state": 2
+        },
+        {
+          "row": 25,
+          "column": 52,
+          "state": 2
+        },
+        {
+          "row": 29,
+          "column": 28,
+          "state": 2
+        },
+        {
+          "row": 35,
+          "column": 55,
+          "state": 2
+        },
+        {
+          "row": 40,
+          "column": 16,
+          "state": 2
+        },
+        {
+          "row": 43,
+          "column": 56,
+          "state": 2
+        },
+        {
+          "row": 48,
+          "column": 4,
+          "state": 2
+        },
+        {
+          "row": 57,
+          "column": 9,
+          "state": 0
+        },
+        {
+          "row": 63,
+          "column": 12,
+          "state": 0
+        }
+      ]
+    }
+  ],
+  "limits": "No physical ground/foliage validation or horizon ceiling is claimed. Unblocked finite rays remain unknown. Compact-grid real-scene accuracy, score sensitivity and city-scale performance remain open."
+}
