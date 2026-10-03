@@ -31,6 +31,7 @@ export interface ShadeResponse {
   states: string;
   counts: ShadeCounts;
   shade: ShadeMetadata;
-  availability: "unknown" | "unsupported";
+  availability: "approximate" | "unknown" | "unsupported";
+  model?: "survey-raytrace" | "building-shadow-approximation";
   explanation: string;
 }

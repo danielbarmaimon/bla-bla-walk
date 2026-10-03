@@ -28,6 +28,7 @@ def prepared(tmp_path, monkeypatch):
         settings = json.loads((ROOT / "config" / name).read_text())
         if name == "shade-service.json":
             settings["halo_metres"] = 2
+            settings["receiver_policy"] = "unknown-until-compact-scene-validation"
         (tmp_path / "config" / name).write_text(json.dumps(settings))
     boundary = {
         "type": "Polygon",
@@ -294,3 +295,93 @@ def test_service_busy_maps_to_retryable_503(prepared, monkeypatch):
     result = TestClient(main.app).post("/api/shade", json=request())
     assert result.status_code == 503
     assert result.headers["retry-after"] == "1"
+
+
+def building_model(prepared):
+    service, manifest = prepared
+    install_flags(service, manifest)
+    settings_path = service.root / "config/shade-service.json"
+    settings = json.loads(settings_path.read_text())
+    settings.update(receiver_policy="building-shadow-approximation", halo_metres=20)
+    settings_path.write_text(json.dumps(settings))
+    ray_path = service.root / "config/shade.json"
+    rays = json.loads(ray_path.read_text())
+    rays["maximum_ray_distance_metres"] = 20
+    ray_path.write_text(json.dumps(rays))
+    (service.root / "config/building-shade.json").write_text(
+        json.dumps(
+            {
+                "cell_size_metres": 1,
+                "maximum_ray_distance_metres": 20,
+                "ground_difference_metres": 2,
+            }
+        )
+    )
+    directory = service.root / ".cache/buildings"
+    directory.mkdir(parents=True)
+    feature = {
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [2610501, 1266498],
+                    [2610502, 1266498],
+                    [2610502, 1266502],
+                    [2610501, 1266502],
+                    [2610501, 1266498],
+                ]
+            ],
+        },
+        "height_m": 20,
+    }
+    path = directory / "buildings.json"
+    path.write_text(json.dumps([feature]))
+    boundary = json.loads((service.root / "data/tile-inventory.json").read_text())
+    (directory / "manifest.json").write_text(
+        json.dumps(
+            {
+                "file": path.name,
+                "sha256": sha256_file(path),
+                "version": "building-test-v1",
+                "coverage": boundary["boundary"]["geometry"],
+                "attribution": "OpenStreetMap contributors",
+            }
+        )
+    )
+    return service, path
+
+
+def test_building_api_labels_positive_states_and_reuses_cache(prepared):
+    service, _ = building_model(prepared)
+    value = ShadeRequest.model_validate(request())
+    response, hit = service.respond(value)
+    assert not hit and response.availability == "approximate"
+    assert response.model == "building-shadow-approximation"
+    assert response.counts.sunlit + response.counts.shaded > 0
+    assert response.counts.unknown > 0
+    assert "Tree shade and terrain relief are excluded" in response.explanation
+    assert "20m" in response.explanation
+    assert service.respond(value)[1]
+    response, _ = service.respond(
+        ShadeRequest.model_validate(request(requested_time="2026-06-21T00:00:00Z"))
+    )
+    assert response.counts.night > 0 and response.counts.shaded == 0
+
+
+def test_changed_building_file_cannot_reuse_cached_data(prepared):
+    service, path = building_model(prepared)
+    value = ShadeRequest.model_validate(request())
+    service.respond(value)
+    path.write_text("[]")
+    with pytest.raises(ValueError, match="footprint checksum"):
+        service.respond(value)
+
+
+def test_building_model_requires_matching_ray_extent(prepared):
+    service, _ = building_model(prepared)
+    path = service.root / "config/building-shade.json"
+    settings = json.loads(path.read_text())
+    settings["maximum_ray_distance_metres"] = 21
+    path.write_text(json.dumps(settings))
+    with pytest.raises(ValueError, match="policy mismatch"):
+        service.respond(ShadeRequest.model_validate(request()))

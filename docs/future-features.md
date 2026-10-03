@@ -47,3 +47,12 @@ Before using any of these cues in the demo, test a short scripted route with peo
 - Confirm who would prepare and send printed maps and how delivery timing is represented.
 
 The first demo only shows the scripted interaction and simulated map-request confirmation. Live calls and actual map delivery remain future work.
+
+## Physically verified city-wide shade
+
+The completed T10 route approximation covers building-cast shadows only. Before
+expanding it into a physical city-wide shade model, independently check walking
+ground, canopy/bridge/tunnel receivers, building/survey alignment, tree behavior,
+terrain relief and a proven horizon extent. Validate shade boundaries against
+observations and route-metre sensitivity, then benchmark full-city coverage and
+low-sun halos. The finite building approximation is not that acceptance evidence.

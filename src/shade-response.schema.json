@@ -69,7 +69,7 @@
     }
   },
   "additionalProperties": false,
-  "description": "North-first row-major uint8 raster encoded as base64, with ShadeState codes.\n\nUnknown includes unsupported receivers and geometry gaps. Night is distinct\nfrom shaded. This numerical output is not accepted physical-scene evidence.\nThe API serves local geometry in both operating modes; no provider calls.",
+  "description": "North-first row-major uint8 raster encoded as base64, with ShadeState codes.\n\nUnknown includes unsupported receivers and geometry gaps. Night is distinct\nfrom shaded. Model and availability distinguish the finite building approximation\nfrom strict survey rays. This is not observed physical-scene evidence.\nThe API serves local geometry in both operating modes; no provider calls.",
   "properties": {
     "bounds": {
       "maxItems": 4,
@@ -123,10 +123,20 @@
     },
     "availability": {
       "enum": [
+        "approximate",
         "unknown",
         "unsupported"
       ],
       "title": "Availability",
+      "type": "string"
+    },
+    "model": {
+      "default": "survey-raytrace",
+      "enum": [
+        "survey-raytrace",
+        "building-shadow-approximation"
+      ],
+      "title": "Model",
       "type": "string"
     },
     "explanation": {

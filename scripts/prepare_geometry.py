@@ -199,7 +199,7 @@ def prepare_pair_flags(tile_id, directory, assets, version):
     return record
 
 
-def prepare_geometry(workers=2, limit=None):
+def prepare_geometry(workers=2, limit=None, tiles=None):
     """Checkpoint each asset; preserve inventory gaps instead of synthesising data."""
     inventory_path = ROOT / "data/tile-inventory.json"
     inventory = json.loads(inventory_path.read_text())
@@ -222,7 +222,10 @@ def prepare_geometry(workers=2, limit=None):
         for kind in ("surface", "terrain")
         if tile[kind]["status"] == "catalog_available"
     ]
-    selected = jobs[:limit] if limit else jobs
+    selected = [
+        (tile, kind) for tile, kind in jobs if tiles is None or tile["tile"] in tiles
+    ]
+    selected = selected[:limit] if limit else selected
     manifest = {
         "settings": settings,
         "preparation_version": version,
@@ -316,7 +319,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--workers", type=int, choices=range(1, 5), default=2)
     parser.add_argument("--limit", type=int, help="Prepare a bounded validation batch")
+    parser.add_argument(
+        "--tiles", help="Comma-separated inventory tiles for a bounded route halo"
+    )
     args = parser.parse_args()
     if args.limit is not None and args.limit < 1:
         parser.error("--limit must be positive")
-    raise SystemExit(0 if prepare_geometry(args.workers, args.limit) else 1)
+    raise SystemExit(
+        0
+        if prepare_geometry(
+            args.workers, args.limit, set(args.tiles.split(",")) if args.tiles else None
+        )
+        else 1
+    )

@@ -145,7 +145,8 @@ class ShadeResponse(ContractModel):
     """North-first row-major uint8 raster encoded as base64, with ShadeState codes.
 
     Unknown includes unsupported receivers and geometry gaps. Night is distinct
-    from shaded. This numerical output is not accepted physical-scene evidence.
+    from shaded. Model and availability distinguish the finite building approximation
+    from strict survey rays. This is not observed physical-scene evidence.
     The API serves local geometry in both operating modes; no provider calls.
     """
 
@@ -159,7 +160,10 @@ class ShadeResponse(ContractModel):
     states: str
     counts: ShadeCounts
     shade: ShadeMetadata
-    availability: Literal["unknown", "unsupported"]
+    availability: Literal["approximate", "unknown", "unsupported"]
+    model: Literal["survey-raytrace", "building-shadow-approximation"] = (
+        "survey-raytrace"
+    )
     explanation: str
 
 

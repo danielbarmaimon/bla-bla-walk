@@ -1,0 +1,414 @@
+{
+  "scope": "Building-only flat-ground 1500m approximation; cell counts, not route-distance metrics",
+  "offline_external_http_attempts": 0,
+  "routes": {
+    "route_1": {
+      "complete_polyline": true,
+      "source_points": 98,
+      "chunks": [
+        {
+          "bounds_lv95": [
+            2611175.077277,
+            1266375.408292,
+            2611417.401023,
+            1267264.458395
+          ],
+          "cold": [
+            {
+              "seconds": 2.778823,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9827,
+                "sunlit": 32,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            },
+            {
+              "seconds": 2.715229,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9829,
+                "sunlit": 30,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            },
+            {
+              "seconds": 2.71151,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9828,
+                "sunlit": 31,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            }
+          ],
+          "warm": [
+            {
+              "seconds": 0.04718,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9827,
+                "sunlit": 32,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            },
+            {
+              "seconds": 0.049431,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9829,
+                "sunlit": 30,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            },
+            {
+              "seconds": 0.047352,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9828,
+                "sunlit": 31,
+                "shaded": 813,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 289291
+            }
+          ]
+        },
+        {
+          "bounds_lv95": [
+            2611213.962237,
+            1267252.458395,
+            2611297.544713,
+            1267504.713222
+          ],
+          "cold": [
+            {
+              "seconds": 1.886221,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            },
+            {
+              "seconds": 1.75728,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            },
+            {
+              "seconds": 1.843865,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            }
+          ],
+          "warm": [
+            {
+              "seconds": 0.045711,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            },
+            {
+              "seconds": 0.04824,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            },
+            {
+              "seconds": 0.046135,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2312,
+                "sunlit": 0,
+                "shaded": 358,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 29604
+            }
+          ]
+        }
+      ]
+    },
+    "route_2": {
+      "complete_polyline": true,
+      "source_points": 113,
+      "chunks": [
+        {
+          "bounds_lv95": [
+            2611379.927424,
+            1266375.408292,
+            2611550.648562,
+            1267272.246067
+          ],
+          "cold": [
+            {
+              "seconds": 2.698084,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9194,
+                "sunlit": 52,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            },
+            {
+              "seconds": 2.913558,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9199,
+                "sunlit": 47,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            },
+            {
+              "seconds": 3.027471,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 9198,
+                "sunlit": 48,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            }
+          ],
+          "warm": [
+            {
+              "seconds": 0.047184,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9194,
+                "sunlit": 52,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            },
+            {
+              "seconds": 0.048113,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9199,
+                "sunlit": 47,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            },
+            {
+              "seconds": 0.065315,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 9198,
+                "sunlit": 48,
+                "shaded": 768,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 206875
+            }
+          ]
+        },
+        {
+          "bounds_lv95": [
+            2611213.962237,
+            1267260.246067,
+            2611416.227985,
+            1267504.713222
+          ],
+          "cold": [
+            {
+              "seconds": 2.620654,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            },
+            {
+              "seconds": 2.447705,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            },
+            {
+              "seconds": 2.082103,
+              "cache": "MISS",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            }
+          ],
+          "warm": [
+            {
+              "seconds": 0.060775,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            },
+            {
+              "seconds": 0.061915,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            },
+            {
+              "seconds": 0.046309,
+              "cache": "HIT",
+              "corridor_cell_counts": {
+                "unknown": 2687,
+                "sunlit": 0,
+                "shaded": 583,
+                "night": 0
+              },
+              "availability": "approximate",
+              "response_bytes": 67569
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concurrent": {
+    "wall_seconds": 4.054557,
+    "requests": [
+      {
+        "seconds": 3.615255,
+        "cache": "MISS",
+        "corridor_cell_counts": {
+          "unknown": 9827,
+          "sunlit": 32,
+          "shaded": 813,
+          "night": 0
+        },
+        "availability": "approximate",
+        "response_bytes": 289291
+      },
+      {
+        "seconds": 2.470208,
+        "cache": "MISS",
+        "corridor_cell_counts": {
+          "unknown": 2687,
+          "sunlit": 0,
+          "shaded": 583,
+          "night": 0
+        },
+        "availability": "approximate",
+        "response_bytes": 67569
+      }
+    ]
+  },
+  "tile_seam_shared_cells": 56,
+  "tile_seam_disagreements": 0,
+  "night": {
+    "seconds": 2.386101,
+    "cache": "MISS",
+    "corridor_cell_counts": {
+      "unknown": 8774,
+      "sunlit": 0,
+      "shaded": 0,
+      "night": 1898
+    },
+    "availability": "approximate",
+    "response_bytes": 289291
+  },
+  "cold_p95_seconds": 2.964818,
+  "warm_p95_seconds": 0.063445,
+  "peak_process_bytes": 591167488,
+  "cache_bytes": 648169,
+  "budgets": {
+    "cold_under_5s": true,
+    "warm_under_half_second": true,
+    "peak_under_2gib": true
+  },
+  "building_source": {
+    "version": "d1b47d7406ce723533a2fe76c1001d3c2eb9ded1925085aa04516702ed4778e5",
+    "retrieved_at": "2026-10-03T17:48:23.016556+00:00",
+    "provider_timestamp": "2026-07-15T15:22:01Z",
+    "feature_count": 17366,
+    "unresolved_geometries": 1
+  },
+  "geometry_version": "e5285070e4cc3888bcba23a762007c4e5e670eceb4bf2eccd0550c6aae6a12bf"
+}

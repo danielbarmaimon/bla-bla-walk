@@ -85,7 +85,7 @@ Keep preparation at two workers or fewer. The full local output is about 3.7 GiB
 
 ## Development checks
 
-### Shade API checkpoint
+### Building-shadow approximation API
 
 `POST /api/shade` accepts an aware timestamp and west/south/east/north viewport bounds in LV95 (EPSG:2056) metres, up to 1000m per side after outward 1m snapping. An optional LV95 `corridor` polyline and `corridor_width_m` restrict the requested cells. The canonical request/response models live in [interfaces.py](backend/bla_bla_walk/interfaces.py); generated client schemas and declarations are separate from the existing map snapshot contract.
 
@@ -95,23 +95,39 @@ For example, POST this JSON to the running local or external server:
 {"bounds":[2610000,1266000,2611000,1267000],"requested_time":"2026-06-21T12:00:00Z"}
 ```
 
-The response contains north-first, row-major uint8 raster bytes encoded as base64, snapped bounds, dimensions, per-state counts and requested/effective time plus preparation version. States are 0 unknown, 1 sunlit, 2 shaded and 3 night. **The compact production path currently returns unknown for every cell:** quantized height equality does not establish a verified walking receiver, and compact real-scene validation remains unfinished. Outside the admitted city/corridor cells, coverage is unsupported. This API is a checkpoint for integration, not a useful shade layer yet; T6 still owns browser wiring and T10 remains open.
+The response contains north-first, row-major uint8 raster bytes encoded as base64, snapped bounds, dimensions, per-state counts and requested/effective time plus preparation version. States are 0 unknown, 1 sunlit, 2 shaded and 3 night. The default model is the user-approved **building-shadow approximation along the saved demo routes**: dated OpenStreetMap footprints, explicit mapped metre heights or survey-derived roof heights cast onto flat ground within a declared 1500m reach. `model` identifies this approximation and `availability` is approximate when any supported cells are calculated. Sunlit means no modeled building shadow within that reach. Trees, terrain relief and physically verified walking ground are excluded; missing heights, source flags and coverage remain unknown. Counts describe raster cells, not walking distances or route scores. T5/T6 still own route evaluation and browser integration.
+
+Prepare the model and route-halo survey inputs once while connected (about 347MB of survey source transfer in the recorded preparation):
+
+```sh
+python scripts/prepare_building_shade.py --geometry
+```
+
+The sanitized footprint cache stays local under `.cache/buildings/`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
+
+Reproduce full-polyline, cold/warm, concurrent, seam, night and offline API checks:
+
+```sh
+python scripts/validate_building_shade.py --repeats 3
+```
+
+[Recorded route validation](data/fixtures/building-shade-validation.json) reports corridor cell counts separately from the surrounding unknown raster. It tests both full saved polylines in bounded chunks, zero external HTTP attempts, matching shared seam cells and process memory. Unknown cells remain prominent; this is an engineering validation of the approximation, not observed shade accuracy.
 
 Shade uses local geometry and solar calculations in both online and offline modes; it makes no provider requests. Missing raster cells/buffer inputs remain unknown. A missing/invalid manifest or corrupt prepared file returns 503, oversized viewports return 413 and invalid request fields return 422. Busy workers return 503 with Retry-After. No geometry is downloaded automatically.
 
 [Service limits](config/shade-service.json) bound geometry to 16 million cells per request, two simultaneous calculations and 128MiB of serialized cache entries per server process. Restart after changing worker/cache limits. Identical misses share one calculation; a different request is rejected when both workers are occupied. Cache keys include exact UTC time, geometry/preparation and implementation versions, encoding/grid, extent, corridor, boundary, source-file presence/size/mtime and ray/receiver policy. Grid hashes are verified on cold reads. There are no five-minute buckets or disk cache; restart clears the cache. The X-Shade-Cache header indicates MISS/HIT. HTTP responses use no-store because local input availability can change.
 
-Reproduce the integration and separate synthetic ray-kernel measurements:
+The earlier strict survey checkpoint has separate integration and synthetic ray-kernel measurements:
 
 ```sh
 python scripts/benchmark_shade.py --repeats 5
 ```
 
-[Recorded performance](data/fixtures/shade-performance.json) includes 1km centre, vegetation and boundary views and two concurrent requests. The real API measurements exercise geometry loading and unknown output; the synthetic benchmark exercises actual rays with an analytically verified ceiling. Neither establishes physical-scene accuracy or useful city-wide shade throughput. See [Slot F's handoff](handoff/t10-cache-api.md) for the remaining acceptance checks.
+[Recorded performance](data/fixtures/shade-performance.json) includes 1km centre, vegetation and boundary views and two concurrent requests. The real API measurements exercise geometry loading and unknown output; the synthetic benchmark exercises actual rays with an analytically verified ceiling. Neither establishes physical-scene accuracy or useful city-wide shade throughput. These historical measurements precede the building model; use the route validator above for its current measurements.
 
 ### Calculation validation
 
-Slot E's T10 calculation checkpoint has analytic and independent numerical checks; see [its handoff](handoff/t10-shade-calculation.md) for remaining T10 acceptance work. To reproduce the small real-raster spot check, supply the native source pair for tile 2610-1266 from [the pinned inventory](data/tile-inventory.json), saved locally as .hack/t10/surface.tif and .hack/t10/terrain.tif. The validator verifies both catalogue checksums and does not download files:
+Slot E's strict survey calculator has analytic and independent numerical checks; [its handoff](handoff/t10-shade-calculation.md) records the completed approximation scope and remaining integration work. To reproduce the small real-raster spot check, supply the native source pair for tile 2610-1266 from [the pinned inventory](data/tile-inventory.json), saved locally as .hack/t10/surface.tif and .hack/t10/terrain.tif. The validator verifies both catalogue checksums and does not download files:
 
 ```sh
 python scripts/validate_shade_sample.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --output .hack/t10/shade-validation.json
@@ -149,8 +165,8 @@ Activate the environment and run from the repository root:
 ```sh
 python backend/export_contract.py
 python -m pytest -c backend/pyproject.toml backend/tests
-python -m ruff check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py
-python -m ruff format --check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py
+python -m ruff check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py scripts/prepare_building_shade.py scripts/validate_building_shade.py
+python -m ruff format --check --config backend/pyproject.toml backend scripts/fetch_browser_assets.py scripts/format_browser.py scripts/prepare_geometry.py scripts/prepare_offline.py scripts/verify_prepared_data.py scripts/benchmark_shade.py scripts/prepare_building_shade.py scripts/validate_building_shade.py
 python scripts/format_browser.py --check
 bash scripts/doc-check.sh --strict
 ```
@@ -165,7 +181,7 @@ See [docs/SOURCES.md](docs/SOURCES.md).
 
 ## Limits
 
-Fixture mode uses invented overlays. Online/offline provider modes use admitted sources with timestamps and uncertainty; offline data never claims a live refresh. Prepared geometry has coverage gaps and mismatched survey years; 1m grid spacing does not make native 2m terrain more detailed, and 2m elevation quantization can change shadows. Shade accuracy/performance and route comparison are not established. Scope, unknowns, and demo fallback are documented in the [design brief](docs/design.md).
+Fixture mode uses invented overlays. Online/offline provider modes use admitted sources with timestamps and uncertainty; offline data never claims a live refresh. Prepared geometry has coverage gaps and mismatched survey years; 1m grid spacing does not make native 2m terrain more detailed, and 2m elevation quantization can change shadows. Physical shade accuracy, city-wide throughput and route comparison are not established; the route building approximation has bounded numerical and performance checks. Scope, unknowns, and demo fallback are documented in the [design brief](docs/design.md).
 
 ## Team
 
