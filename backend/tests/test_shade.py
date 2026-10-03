@@ -362,3 +362,56 @@ def test_audited_bridge_reference_keeps_t8_scene_flag_unknown():
 def test_rejects_invalid_grid_and_ray_options(options):
     with pytest.raises(ValueError):
         mask(np.zeros((30, 30)), **options)
+
+
+@pytest.mark.parametrize("height", [3, 5, 7])
+@pytest.mark.parametrize("elevation", [30, 45, 60])
+@pytest.mark.parametrize("datum", [0, 0.6])
+def test_compact_known_object_edges_follow_encoded_relative_height(
+    height, elevation, datum
+):
+    """Absolute rounding changes relative caster height and therefore edge length."""
+    surface = np.full((160, 160), datum)
+    surface[60:64, 80:82] += height
+    terrain = np.full_like(surface, datum)
+    native_states = mask(
+        surface, terrain, cell_size_m=0.5, elevation_deg=elevation, horizon_ceiling_m=20
+    )
+    settings = geometry_settings()
+    encoded = compact_heights(surface, "surface", 0.5, settings) * 2.0
+    ground = compact_heights(terrain[::4, ::4], "terrain", 2, settings) * 2.0
+    compact_states = mask(
+        encoded, ground, elevation_deg=elevation, horizon_ceiling_m=20
+    )
+    slope = math.tan(math.radians(elevation))
+    encoded_height = float(encoded[31, 40] - ground[31, 40])
+    assert np.count_nonzero(native_states[62, :80] == SHADED) * 0.5 == pytest.approx(
+        math.ceil(height / (0.5 * slope) - 0.5) * 0.5
+    )
+    assert np.count_nonzero(compact_states[31, :40] == SHADED) == math.ceil(
+        encoded_height / slope - 0.5
+    )
+    for column in (30, 34, 38):
+        assert compact_states[31, column] == independent_reference(
+            encoded,
+            31,
+            column,
+            90,
+            elevation,
+            20,
+            receiver_height=float(ground[31, column]),
+            terrain=ground,
+        )
+
+
+def test_pre_encoding_scene_flags_prevent_rounding_from_hiding_invalid_geometry():
+    """A decoder must carry validity evidence from before height quantization."""
+    surface = np.full((30, 30), 1.1)
+    terrain = np.full_like(surface, 1.2)
+    settings = geometry_settings()
+    encoded_surface = compact_heights(surface, "surface", 1, settings) * 2.0
+    encoded_terrain = compact_heights(terrain, "surface", 1, settings) * 2.0
+    # Both arrays round to 2m: heights alone cannot recover the native mismatch.
+    assert np.array_equal(encoded_surface, encoded_terrain)
+    flags = np.full(surface.shape, 3, dtype="uint8")
+    assert np.all(mask(encoded_surface, encoded_terrain, cell_flags=flags) == UNKNOWN)

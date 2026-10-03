@@ -79,6 +79,7 @@ def shadow_mask(
     cell_flags=None,
     receivers=None,
     receiver_elevations=None,
+    receiver_surface_elevations=None,
     finite_model: bool = False,
 ):
     """Trace ground-to-sun rays through every intersected raster cell.
@@ -89,6 +90,9 @@ def shadow_mask(
     small surface/terrain differences, callers can supply absolute metre receiver
     elevations plus an explicitly verified ground/corridor mask. Receivers below
     the surface remain unknown: these grids cannot resolve canopy interiors.
+    For compact grids, receiver_surface_elevations may supply preserved native
+    maxima so rounding does not bury a verified ground receiver in its own cell.
+    It requires explicit receiver support/elevations and pre-encoding cell flags.
 
     horizon_ceiling_m is an externally VERIFIED absolute elevation bound on all
     potential blockers beyond and within this grid. Never infer it from local
@@ -131,6 +135,21 @@ def shadow_mask(
                 "Receiver elevations require a matching explicit receiver mask"
             )
         selected = valid & receivers & np.isfinite(base) & (base >= surface)
+    if receiver_surface_elevations is not None:
+        reference = np.ma.asarray(receiver_surface_elevations, dtype="float32").filled(
+            np.nan
+        )
+        if (
+            receivers is None
+            or receiver_elevations is None
+            or cell_flags is None
+            or reference.shape != surface.shape
+        ):
+            raise ValueError(
+                "Native receiver surfaces require support, heights and flags"
+            )
+        selected = valid & receivers & np.isfinite(base) & np.isfinite(reference)
+        selected &= base >= reference
     output = np.full(surface.shape, UNKNOWN, dtype="uint8")
     if elevation_deg <= 0:
         output[selected] = NIGHT

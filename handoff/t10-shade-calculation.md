@@ -1,6 +1,6 @@
 # T10 — building-cast shadows along demo routes
 
-Status: in progress — agreed approximation validated; sharing and main update pending.
+Status: done — user-approved building-shadow approximation; ready for PR review, not merged.
 Branch: feat/t10-receiver-validation
 
 ## Goal and decision
@@ -22,6 +22,13 @@ unknown. Night remains separate. The wire contract labels model and approximate
 availability. The strict survey calculator remains available and unchanged in
 its horizon requirements.
 
+## Earlier merged checkpoints
+
+PRs #29, #30 and #32 are merged. Their strict calculator, compact receiver
+evidence model and validator remain intact. The six-tile pipeline comparison
+is separately named scripts/validate_compact_pipeline.py and
+data/fixtures/compact-pipeline-validation.json to retain both independent audits.
+
 ## Done
 
 - Source flag preservation, compact encoding audit and six-tile numerical
@@ -36,24 +43,28 @@ its horizon requirements.
   Two distinct concurrent cold calls succeed; zero external HTTP attempts.
 - Model/parser/API tests cover analytic shadows, missing heights and geometry,
   explicit heights, coverage limits, ground proxy, source flags, cache identity
-  and tag sanitization. Full regression: 142 passed, one browser test skipped;
-  two additional focused checks added since that full run also pass.
+  and tag sanitization. Updated legacy browser checks to the current route-screen
+  controls. Final regression after main integration: 171 passed, one browser
+  check skipped because offline imagery/provider snapshots are absent.
 - Reproduction and interpretation are documented in README and docs/SOURCES.md;
   physical/city-wide acceptance is retained in docs/future-features.md.
 
 ## Next
 
-1. Bring this branch up to current origin/main, resolve shared-file conflicts
-   without losing the new route UI, PET contract or independent compact audit.
-2. Rerun contracts, complete regression, strict docs and privacy guard, then
-   commit/push and create the review PR. Explicit approval is required to merge.
-3. T5/T6 still own scoring and browser shade integration; do not claim those
-   complete from the API checks. Many corridor cells deliberately remain unknown.
+1. Review the continuation PR; merging requires an explicit yes for that PR.
+2. T5/T6 own route-distance scoring and browser shade integration. Supply
+   corridor requests in bounded chunks, show approximate model identity and
+   requested/effective times, retain unknown cells and keep night separate.
+3. Preparation: python scripts/prepare_building_shade.py --geometry. Validation:
+   python scripts/validate_building_shade.py --repeats 3. Large inputs remain local.
+4. Broader observed ground/shade, vegetation, terrain and city-wide acceptance
+   are future work documented in docs/future-features.md. Many corridor cells
+   deliberately remain unknown; do not invent percentages of shaded route metres.
 
 ## Resume prompt
 
-Finish the user-approved T10 building-shadow approximation on
-feat/t10-receiver-validation. Use local .cache/buildings and data/geometry.
-Complete validation and documentation, preserve unknown/night states and model
-labels, then save and share for review. Do not restore the obsolete requirement
-for independently observed ground before completing this agreed approximation.
+Review the completed T10 building-shadow approximation on
+feat/t10-receiver-validation. Reuse the dated local building cache and prepared
+geometry, the canonical labelled response and recorded route validation. Carry
+T5/T6 browser/scoring integration forward without claiming physical or city-wide
+shade acceptance. Do not merge this PR without its explicit approval.

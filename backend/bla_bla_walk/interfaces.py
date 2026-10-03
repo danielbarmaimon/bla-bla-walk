@@ -7,6 +7,7 @@ Feature tasks extend these models with a decision line before regeneration.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
 from typing import TYPE_CHECKING, Annotated, Any, Literal, Protocol
@@ -79,6 +80,24 @@ class ShadeState(IntEnum):
     SUNLIT = 1
     SHADED = 2
     NIGHT = 3
+
+
+@dataclass(frozen=True)
+class CompactReceiverEvidence:
+    """Server evidence recorded before quantization; never a browser payload.
+
+    Flags use native T8 bits 1/2/4, aggregated conservatively across each compact
+    cell. ground_candidates requires all source samples within the explicitly
+    supplied numerical ground-envelope tolerance; it does not prove walkability.
+    surface_elevations retains unrounded source maxima in absolute metres.
+    Slot F must intersect candidates with verified receiver support and retain
+    source checksums, grid alignment and evidence version in preparation/cache keys.
+    """
+
+    cell_flags: NDArray[np.uint8]
+    ground_candidates: NDArray[np.bool_]
+    surface_elevations: NDArray[np.float32]
+    maximum_surface_gap_m: float
 
 
 class ShadeCalculator(Protocol):
@@ -174,6 +193,18 @@ class RouteMetrics(ContractModel):
     duration_s: Annotated[float, Field(ge=0)]
 
 
+class PetRouteMetrics(ContractModel):
+    """Route length sampled by the provider's fixed historical PET classes."""
+
+    availability: Availability
+    scenario: str
+    resolution_m: Annotated[float, Field(gt=0)]
+    known_distance_m: Annotated[float, Field(ge=0)]
+    unknown_distance_m: Annotated[float, Field(ge=0)]
+    class_distances_m: dict[str, Annotated[float, Field(ge=0)]]
+    provenance: Provenance
+
+
 class MapFeature(ContractModel):
     """One display feature, with explicit evidence and unknown values."""
 
@@ -191,6 +222,7 @@ class MapFeature(ContractModel):
     drinking_water: Literal["yes", "no", "unknown"] | None = None
     shade: ShadeMetadata | None = None
     route: RouteMetrics | None = None
+    pet: PetRouteMetrics | None = None
 
 
 class MapLayer(ContractModel):

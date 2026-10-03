@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bla Bla Walk · Route preview</title>
+  <link rel="stylesheet" href="/vendor/ol.css">
+  <link rel="stylesheet" href="/src/theme.css">
+  <link rel="stylesheet" href="/poc-assets/poc.css">
+  <script src="/vendor/ol.js" defer></script>
+  <script src="/vendor/ajv2020.js" defer></script>
+  <script type="module" src="/poc-assets/poc.js"></script>
+</head>
+<body class="poc" data-view="plan">
+  <div class="app-shell">
+    <header class="site-header">
+      <a class="brand" href="/poc" aria-label="Bla Bla Walk home">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span>Bla Bla Walk</span>
+      </a>
+      <span class="preview-label">INTERACTIVE CONCEPT</span>
+    </header>
+
+    <main class="route-layout">
+      <section class="planner" aria-labelledby="planner-title">
+        <div class="section-heading">
+          <p class="kicker">BASEL, SWITZERLAND</p>
+          <h1 id="planner-title">Where are you going?</h1>
+          <p class="intro">Find a route that fits your day.</p>
+        </div>
+
+        <div class="journey-fields">
+          <div class="field-block">
+            <label for="origin-input">Starting point</label>
+            <div class="input-wrap">
+              <span class="input-icon" data-icon="map-pin" aria-hidden="true"></span>
+              <input id="origin-input" autocomplete="off" list="origin-options" placeholder="Enter a starting point">
+              <datalist id="origin-options"></datalist>
+              <button class="inside-button" id="gps-button" type="button">Use GPS</button>
+            </div>
+            <div class="field-actions">
+              <button class="text-button" id="pick-origin" type="button">Choose start on map</button>
+              <span id="origin-status" role="status">Finding your location…</span>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <label for="destination-input">Destination</label>
+            <div class="input-wrap">
+              <span class="input-icon" data-icon="search" aria-hidden="true"></span>
+              <input id="destination-input" autocomplete="off" placeholder="Search for a place">
+              <button class="inside-button" id="pick-destination" type="button">Pin on map</button>
+            </div>
+            <div class="suggestions" id="suggestions" role="listbox" aria-label="Suggested destinations" hidden></div>
+          </div>
+        </div>
+
+        <fieldset class="route-mode">
+          <legend>What matters most?</legend>
+          <div class="segmented">
+            <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest</button>
+            <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
+          </div>
+          <p class="helper">Both preferences show this example path. Calculated shade arrives later.</p>
+          <button class="example-button" id="try-example" type="button">Try SBB → Marktplatz example</button>
+        </fieldset>
+
+        <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
+          <div class="journey-card-heading"><span class="journey-tag">ROUTE PREVIEW</span><span id="journey-mode"></span></div>
+          <h2 id="journey-title"></h2>
+          <p id="journey-summary"></p>
+          <button class="primary-button" id="show-route" type="button">See route and steps <span data-icon="arrow-right" aria-hidden="true"></span></button>
+        </section>
+
+        <div class="quick-heading">
+          <div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div>
+          <p>Closest sample place</p>
+        </div>
+        <div class="quick-grid" id="quick-grid"></div>
+        <p class="prototype-note">The SBB → Marktplatz example follows a saved pedestrian street route. Route temperatures, rest points, and other destinations remain illustrative.</p>
+      </section>
+
+      <section class="map-screen" aria-label="Route map and directions">
+        <div class="map-topline">
+          <div><p class="kicker">YOUR JOURNEY</p><h2 id="map-title">Explore Basel</h2></div>
+          <button class="back-button" id="back-to-plan" type="button"><span data-icon="arrow-left" aria-hidden="true"></span> Plan trip</button>
+        </div>
+        <div class="map-controls" aria-label="Map display controls">
+          <div class="map-view-row">
+            <div class="map-view-switch" role="group" aria-label="Map view">
+              <button id="route-heat-view" type="button" aria-pressed="true">Coloured route</button>
+              <button id="area-heat-view" type="button" aria-pressed="false">Area heat</button>
+            </div>
+            <button class="reverse-button" id="reverse-heat" type="button" aria-pressed="false">Reverse heat colours</button>
+          </div>
+          <div class="layer-switches" role="group" aria-label="Show map layers">
+            <label><input type="checkbox" data-layer="fountains" checked> Fountains</label>
+            <label><input type="checkbox" data-layer="sensors" checked> Sensors</label>
+            <label><input type="checkbox" data-layer="landmarks" checked> Wayfinding cues</label>
+            <label><input type="checkbox" data-layer="shadows"> Shadows · example</label>
+            <label><input type="checkbox" data-layer="coolPlaces"> Cool places · AC unknown</label>
+            <label><input type="checkbox" data-layer="heatmap" checked> Area heat · example</label>
+          </div>
+          <p id="layer-note">The heat surface and shadows are illustrative. Cooling-place AC remains unverified.</p>
+        </div>
+        <div class="map-and-steps">
+          <div class="map-wrap">
+            <div id="poc-map" tabindex="0" role="region" aria-label="Interactive Basel map. Select a map pin to set a place."></div>
+            <div class="map-overlay" id="map-overlay">Loading checked street route…</div>
+            <div class="map-legend" id="map-legend" hidden>
+              <strong id="legend-title">Example route temperature</strong>
+              <div id="ramp-display">
+                <img id="heat-ramp" src="/poc-assets/assets/inferno.png" alt="Purple through red to yellow temperature colour ramp">
+                <div class="ramp-labels"><span>26°C</span><span>29°C</span><span>36°C</span></div>
+              </div>
+              <p id="legend-note">Start 26°C · peak 36°C · end 31°C</p>
+              <p><span class="legend-stop"><img src="/poc-assets/icons/armchair.svg" alt=""></span> Rest or pause on route</p>
+              <p><span class="legend-stop"><img src="/poc-assets/icons/droplets.svg" alt=""></span> Fountain stop, status unknown</p>
+              <p id="legend-fountains"><span class="legend-dot fountain-dot"></span> Fountains within 50 m</p>
+              <p id="legend-sensors"><span class="legend-dot sensor-dot"></span> Sensors within 250 m</p>
+              <p id="legend-wayfinding"><span class="legend-dot landmark-dot"></span> Wayfinding cues · nearby</p>
+              <p id="legend-cool"><span class="legend-dot cool-dot"></span> Cool place · AC unknown</p>
+              <p id="legend-shadow"><span class="legend-dot shadow-dot"></span> Shadows · example only</p>
+            </div>
+            <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
+          </div>
+          <aside class="steps" aria-labelledby="steps-title">
+            <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to preview directions.</p><p id="source-status" role="status"></p></div>
+            <ol id="step-list"></ol>
+            <details class="nearby-details" id="nearby-details" hidden>
+              <summary id="nearby-summary">Nearby source points</summary>
+              <ul id="nearby-list"></ul>
+            </details>
+            <div class="steps-footer"><span data-icon="info" aria-hidden="true"></span><p>OSM pedestrian route via FOSSGIS. Fountain locations: IWB, noncommercial. Temperatures: meteoblue via Basel-Stadt. Lynch-inspired cues use OSM. Heat and shadows are examples. Check water, seating, visibility, AC, and access.</p></div>
+          </aside>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

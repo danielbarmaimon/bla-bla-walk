@@ -164,6 +164,17 @@ export const snapshotSchema = {
             }
           ],
           "default": null
+        },
+        "pet": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PetRouteMetrics"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -232,6 +243,64 @@ export const snapshotSchema = {
         "features"
       ],
       "title": "MapLayer",
+      "type": "object"
+    },
+    "PetRouteMetrics": {
+      "additionalProperties": false,
+      "description": "Route length sampled by the provider's fixed historical PET classes.",
+      "properties": {
+        "availability": {
+          "enum": [
+            "current",
+            "stale",
+            "missing",
+            "unknown",
+            "unsupported"
+          ],
+          "title": "Availability",
+          "type": "string"
+        },
+        "scenario": {
+          "title": "Scenario",
+          "type": "string"
+        },
+        "resolution_m": {
+          "exclusiveMinimum": 0,
+          "title": "Resolution M",
+          "type": "number"
+        },
+        "known_distance_m": {
+          "minimum": 0,
+          "title": "Known Distance M",
+          "type": "number"
+        },
+        "unknown_distance_m": {
+          "minimum": 0,
+          "title": "Unknown Distance M",
+          "type": "number"
+        },
+        "class_distances_m": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "number"
+          },
+          "title": "Class Distances M",
+          "type": "object"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        }
+      },
+      "required": [
+        "availability",
+        "scenario",
+        "resolution_m",
+        "known_distance_m",
+        "unknown_distance_m",
+        "class_distances_m",
+        "provenance"
+      ],
+      "title": "PetRouteMetrics",
       "type": "object"
     },
     "PointGeometry": {

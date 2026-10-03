@@ -10,7 +10,7 @@ The shortest walk may involve exposed streets, few places to rest, or inaccessib
 
 ## Project status
 
-The map supports online provider observations/fountain locations, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Calculated shade and route comparison are still later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
+The map supports online provider observations/fountain locations, a historical PET heat layer with route-class distances, downloaded offline maps and saved provider snapshots, and separate synthetic fixtures. The PET map overlay needs internet; saved route classes remain visible offline with a stale label. PET describes a fixed 14:00 summer scenario. FastAPI serves the browser and API; no JavaScript package manager or build step is required. Compact city geometry preparation is available. Current-time shade and the full weighted route comparison remain later tasks; downloading heights does not enable those features by itself. See the [current preparation handoff](handoff/data-compact-offline.md). T8 also keeps a native 0.5 m preparation for geometry validation; see [T8's handoff](handoff/t8.md).
 
 - [Design and demo proposal](docs/design.md)
 - [Build tasks and acceptance checks](docs/plan.md)
@@ -37,6 +37,10 @@ python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --por
 
 Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .venv` and run the Activate.ps1 script inside the environment's Scripts folder in PowerShell instead of the first two commands.
 
+## Route planner
+
+The root page now combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, sample-place search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Only that endpoint pair has checked route geometry; choosing other sample places shows that no checked route is available. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Fountain and sensor summaries come from the selected fixture, online, or offline snapshot. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. Current shade is not calculated, so “More shade” does not rank routes. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
+
 The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL selects synthetic fixtures; use the links in the app to choose a mode.
 
 ## Download data before offline use
@@ -52,7 +56,7 @@ python scripts/verify_prepared_data.py
 
 Geometry preparation downloads all available pinned city/buffer assets, verifies catalogue SHA-256 checksums, and writes compressed 1m grids with 2m height steps into ignored `data/geometry/`. It keeps native 0.5m surface detail until max aggregation and uses the smaller native 2m terrain sources. Verified temporary source downloads are discarded after conversion. The local manifest records source URLs/checksums, preparation version, output checksums and coverage gaps. Run the same command again to resume; `--limit 2` is a small validation batch, not full preparation. Encoding and accuracy limitations live in [the source register](docs/SOURCES.md#compact-geometry-and-offline-preparation).
 
-Offline preparation saves sanitized observation/fountain layers and all basemap tiles in the finite advertised Basel rectangle at zooms 12–17. It retains source attribution and saved timestamps. Basemap downloads resume from checksum-verified files. Inspect .cache/basemap/manifest.json (generated locally by offline preparation) for `complete: true` and data/geometry/manifest.json (generated locally by geometry preparation) for `complete_available_inventory: true`; the latter means all available assets, not that the buffer gaps disappeared. Large downloads stay on this computer and are not included in a Git clone.
+Offline preparation saves sanitized observation/fountain layers, any available route PET class summary, and all basemap tiles in the finite advertised Basel rectangle at zooms 12–17. Saved PET route summaries are labelled stale; the PET map overlay itself requires internet. It retains source attribution and saved timestamps. Basemap downloads resume from checksum-verified files. Inspect .cache/basemap/manifest.json (generated locally by offline preparation) for `complete: true` and data/geometry/manifest.json (generated locally by geometry preparation) for `complete_available_inventory: true`; the latter means all available assets, not that the buffer gaps disappeared. Large downloads stay on this computer and are not included in a Git clone.
 
 ## Use offline
 
@@ -60,7 +64,7 @@ Keep the local server running with the Run locally command and open [offline mod
 
 ## Use online or on an external server
 
-Open [online mode](http://127.0.0.1:8000/?mode=online) to request provider observations and fountain locations through the API and live basemap images through the browser. Source timestamps and stale/missing states remain visible. The first provider load may take longer; later requests follow the adapters' hourly/daily caches.
+Open [online mode](http://127.0.0.1:8000/?mode=online) to request provider observations, fountain locations, the two checked walking routes, and PET-class distances through the API. The historical PET map is served by the canton WMS. PET is modelled for a clear summer high-pressure day at 14:00; it is not current weather. Source attribution, route class distances and unknown coverage remain visible. The first provider load may take longer; later requests follow the observation/fountain adapters' hourly/daily caches.
 
 To run on an external server, install the same pinned environment and browser assets there. Prepare geometry there for the local shade API checkpoint, or copy the prepared geometry together with its manifest and config. Run:
 
@@ -149,16 +153,24 @@ scene checks. See [E's handoff](handoff/t10-shade-calculation.md).
 Reproduce the actual 1m compact pipeline and saved-route encoding sensitivity:
 
 ```sh
-python scripts/validate_compact_shade.py --download --output .hack/compact-shade-validation.json
+python scripts/validate_compact_pipeline.py --download --output .hack/compact-shade-validation.json
 ```
 
 This downloads six checksum-pinned source pairs to `.hack/e-t10`, prepares local
 compact rasters and source flags, and compares the encoded grids with an
 unquantized 1m control. Omit `--download` to repeat offline with those files.
-[Recorded compact comparison](data/fixtures/compact-shade-validation.json)
+[Recorded compact comparison](data/fixtures/compact-pipeline-validation.json)
 separates independent ray checks from invalid-receiver policy checks. Its route
 samples are numerical upper-surface comparisons in 128m windows, with unknown
 unresolved rays; they are not walking-shade metrics or route recommendations.
+
+To reproduce the compact sensitivity check, supply the same pinned surface/native-0.5m terrain pair plus the matching native 2m terrain asset (same tile/year, replace `_0.5_2056_` with `_2_2056_` in its URL). The 2m SHA-256 pins for all three checked tiles are recorded in [compact validation evidence](data/fixtures/compact-shade-validation.json). The script makes no external requests, writes scaled compact rasters and compressed pre-encoding receiver evidence to the local work directory, and checks both representations independently:
+
+```sh
+python scripts/validate_compact_shade.py --surface .hack/t10/surface.tif --terrain .hack/t10/terrain.tif --terrain-2m .hack/t10/terrain-2m.tif --work-directory .hack/t10/compact --output .hack/t10/compact-validation.json
+```
+
+Repeat for route tiles 2611-1266 and 2611-1267 using `--tile` and `--terrain-2m-sha256` from the evidence, with their matching source paths and separate work/output paths. Each per-tile report uses the full route denominator and marks outside-tile samples unknown. Across these disjoint receiver tiles, sum shaded/changed-state metres; aggregate unknown metres equal the full route length minus summed shaded metres. The preserved-evidence case retains source flags and numerical ground candidates; it does not certify walking surfaces. Existing compact height files alone cannot reconstruct this evidence. Slot F must version and verify the companion files before cache/API use; see the handoff.
 
 Activate the environment and run from the repository root:
 

@@ -1,7 +1,7 @@
 # Bla Bla Walk
 
 Track: Social impact · Updated: 2026-10-03
-Status: agreed direction and scope; the grocery-first multimodal journey below is a proposal for team review. [Demo endpoints and domain defaults](routing-rules.md) are specified for T2. T1's runnable map foundation and T0's source/geometry inventory are merged to `main`. T8 prepares the pinned native geometry and explicit gaps; shade accuracy and performance remain for T10. See task handoffs for implementation state.
+Status: agreed direction and scope; the grocery-first multimodal journey below is a proposal for team review. [Demo endpoints and domain defaults](routing-rules.md) are specified for T2. T1's runnable map foundation and T0's source/geometry inventory are merged to `main`. The online map now displays historical PET and reports its class distances along the two demo routes; the same API result can feed the planned simulated phone flow. T8 prepares the pinned native geometry and explicit gaps; shade accuracy and performance remain for T10. See task handoffs for implementation state.
 
 ## Problem
 People affected by heat, and caregivers planning on their behalf, need to understand shade, drinking water and walking effort together. A short route can leave someone exposed; a shaded detour may be impractical. The [routing rules](routing-rules.md) describe the selected demo walk, assumed current workaround and one concrete domain pitfall; the workaround is a scenario assumption rather than an observed participant habit.
@@ -35,7 +35,7 @@ The [source register](SOURCES.md) is authoritative for endpoints, licensing, att
 | Surface and terrain heights | swissSURFACE3D Raster / swissALTI3D | Swisstopo OGD terms; surveyed geometry for calculated shadows |
 | Tree context | Basel 100052 | Canton CC BY terms and OSM incorporation notice; locations alone do not establish shade |
 | Basemap and walking alternatives | Basel map service / OSM candidate | Verify basemap mapping/access; OSM attribution and database obligations apply |
-| Optional context | Historical PET, MeteoSwiss forecasts, construction feed | Separate scenario, forecast and caution states; source admission remains required |
+| Optional context | Historical PET, MeteoSwiss forecasts, construction feed | PET is a fixed 14:00 summer scenario with route class distances; forecasts and construction remain separate states |
 | Public transport | BVB/BLT GTFS and GTFS-RT | Proposed; scheduled times and live alerts need separate admission and freshness checks |
 
 ## How it is built
@@ -58,7 +58,7 @@ Waiting outdoors has unknown heat exposure unless stop shade or shelter data are
 Let users report a broken fountain, a temporarily closed place, or a blocked path. Reports appear as shared map alerts with a category, location, submission time and status; a short note is optional. Users can confirm, resolve or flag reports. Show report age and confirmation state so unverified reports are clear. Define expiry, moderation and rate limits before launch. Start without accounts or stored reporter identities. Do not label any reported place as safe. Choose persistent storage and abuse controls when this extension is designed; it is outside the core demo.
 
 ## Out of scope and approximations
-No health profiles or stored location histories. Current-time shade is calculated from surveyed geometry, not observed cloud shadows or live canopy measurements. Foliage and gaps are approximate; unsupported areas stay unknown. Do not turn shade fraction into temperature/PET degrees. Historical PET remains a summer 14:00 scenario. The user-approved T10 continuation delivers a labelled building-only, flat-ground approximation along the two saved routes with a finite 1500m reach. It excludes tree shade and terrain relief, preserves unknowns and night, and does not claim measured walking ground or physical sunlight. Broader physically verified/city-wide shade remains future work; shared reports, volunteer matching and phone service remain extensions.
+No health profiles or stored location histories. Current-time shade is calculated from surveyed geometry, not observed cloud shadows or live canopy measurements. Foliage and gaps are approximate; unsupported areas stay unknown. Do not turn shade fraction into temperature/PET degrees. The optional PET map and route-class distances describe the canton’s fixed 14:00 summer scenario; they do not change with selected departure time and remain unavailable offline. The online route summary is part of the shared API contract for later reuse by the simulated phone flow. The user-approved T10 continuation delivers a labelled building-only, flat-ground approximation along the two saved routes with a finite 1500m reach. It excludes tree shade and terrain relief, preserves unknowns and night, and does not claim measured walking ground or physical sunlight. Broader physically verified/city-wide shade remains future work; shared reports, volunteer matching and phone service remain extensions.
 
 ## Team and domain input
 Owners remain unassigned until contributors choose tasks by GitHub username. Domain examples determine walking constraints, acceptable detours and water interpretation. Explore the look together with hack-design before or after the first map works.

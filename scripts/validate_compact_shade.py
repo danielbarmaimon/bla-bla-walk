@@ -1,312 +1,381 @@
-"""Measure actual compact-grid encoding and saved-route sample sensitivity.
+"""Measure compact shade changes against pinned unquantized Basel geometry.
 
-Unquantized control and encoded grids use the same 1m max/nearest resampling.
-Numerical upper-envelope receivers do not admit walking ground or foliage.
-Finite unblocked rays stay unknown; no horizon maximum is invented.
+This is surveyed-envelope numerical evidence, not observed pedestrian shade or
+route scoring. Only the pinned centre tile is covered; other route samples stay
+unknown. Run after validate_shade_sample.py verifies the native source pair.
 """
 
 import argparse
 import json
+import math
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
-import httpx
 import numpy as np
 from rasterio.warp import transform
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "backend"))
-sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "backend/tests"))
-from audit_compact_receivers import SCENES  # noqa: E402
+sys.path.insert(0, str(ROOT / "scripts"))
+from bla_bla_walk.compact_evidence import (  # noqa: E402
+    compact_receiver_evidence,
+    read_receiver_evidence,
+    write_receiver_evidence,
+)
 from bla_bla_walk.geometry import (  # noqa: E402
-    compact_pair_flags,
     geometry_settings,
     prepare_raster,
     read_heights,
     sha256_file,
 )
-from bla_bla_walk.geometry_io import normalized_sha256  # noqa: E402
 from bla_bla_walk.shade import SHADED, UNKNOWN, shadow_mask  # noqa: E402
-from bla_bla_walk.shade_service import solar_location  # noqa: E402
 from bla_bla_walk.solar import solar_position  # noqa: E402
-from prepare_geometry import download_verified, resolve_asset, write_json  # noqa: E402
 from test_shade import independent_reference  # noqa: E402
 
-TIMES = tuple(
-    datetime.fromisoformat(f"2026-10-03T{h}:00:00+00:00") for h in ("08", "12", "15")
-)
-TILES = ("2610-1266", "2613-1269", "2612-1267", "2611-1270", "2611-1266", "2611-1267")
+TILE = "2610-1266"
+TERRAIN_2M_SHA256 = "10db3f33bef59d7fd4018aeeb1c7d47d787a396d2f69274d75e3473d06ad3bb5"
+WEST, NORTH = 2610000, 1267000
+TIMES = [f"2026-10-03T{hour:02}:00:00+00:00" for hour in (8, 12, 15)]
 
 
-def download_sources(directory, inventory):
-    """Fetch only six audit pairs with pinned hashes; keep sources local."""
-    directory.mkdir(parents=True, exist_ok=True)
-    records = {}
-    with httpx.Client(timeout=60, follow_redirects=True) as client:
-        for tile_id in TILES:
-            tile = next(t for t in inventory["tiles"] if t["tile"] == tile_id)
-            for kind in ("surface", "terrain"):
-                asset = resolve_asset(tile, kind, client)
-                download_verified(asset, directory / f"{tile_id}-{kind}.tif", client)
-                records[f"{tile_id}-{kind}"] = asset
-                print(f"Verified {tile_id} {kind}", flush=True)
-    write_json(directory / "route-sources.json", records)
-
-
-def control_grids(surface_path, terrain_path):
-    """Resample the pinned 0.5m surface and 2m terrain without height rounding."""
-    surface = read_heights(surface_path).filled(np.nan)
-    terrain = read_heights(terrain_path).filled(np.nan)
-    if surface.shape != (2000, 2000) or terrain.shape != (500, 500):
-        raise ValueError("Expected a native 1km surface/terrain pair")
-    surface = surface.reshape(1000, 2, 1000, 2).max(axis=(1, 3))
-    terrain = terrain.repeat(2, axis=0).repeat(2, axis=1)
-    return surface, terrain
-
-
-def verified_pair(surface_path, terrain_path, tile, terrain_record, output):
-    """Verify both actual source assets and prepare through production encoding."""
-    surface_sha = sha256_file(surface_path)
-    terrain_sha = sha256_file(terrain_path)
-    if surface_sha != normalized_sha256(tile["surface"]["catalog_checksum"]):
-        raise ValueError("Surface catalogue checksum mismatch")
-    expected_url = tile["terrain"]["asset_url"].replace("_0.5_2056_", "_2_2056_")
-    if terrain_record["url"] != expected_url or terrain_sha != terrain_record["sha256"]:
-        raise ValueError("Native 2m terrain pin mismatch")
-    prepared = {}
-    for kind, path in (("surface", surface_path), ("terrain", terrain_path)):
-        prepared[kind] = prepare_raster(
-            path, output / f"{tile['tile']}-{kind}.tif", tile, kind
-        )
-    control = control_grids(surface_path, terrain_path)
-    flags = compact_pair_flags(read_heights(surface_path), read_heights(terrain_path))
-    flag_path = output / f"{tile['tile']}-flags.npy"
-    np.save(flag_path, flags)
-    prepared["pair_flags"] = {
-        "file": flag_path.name,
-        "sha256": sha256_file(flag_path),
-        "bytes": flag_path.stat().st_size,
-    }
-    compact = tuple(
-        read_heights(output / f"{tile['tile']}-{kind}.tif").filled(np.nan)
-        for kind in ("surface", "terrain")
+def trace(surface, terrain, cell, moment, receivers=None, heights=None, **evidence):
+    """Use exact time and local convergence; no inferred horizon ceiling."""
+    longitude, latitude = transform(
+        "EPSG:2056", "EPSG:4326", [WEST + 500], [NORTH - 500]
     )
-    valid = np.isfinite(control[0]) & np.isfinite(control[1])
-    erased = valid & (control[0] < control[1]) & (compact[0] >= compact[1])
-    errors = [
-        round(float(np.max(np.abs(a[valid] - b[valid]))), 6)
-        for a, b in zip(control, compact)
-    ]
+    east, north = transform(
+        "EPSG:4326", "EPSG:2056", longitude * 2, [latitude[0], latitude[0] + 0.0001]
+    )
+    rotation = -math.degrees(math.atan2(east[1] - east[0], north[1] - north[0]))
+    elevation, azimuth = solar_position(moment, latitude[0], longitude[0])
+    options = dict(
+        elevation_deg=elevation,
+        azimuth_deg=azimuth - rotation,
+        cell_size_m=cell,
+        max_distance_m=1500,
+        minimum_elevation_deg=10,
+        receivers=receivers,
+        receiver_elevations=heights,
+    )
     return (
-        control,
-        compact,
-        flags,
-        {
-            "tile": tile["tile"],
-            "source_sha256": {"surface": surface_sha, "terrain_2m": terrain_sha},
-            "prepared": prepared,
-            "valid_pairs": int(valid.sum()),
-            "erased_inversions": int(erased.sum()),
-            "source_subcell_inversion_cells": int(((flags & 2) != 0).sum()),
-            "max_encoding_error_metres": errors,
-        },
+        shadow_mask(surface, terrain, **options, **evidence),
+        elevation,
+        azimuth - rotation,
     )
 
 
-def compare_window(control, compact, row, col, bounds, pair_flags, reference=False):
-    """Compare the same numerical receiver on a bounded 128m local scene."""
-    row0, col0 = max(0, row - 64), max(0, col - 64)
-    row1, col1 = min(1000, row + 64), min(1000, col + 64)
-    selection = np.s_[row0:row1, col0:col1]
-    source_surface, source_terrain = (grid[selection] for grid in control)
-    encoded_surface, encoded_terrain = (grid[selection] for grid in compact)
-    flags = pair_flags[selection]
-    receivers = np.zeros(source_surface.shape, dtype=bool)
-    receivers[row - row0, col - col0] = True
-    latitude, longitude, rotation = solar_location(bounds)
-    result = []
-    for moment in TIMES:
-        elevation, azimuth = solar_position(moment, latitude, longitude)
-        states = []
-        for surface, terrain in (
-            (source_surface, source_terrain),
-            (encoded_surface, encoded_terrain),
+def scene_check(native_surface, native_terrain, compact_surface, compact_terrain):
+    """Compare both representations with independent prism intersections."""
+    checks = []
+    # Aligned windows: same physical footprint, two grid resolutions.
+    for row, column in ((970, 970), (1300, 1000), (500, 500)):
+        for label, surface, terrain, cell in (
+            ("native", native_surface, native_terrain, 0.5),
+            ("compact", compact_surface, compact_terrain, 1.0),
         ):
-            mask = shadow_mask(
-                surface,
-                terrain,
-                elevation_deg=elevation,
-                azimuth_deg=azimuth - rotation,
-                cell_size_m=1,
-                max_distance_m=1500,
-                minimum_elevation_deg=10,
-                receivers=receivers,
-                receiver_elevations=surface,
-                cell_flags=flags,
+            factor = int(cell / 0.5)
+            r, c, size = row // factor, column // factor, 64 // factor
+            surface = surface[r : r + size, c : c + size]
+            terrain = terrain[r : r + size, c : c + size]
+            candidates = np.argwhere(
+                np.isfinite(surface) & (surface >= terrain) & (surface - terrain <= 0.1)
             )
-            states.append(int(mask[row - row0, col - col0]))
-            if reference:
-                receiver_valid = (
-                    flags[row - row0, col - col0] == 1
-                    and np.isfinite(surface[row - row0, col - col0])
-                    and np.isfinite(terrain[row - row0, col - col0])
-                    and surface[row - row0, col - col0]
-                    >= terrain[row - row0, col - col0]
+            candidates = candidates[
+                np.linspace(0, len(candidates) - 1, min(12, len(candidates)), dtype=int)
+            ]
+            receivers = np.zeros(surface.shape, dtype=bool)
+            receivers[candidates[:, 0], candidates[:, 1]] = True
+            for time in TIMES:
+                states, elevation, azimuth = trace(
+                    surface,
+                    terrain,
+                    cell,
+                    datetime.fromisoformat(time),
+                    receivers,
+                    surface,
                 )
-                expected = (
-                    independent_reference(
+                points = []
+                for rr, cc in candidates:
+                    expected = independent_reference(
                         surface,
-                        row - row0,
-                        col - col0,
-                        azimuth - rotation,
+                        rr,
+                        cc,
+                        azimuth,
                         elevation,
                         None,
-                        cell=1,
-                        receiver_height=float(surface[row - row0, col - col0]),
+                        cell=cell,
+                        receiver_height=float(surface[rr, cc]),
                         terrain=terrain,
-                        flags=flags,
                         extent=1500,
                     )
-                    if receiver_valid
-                    else UNKNOWN
+                    if states[rr, cc] != expected:
+                        raise AssertionError("Independent scene reference disagrees")
+                    points.append([int(rr), int(cc), int(expected)])
+                checks.append(
+                    dict(
+                        window_native=[row, column, 64, 64],
+                        representation=label,
+                        time=time,
+                        points=points,
+                    )
                 )
-                if states[-1] != expected:
-                    raise AssertionError("Independent compact tracer disagrees")
-        result.append(states)
-    return result
+    return checks
+
+
+def edge_changes(native_surface, native_terrain, compact_surface, compact_terrain):
+    """Measure state changes on aligned 32m scene footprints, without a tolerance."""
+    evidence = []
+    for row, col in ((970, 970), (1300, 1000), (500, 500)):
+        native = (
+            native_surface[row : row + 64, col : col + 64],
+            native_terrain[row : row + 64, col : col + 64],
+        )
+        compact = (
+            compact_surface[row // 2 : row // 2 + 32, col // 2 : col // 2 + 32],
+            compact_terrain[row // 2 : row // 2 + 32, col // 2 : col // 2 + 32],
+        )
+        for time in TIMES:
+            a, _, _ = trace(*native, 0.5, datetime.fromisoformat(time))
+            b, _, _ = trace(*compact, 1, datetime.fromisoformat(time))
+            b = b.repeat(2, axis=0).repeat(2, axis=1)
+            evidence.append(
+                dict(
+                    window_native=[row, col, 64, 64],
+                    time=time,
+                    changed_state_square_m=float(np.count_nonzero(a != b) * 0.25),
+                    native_shaded_square_m=float(np.count_nonzero(a == SHADED) * 0.25),
+                    compact_shaded_square_m=float(np.count_nonzero(b == SHADED) * 0.25),
+                )
+            )
+    return evidence
 
 
 def route_samples(feature):
-    """Sample projected route segments every 10m with full-length denominators."""
-    coordinates = feature["geometry"]["coordinates"]
-    x, y = transform(
-        4326, 2056, [p[0] for p in coordinates], [p[1] for p in coordinates]
-    )
+    """Sample segment midpoints with metre weights and proportional elapsed time."""
+    coordinates = np.asarray(feature["geometry"]["coordinates"])
+    x, y = transform("EPSG:4326", "EPSG:2056", coordinates[:, 0], coordinates[:, 1])
+    vertices = np.column_stack((x, y))
+    lengths = np.linalg.norm(np.diff(vertices, axis=0), axis=1)
+    total = float(lengths.sum())
+    travelled = 0
     samples = []
-    for ax, ay, bx, by in zip(x, y, x[1:], y[1:]):
-        length = float(np.hypot(bx - ax, by - ay))
-        count = max(1, int(np.ceil(length / 10)))
-        for fraction in (np.arange(count) + 0.5) / count:
-            samples.append(
-                (ax + fraction * (bx - ax), ay + fraction * (by - ay), length / count)
+    for start, end, length in zip(vertices[:-1], vertices[1:], lengths, strict=True):
+        count = max(1, math.ceil(length / 2))
+        for index in range(count):
+            fraction = (index + 0.5) / count
+            point = start + fraction * (end - start)
+            elapsed = (travelled + fraction * length) / total
+            elapsed *= feature["properties"]["routing_duration_s"]
+            samples.append((point, length / count, elapsed))
+        travelled += length
+    return samples, total
+
+
+def route_check(
+    routes,
+    native_surface,
+    native_terrain,
+    compact_surface,
+    compact_terrain,
+    receiver_evidence,
+):
+    """Compare full-denominator sample metres; not a T5 recommendation/score."""
+    evidence = []
+    for feature in routes["features"]:
+        samples, total = route_samples(feature)
+        for time in TIMES:
+            departure = datetime.fromisoformat(time)
+            weights = np.asarray([sample[1] for sample in samples])
+            results = {}
+            for label, surface, terrain, cell in (
+                ("native", native_surface, native_terrain, 0.5),
+                ("compact", compact_surface, compact_terrain, 1.0),
+                ("compact_preserved", compact_surface, compact_terrain, 1.0),
+            ):
+                values = np.full(len(samples), UNKNOWN, dtype="uint8")
+                for index, (point, _, elapsed) in enumerate(samples):
+                    row = math.floor((NORTH - point[1]) / cell)
+                    col = math.floor((point[0] - WEST) / cell)
+                    if not (
+                        0 <= row < surface.shape[0] and 0 <= col < surface.shape[1]
+                    ):
+                        continue
+                    # Numerical ground candidates, not verified pedestrian receivers.
+                    if not (
+                        np.isfinite(surface[row, col])
+                        and 0 <= surface[row, col] - terrain[row, col] <= 0.1
+                    ):
+                        continue
+                    if (
+                        label == "compact_preserved"
+                        and not receiver_evidence.ground_candidates[row, col]
+                    ):
+                        continue
+                    receivers = np.zeros(surface.shape, dtype=bool)
+                    receivers[row, col] = True
+                    options = {}
+                    heights = surface
+                    if label == "compact_preserved":
+                        options = dict(
+                            cell_flags=receiver_evidence.cell_flags,
+                            receiver_surface_elevations=receiver_evidence.surface_elevations,
+                        )
+                        heights = receiver_evidence.surface_elevations
+                    states, _, _ = trace(
+                        surface,
+                        terrain,
+                        cell,
+                        departure + timedelta(seconds=elapsed),
+                        receivers,
+                        heights,
+                        **options,
+                    )
+                    values[index] = states[row, col]
+                results[label] = values
+            native, compact = results["native"], results["compact"]
+            preserved = results["compact_preserved"]
+            evidence.append(
+                dict(
+                    route_id=feature["id"],
+                    departure=time,
+                    samples=len(samples),
+                    projected_length_m=total,
+                    native_shaded_m=float(weights[native == SHADED].sum()),
+                    compact_shaded_m=float(weights[compact == SHADED].sum()),
+                    preserved_shaded_m=float(weights[preserved == SHADED].sum()),
+                    preserved_unknown_m=float(weights[preserved == UNKNOWN].sum()),
+                    preserved_changed_state_m=float(weights[native != preserved].sum()),
+                    native_unknown_m=float(weights[native == UNKNOWN].sum()),
+                    compact_unknown_m=float(weights[compact == UNKNOWN].sum()),
+                    changed_state_m=float(weights[native != compact].sum()),
+                    compact_shade_native_unknown_m=float(
+                        weights[(compact == SHADED) & (native == UNKNOWN)].sum()
+                    ),
+                )
             )
-    return samples
+    return evidence
+
+
+def validate(surface_path, terrain_path, terrain_2m_path, output_dir):
+    """Prepare actual scaled GeoTIFFs and record reproducible comparison evidence."""
+    if sha256_file(terrain_2m_path) != TERRAIN_2M_SHA256:
+        raise ValueError("2m terrain differs from its pinned catalogue checksum")
+    inventory = json.loads((ROOT / "data/tile-inventory.json").read_text())
+    tile = next(row for row in inventory["tiles"] if row["tile"] == TILE)
+    for kind, path in (("surface", surface_path), ("terrain", terrain_path)):
+        expected = tile[kind]["catalog_checksum"][4:].lower()
+        if sha256_file(path) != expected:
+            raise ValueError("Native source differs from pinned catalogue")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    paths = {}
+    for kind, source in (("surface", surface_path), ("terrain", terrain_2m_path)):
+        paths[kind] = output_dir / f"compact-{kind}.tif"
+        prepare_raster(source, paths[kind], tile, kind)
+    native_surface = read_heights(surface_path).filled(np.nan)
+    native_terrain = read_heights(terrain_path).filled(np.nan)
+    compact_surface = read_heights(paths["surface"]).filled(np.nan)
+    compact_terrain = read_heights(paths["terrain"]).filled(np.nan)
+    evidence_path = output_dir / "receiver-evidence.npz"
+    sources = [sha256_file(surface_path), sha256_file(terrain_path)]
+    receiver_evidence = compact_receiver_evidence(
+        native_surface, native_terrain, maximum_surface_gap_m=0.1
+    )
+    write_receiver_evidence(
+        receiver_evidence,
+        evidence_path,
+        source_sha256=sources,
+        bounds=tile["bounds_epsg2056"],
+    )
+    receiver_evidence = read_receiver_evidence(
+        evidence_path,
+        source_sha256=sources,
+        bounds=tile["bounds_epsg2056"],
+        maximum_surface_gap_m=0.1,
+    )
+    scenes = scene_check(
+        native_surface, native_terrain, compact_surface, compact_terrain
+    )
+    routes = route_check(
+        json.loads((ROOT / "data/routes/demo.geojson").read_text()),
+        native_surface,
+        native_terrain,
+        compact_surface,
+        compact_terrain,
+        receiver_evidence,
+    )
+    native_invalid = ~np.isfinite(native_surface) | ~np.isfinite(native_terrain)
+    native_invalid |= native_surface < native_terrain
+    invalid_blocks = native_invalid.reshape(1000, 2, 1000, 2).any(axis=(1, 3))
+    compact_candidate = np.isfinite(compact_surface) & (
+        compact_surface == compact_terrain
+    )
+    return dict(
+        schema_version=1,
+        tile=TILE,
+        attribution="© swisstopo; © OpenStreetMap contributors",
+        settings=geometry_settings(),
+        source_sha256=dict(
+            surface=sha256_file(surface_path),
+            terrain_native=sha256_file(terrain_path),
+            terrain_2m=TERRAIN_2M_SHA256,
+        ),
+        prepared_sha256={kind: sha256_file(path) for kind, path in paths.items()},
+        receiver_evidence_sha256=sha256_file(evidence_path),
+        receiver_evidence_bytes=evidence_path.stat().st_size,
+        preserved_ground_candidates=int(receiver_evidence.ground_candidates.sum()),
+        numerical_surface_gap_metres=0.1,
+        route_fixture_sha256=sha256_file(ROOT / "data/routes/demo.geojson"),
+        independent_matches=sum(len(check["points"]) for check in scenes),
+        compact_ground_candidates_hiding_native_invalid=int(
+            (invalid_blocks & compact_candidate).sum()
+        ),
+        scene_checks=scenes,
+        scene_edge_changes=edge_changes(
+            native_surface, native_terrain, compact_surface, compact_terrain
+        ),
+        route_sensitivity=routes,
+        limits=[
+            "Numerical surface-envelope candidates do not prove walkability or "
+            "canopy interiors.",
+            "Cell centres differ by up to 0.354m; state changes combine grid, "
+            "height and terrain-source effects.",
+            "No verified horizon ceiling: unblocked rays and samples outside "
+            "this tile remain unknown.",
+            "Route samples every <=2m use departure plus proportional saved "
+            "routing duration; no route score or ranking.",
+            "No physical shade accuracy, encoding tolerance, city-wide or "
+            "cache/API acceptance is claimed.",
+            "Raw compact values demonstrate the unsafe case; compact_preserved "
+            "uses native pair flags and all-four-sample ground candidates.",
+            "The 0.1m envelope is a numerical validation selection, not "
+            "adopted pedestrian or canopy support evidence.",
+        ],
+    )
 
 
 def main():
+    global TILE, TERRAIN_2M_SHA256, WEST, NORTH
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--sources", type=Path, default=ROOT / ".hack/e-t10")
-    parser.add_argument("--native-samples", type=Path, default=ROOT / ".hack/t0")
+    parser.add_argument("--surface", type=Path, required=True)
+    parser.add_argument("--terrain", type=Path, required=True)
+    parser.add_argument("--terrain-2m", type=Path, required=True)
+    parser.add_argument("--work-directory", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument(
-        "--download",
-        action="store_true",
-        help="Download six pinned pairs; default validation is offline",
-    )
+    parser.add_argument("--tile", default=TILE)
+    parser.add_argument("--terrain-2m-sha256", default=TERRAIN_2M_SHA256)
     args = parser.parse_args()
-    inventory = json.loads((ROOT / "data/tile-inventory.json").read_text())
-    if args.download:
-        download_sources(args.sources, inventory)
-    sources = json.loads((args.sources / "route-sources.json").read_text())
-    output = args.sources / "compact"
-    arrays, reports = {}, []
-    names = dict(zip(("2610-1266", "2613-1269", "2612-1267", "2611-1270"), SCENES))
-    for tile_id in (*names, "2611-1266", "2611-1267"):
-        tile = next(t for t in inventory["tiles"] if t["tile"] == tile_id)
-        surface = (
-            args.native_samples / f"{names[tile_id]}-surface.tif"
-            if tile_id in names
-            else args.sources / f"{tile_id}-surface.tif"
-        )
-        if not surface.exists():
-            surface = args.sources / f"{tile_id}-surface.tif"
-        terrain = args.sources / f"{tile_id}-terrain.tif"
-        record = sources.get(tile_id) or sources[tile_id + "-terrain"]
-        control, compact, flags, report = verified_pair(
-            surface, terrain, tile, record, output
-        )
-        arrays[tile_id] = (control, compact, tile["bounds_epsg2056"], flags)
-        comparisons = [
-            compare_window(
-                control,
-                compact,
-                row,
-                col,
-                tile["bounds_epsg2056"],
-                flags,
-                reference=True,
-            )
-            for row, col in ((500, 500), (490, 490), (510, 510), (500, 510))
-        ]
-        report["numerical_scene_comparisons"] = 12
-        report["receiver_policy_and_reference_matches"] = 24
-        report["independent_ray_reference_matches"] = int(
-            sum(
-                flags[row, col] == 1
-                for row, col in ((500, 500), (490, 490), (510, 510), (500, 510))
-            )
-            * 6
-        )
-        report["invalid_receiver_unknown_checks"] = (
-            24 - report["independent_ray_reference_matches"]
-        )
-        report["changed_scene_states"] = sum(
-            a != b for point in comparisons for a, b in point
-        )
-        reports.append(report)
-    routes = []
-    for feature in json.loads((ROOT / "data/routes/demo.geojson").read_text())[
-        "features"
-    ]:
-        sums = np.zeros((3, 3), dtype=float)
-        samples = route_samples(feature)
-        for east, north, length in samples:
-            tile_id = f"{int(east // 1000)}-{int(north // 1000)}"
-            control, compact, bounds, flags = arrays[tile_id]
-            row, col = int(bounds[3] - north), int(east - bounds[0])
-            for i, (a, b) in enumerate(
-                compare_window(control, compact, row, col, bounds, flags)
-            ):
-                sums[i] += [
-                    length * (a == SHADED),
-                    length * (b == SHADED),
-                    length * (a != b),
-                ]
-        routes.append(
-            {
-                "route_id": feature["properties"]["route_id"],
-                "samples": len(samples),
-                "sampled_length_metres": round(sum(p[2] for p in samples), 6),
-                "times": [
-                    {
-                        "time": moment.isoformat(),
-                        "control_upper_envelope_shaded_metres": round(values[0], 6),
-                        "encoded_upper_envelope_shaded_metres": round(values[1], 6),
-                        "changed_state_metres": round(values[2], 6),
-                    }
-                    for moment, values in zip(TIMES, sums)
-                ],
-            }
-        )
-    evidence = {
-        "schema_version": 1,
-        "settings": geometry_settings(),
-        "tiles": reports,
-        "route_sensitivity": routes,
-        "production_receiver_admission": False,
-        "limits": (
-            "Numerical upper-envelope receivers only; no walking ground or "
-            "physical shade acceptance. 128m windows omit distant blockers, "
-            "so unresolved rays remain unknown. Same-grid unquantized control "
-            "isolates encoding. No route recommendation or horizon ceiling "
-            "is admitted."
-        ),
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps(routes, indent=2))
+    TILE = args.tile
+    TERRAIN_2M_SHA256 = args.terrain_2m_sha256
+    WEST, NORTH = int(args.tile[:4]) * 1000, (int(args.tile[5:]) + 1) * 1000
+    evidence = validate(
+        args.surface, args.terrain, args.terrain_2m, args.work_directory
+    )
+    args.output.write_text(json.dumps(evidence, indent=2) + "\n")
+    print(f"{evidence['independent_matches']} independent scene matches")
+    for route in evidence["route_sensitivity"]:
+        print(route)
 
 
 if __name__ == "__main__":

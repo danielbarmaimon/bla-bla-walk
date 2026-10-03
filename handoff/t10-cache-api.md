@@ -1,3 +1,7 @@
+> Superseded by the completed user-approved building-shadow continuation in
+> [E/T10 handoff](t10-shade-calculation.md). The unknown-only behavior and timings
+> below describe this earlier strict survey checkpoint, retained as history.
+
 # T10 · Slot F cache/API checkpoint
 
 Status: cache/API checkpoint ready for review; parent T10 open · Branch: feat/t10-shade-cache-api · Owner: @danielbarmaimon
