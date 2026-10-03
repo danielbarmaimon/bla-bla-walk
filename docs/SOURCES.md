@@ -139,24 +139,24 @@ Optional OSM drinking-water extraction (`amenity=drinking_water` or explicit `dr
 
 ## Historical heat scenario: Basel-Stadt Geoportal daytime PET
 
-Documentation checked: 2026-10-03. PET is a candidate historical context layer, not the live-temperature foundation. Numeric access and dataset-specific open licensing still need verification; no application integration exists.
+Documentation checked: 2026-10-03. The historical PET layer is now displayed in online map mode and sampled for route-class distances. It remains a fixed historical scenario, not the live-temperature foundation.
 
 PET (Physiological Equivalent Temperature) estimates thermal conditions for a modelled person from air temperature, humidity, wind, and short- and long-wave radiation. Although expressed in °C, PET is not thermometer air temperature or a personalised health-risk estimate.
 
 | Item | Finding / reference |
 |---|---|
-| Dataset to investigate | Stadtklima: `HumanbioklimSituation`, the daytime PET layer; keep the separate `HumanbioklimSituation_2030` projection out of the initial baseline |
+| Dataset | Stadtklima: `HumanbioklimSituation`, the daytime PET layer; the separate `HumanbioklimSituation_2030` projection is excluded from the baseline |
 | Map and catalogue | [MapBS Stadtklima](https://www.geo.bs.ch/stadtklima), [Basel-Stadt geodata catalogue](https://shop.geo.bs.ch/geodaten-katalog/) |
 | Layer description | [Official Stadtklima data model, sections 6.1.12–6.1.13](https://models.geo.bs.ch/Modellbeschreibungen/KL_Stadtklima_KGDM_V1_0.pdf) |
 | Method and shade evidence | [2019 climate analysis, sections 4 and 4.4](https://map.geo.bs.ch/file_proxy/KL_Stadtklima_Windstroemungsfeld/Endbericht_Basel_Klimaanalyse_Rev09_ohne_Anhang.pdf): reduced heat stress under tree canopies and from building shade in the old town |
 | Scenario | Modelled clear summer weather at 14:00, not live weather or a forecast for a chosen departure time |
-| Model resolution | 10 × 10 m cells, evaluated at 2 m above ground; verify the delivered layer's resolution and whether values are numeric PET or classified ranges |
-| Licence and attribution | Verify the selected dataset's access and download terms. Basel-Stadt applies CC BY 4.0 to public-access geodata with a download service; attribute Kanton Basel-Stadt and retain dataset-specific notices. [Official terms](https://www.bs.ch/en/node/29871) |
-| API / download discovery | [Official geoservices](https://www.bs.ch/en/node/28694). GetCapabilities verified at https://wms.geo.bs.ch/?SERVICE=WMS&REQUEST=GetCapabilities&VERSION=1.3.0; exact baseline layer is KL_HumanbioklimaSituation, projection is KL_HumanbioklimaSituation_2030. GetMap rendering, numeric GetFeatureInfo/sampling, download and dataset-specific licence remain to be verified; advertised layers alone do not establish working numeric access |
+| Model resolution and values | 10 × 10 m cells, evaluated at 2 m above ground. The WMS serves rendered PET classes; its GetFeatureInfo response contains no numeric value. |
+| Licence and attribution | The catalogue lists both PET products as public and available through the Geodaten-Shop. Basel-Stadt's terms apply CC BY 4.0 to public-access geodata with a download service; attribute **Quelle: Geodaten Kanton Basel-Stadt**. [Official terms](https://www.bs.ch/en/node/29871) |
+| API / download | [Official geoservices](https://www.bs.ch/en/node/28694). Current WMS GetCapabilities names the baseline layer `KL_HumanbioklimaSituation`; the projection is `KL_HumanbioklimaSituation_2030`. A GetMap request returned a four-band PNG. GetFeatureInfo returned an empty feature properties object, so the route adapter samples the rendered PET class colours and matches them against the published legend. Unknown/unmatched pixels remain unknown. |
 
-Optional historical-context mode: compare within the documented 14:00 PET scenario, alongside distance, water and known obstacles. The agreed main comparison uses time-dependent shade and adjustable preferences; PET is not required for it. Shade effects are already represented in PET, so do not apply an additional assumed shade cooling adjustment to those values. A separate shade overlay may explain conditions, but is not evidence for subtracting temperature or PET degrees.
+Optional historical-context mode: compare route distance across PET classes alongside distance, water and known obstacles. Route samples use 10 m intervals and retain unclassified distance as unknown. PET classes supplement route evidence; they do not produce a combined score or automatic health recommendation. Shade effects are already represented in PET, so do not apply an additional assumed shade cooling adjustment to those values. A separate shade overlay may explain conditions, but is not evidence for subtracting temperature or PET degrees.
 
-Keep model/scenario time, dataset publication or update time, and retrieval time distinct. Missing cells or unavailable data must remain unknown; a synthetic fallback must be visibly labelled. Do not present this historical baseline or its 2030 projection as today's conditions.
+Keep model/scenario time, dataset publication or update time, and retrieval time distinct. Missing cells or unavailable data must remain unknown; a synthetic fallback must be visibly labelled. The browser overlay and route sampler require internet and are absent in offline mode. Do not present this historical baseline or its 2030 projection as today's conditions.
 
 Time-specific shadow modelling is now in scope; see the current-time shade preflight below. SunCalc remains one candidate sun-position utility. It would need its own validation and would not automatically produce updated PET values. The sources below remain candidates for that extension.
 

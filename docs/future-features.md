@@ -12,7 +12,7 @@ Let people using a basic phone or landline access the same route-planning help a
 
 Use a scripted call simulation, not a live phone number. The caller chooses from prepared Basel locations, receives a route recommendation and directions, and can request a map for later. Map delivery is the priority extension: the caller can choose postal delivery to their home or an email to a neighbour who can print it. For the demo, show a confirmation only. Do not ask for or store a real home address or email, and do not actually send a map.
 
-Use the same route scenario and evidence as the web demo. Label simulated or unverified data. The call must explain missing information and avoid presenting the recommendation as a guarantee of safety.
+Use the same route scenario and evidence as the web demo. The shared route response can include the PET class-distance summary for a prepared route; if spoken, explain once that it describes a fixed 14:00 summer model scenario. It is a whole-route summary, not turn-by-turn evidence and not a forecast. Label simulated or unverified data. The call must explain missing information and avoid presenting the recommendation as a guarantee of safety.
 
 ### Infrastructure notes for a later implementation
 

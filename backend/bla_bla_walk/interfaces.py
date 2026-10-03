@@ -130,6 +130,18 @@ class RouteMetrics(ContractModel):
     duration_s: Annotated[float, Field(ge=0)]
 
 
+class PetRouteMetrics(ContractModel):
+    """Route length sampled by the provider's fixed historical PET classes."""
+
+    availability: Availability
+    scenario: str
+    resolution_m: Annotated[float, Field(gt=0)]
+    known_distance_m: Annotated[float, Field(ge=0)]
+    unknown_distance_m: Annotated[float, Field(ge=0)]
+    class_distances_m: dict[str, Annotated[float, Field(ge=0)]]
+    provenance: Provenance
+
+
 class MapFeature(ContractModel):
     """One display feature, with explicit evidence and unknown values."""
 
@@ -147,6 +159,7 @@ class MapFeature(ContractModel):
     drinking_water: Literal["yes", "no", "unknown"] | None = None
     shade: ShadeMetadata | None = None
     route: RouteMetrics | None = None
+    pet: PetRouteMetrics | None = None
 
 
 class MapLayer(ContractModel):
