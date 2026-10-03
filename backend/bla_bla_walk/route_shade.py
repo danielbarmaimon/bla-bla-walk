@@ -7,7 +7,7 @@ from datetime import UTC, datetime, timedelta
 
 from rasterio.warp import transform
 
-from .evaluation import finite, load_rules
+from .evaluation import load_rules
 from .interfaces import (
     MapFeature,
     ShadeRequest,
@@ -19,6 +19,7 @@ from .interfaces import (
     WaterEvidence,
 )
 from .shade_cache import ShadeBusy
+from .walking_metrics import finite
 
 
 def intervals(points, distance, maximum, stops):
@@ -193,4 +194,7 @@ def calculate_walking_evidence(
         water=water or WaterEvidence(),
         provenance=route.provenance,
         samples=samples,
+        sampled_speed_m_per_s=speed,
+        sampled_distance_metres=distance,
+        sampled_stop_minutes=sum(s.minutes for s in stops),
     )

@@ -282,6 +282,9 @@ class WalkingEvidence(ContractModel):
     water: WaterEvidence = Field(default_factory=WaterEvidence)
     provenance: Provenance | None = None
     samples: list[WalkingShadeSample] = Field(default_factory=list)
+    sampled_speed_m_per_s: float | None = None
+    sampled_distance_metres: float | None = None
+    sampled_stop_minutes: float | None = None
 
 
 class WalkingShadeSample(ContractModel):

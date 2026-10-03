@@ -233,3 +233,16 @@ def test_geometry_change_mid_route_withholds_shade_recommendation():
     choice = compare_choices([evidence])["more_shade"]
     assert choice.status == "insufficient_evidence" and choice.winner is None
     assert choice.contributions[evidence.id]["shade"] == 0
+
+
+def test_cached_shade_cannot_be_reused_after_speed_or_stop_change():
+    evidence = calculate_walking_evidence(
+        short_route(), DEPARTURE, response, access_state="checked_open"
+    )
+    changed_speed = compare_choices(
+        [evidence], rules={**load_rules(), "walking_speed_m_per_s": 2}
+    )
+    assert changed_speed["more_shade"].status == "insufficient_evidence"
+    assert changed_speed["more_shade"].contributions[evidence.id]["shade"] == 0
+    evidence.planned_stop_minutes = 2
+    assert compare_choices([evidence])["more_shade"].status == "insufficient_evidence"
