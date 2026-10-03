@@ -136,3 +136,30 @@ These are suggested role slots for the remaining work, not assigned people. Repl
 2. **Feasibility holds:** T0 confirms the source and city-wide geometry approach; T2 settles the example walk and comparison rules.
 3. **Two alternatives compare:** T4, T8–T10, T9, and T5 supply observations, shade, routes, and explained comparisons.
 4. **Demo is repeatable:** T6 connects the journey; T7 prepares the three-minute story and dated offline fallback.
+
+## Next-session priority: four-account journey improvements
+
+[M6 in the plan](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience) takes priority over the optional phone/report extensions. Lane labels are temporary and distinct from earlier team slots.
+
+```mermaid
+flowchart LR
+  T20["T20 · Baseline and contracts"] --> T21["A · T21 Landmarks"]
+  T21 --> T22["A · T22 Journey steps"]
+  T20 --> T23["B · T23 Shade diagnosis"]
+  T23 --> T24["B · T24 Corridors and shadow overlay"]
+  T20 --> T25["C · T25 Construction admission"]
+  T25 --> T26["C · T26 Closure avoidance"]
+  T20 --> T27["D · T27 Simple trip form"]
+  T27 --> T28["D · T28 Choice and progress"]
+  T22 --> T29["C · T29 Backend integration"]
+  T24 --> T29
+  T26 -. "if admitted" .-> T29
+  T21 --> T30["D · T30 Browser integration"]
+  T22 --> T30
+  T24 --> T30
+  T28 --> T30
+  T29 --> T31["T31 · Real integration and fallback checks"]
+  T30 --> T31
+```
+
+Backend and browser integration can proceed together against the frozen contract; final acceptance waits for both. See the plan for exact dependencies and file ownership.

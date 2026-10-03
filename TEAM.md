@@ -25,3 +25,16 @@ Core implementation tasks T0–T4 and T9 are merged; T8 ingestion and online/off
 - Keep `main` runnable. Share progress and blockers with the team regularly; there are no fixed sync times.
 - Run `bash scripts/hack-guard.sh` before commits and pushes. Never bypass the privacy check.
 - Record team-wide choices in `docs/decisions.md`. Keep task status in the relevant `handoff/` file.
+
+## Next-session four-account lanes
+
+The team will assign usernames tomorrow. These temporary A–D lane labels are separate from the existing six A–F work-area slots above. Each account uses its own clone; no four chats share a working directory. Task acceptance and exact files live only in [M6 in docs/plan.md](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience).
+
+| Temporary lane | GitHub username | Queue | Ownership |
+|---|---|---|---|
+| A | TBD | T21, T22 | Route landmarks and maneuver directions |
+| B | TBD | T23, T24 | Shade diagnosis, corridor evidence and shadow overlay module |
+| C | TBD | T25, T26, T29 | Construction admission, avoidance policy and backend integration |
+| D | TBD | T20, T27, T28, T30, T31 | Common contract checkpoint, concise UX and browser integration/acceptance |
+
+D coordinates T20 before the parallel wave; C and D own shared backend/browser entry points respectively. Other lanes export modules with frozen contract fixtures and do not edit those shared files. Assign usernames and claim handoffs at the start; assistants must not infer that temporary lane letters are people.
