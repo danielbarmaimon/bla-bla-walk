@@ -1,37 +1,31 @@
 # T6 · Complete journey integration
 
-Status: implemented · Prepared-data acceptance pending · Branch: feat/t6-journey-integration
+Status: done — implementation merged in PR #39 · Historical handoff
 
 ## State
 
-Started from main cc3207c and reused screen work from commit 93705a3.
-Updated with main d89146e after PR #38 merged; retained the enabled screen
-controls, calculation wiring, eligibility restrictions and keyboard focus handling.
-PR #39 tracks this branch.
-T4/T5/T3/T9 and the approved T10 approximation are merged.
-Local compact geometry, building cache and saved offline snapshot are absent here.
-Real prepared-data and external-server acceptance remain unverified.
+PR #39 merged into main f438090. The implementation was subsequently reconciled
+and validated in PR #40. The [current T6 acceptance record](t6-integration.md)
+owns validation evidence and remaining work.
 
 ## Done
 
 - Typed exact-departure jobs, bounded workers/results, complete input identity,
   cancellation and pure cached rescoring; no access overrides or provider calls.
-- Departure/Now, detour/weights, eligibility-only choice, inspect excluded routes,
-  source/model/time details, night/unknown and route shade overlay, city boundary.
-- Canonical generated browser contracts; 263 tests passed after merging latest main, including Chrome
-  integration, with one real saved-offline test skipped because inputs are absent.
-  Final browser regressions: four passed, including late-start cancellation.
-  Formatter, lint, generated contracts and strict documentation checks pass.
+- Departure/Now, detour/weights, eligibility-only choice, inspection of excluded
+  routes, source/model/time details, night/unknown, route shade overlay and city
+  boundary.
+- Canonical generated browser contracts and API/browser regression checks.
+- Reused the screen work from commit 93705a3 and merged main d89146e while
+  preserving calculation wiring, eligibility restrictions and keyboard focus.
+
+## Historical validation
+
+This implementation checkpoint passed its checks while prepared datasets were
+absent on its validation machine. Later real offline acceptance supersedes that
+limitation; see the [current acceptance record](t6-integration.md).
 
 ## Next
 
-Privacy check and reviewable PR; merge requires explicit approval.
-Run the full prepared-data journey on a machine with local inputs before claiming
-T6's real offline/external-server acceptance. Broader T8/T10 scene acceptance stays
-with those tasks; transit is unavailable.
-
-## Resume
-
-Continue T6 on feat/t6-journey-integration. Read this handoff, comparison_service.py,
-journey-calculation.js and test_journey_browser.py; finish Next without changing
-T5 policy or inventing verified access/water evidence.
+Continue from the [T6 acceptance record](t6-integration.md), which tracks the
+remaining external-server check. Do not restart the merged implementation.

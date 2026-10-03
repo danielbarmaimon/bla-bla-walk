@@ -4,11 +4,12 @@ Status: local checkpoint verified · Parent external-server acceptance open · B
 
 ## State
 
-PR #39 merged into main f438090. PR #40 is reconciled against it and keeps its
+This is the current T6 acceptance record. PR #39 merged into main f438090;
+PR #40 merged into main 4e28b71. The reconciled implementation keeps its
 canonical ComparisonRequest, ComparisonJob and ComparisonPreferences contracts,
 cancellation, polling and pure cached rescoring. The overlapping Slot F API was
-removed. See [the implementation handoff](t6-journey-integration.md) and
-[D's screen handoff](t6-screen.md).
+removed. See [the historical implementation handoff](t6-journey-integration.md) and
+[the historical screen handoff](t6-screen.md).
 
 ## Done
 
@@ -55,6 +56,9 @@ No measured cooling, overall safety or physical shade accuracy is claimed.
 
 ## Next
 
-PR #40 publishes this reconciled local checkpoint; the user explicitly authorized
-its merge. Obtain an external online deployment URL and record the complete
-journey acceptance there before marking parent T6 complete.
+Obtain an external online deployment URL and verify the complete journey with
+its prepared datasets: provider freshness/failures, exact departure calculation,
+polling, preference rescoring, eligibility, map layers and missing-resource states.
+Record that deployment and its results here before marking parent T6 complete.
+Broader physical/city-wide shade acceptance remains with T8/T10; transit remains
+unavailable until T18/T19 admission.

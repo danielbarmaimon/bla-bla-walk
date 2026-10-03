@@ -225,7 +225,7 @@ source explanations; the original route provenance remains attached.
 
 `compare_routes` only consumes cached evidence: weight changes make zero shade
 calls. `compare_choices` additionally exposes walking-only Fastest overall and
-More shade views for T6 to review, without replacing the approved baseline or
+More shade views used by T6, without replacing the approved baseline or
 admitting the multimodal proposal. Fastest compares complete total minutes
 directly, avoiding duration-normalization saturation. More shade uses current
 shade over full route length and the same eligibility/completeness rules.
@@ -235,5 +235,6 @@ is explicitly unavailable pending T18/T19 admission and approval.
 
 The saved T9 routes' access remains unknown and current fountain records do not
 establish operation. They can display metrics but receive no recommendation.
-T6 owns API/browser wiring; it should reuse these contracts and functions and
-keep approximate model and missing-evidence explanations visible.
+T6 API/browser wiring reuses these contracts and functions and keeps approximate
+model and missing-evidence explanations visible. Journey acceptance is tracked
+in the [T6 acceptance record](../handoff/t6-integration.md).
