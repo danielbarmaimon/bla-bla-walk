@@ -41,6 +41,41 @@
   font-weight: 700;
 }
 
+.route-app .header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.route-app .mode-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--poc-label);
+  font-size: 0.875rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.route-app .mode-indicator-mark {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.route-app .mode-indicator[data-mode="online"] .mode-indicator-mark {
+  background: var(--poc-teal);
+}
+
+.route-app .mode-indicator[data-mode="offline"] .mode-indicator-mark {
+  background: transparent;
+}
+
+.route-app .mode-indicator[data-mode="fixture"] .mode-indicator-mark {
+  background: var(--poc-label);
+}
+
 .route-app .mode-notice {
   margin-top: var(--space-3);
   padding: var(--space-2) var(--space-3);

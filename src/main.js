@@ -79,6 +79,9 @@ const state = {
   amenitiesStatus: 'Loading real route-stop data…',
 };
 const $ = (selector) => document.querySelector(selector);
+const modeLabels = { online: 'Online mode', offline: 'Offline mode', fixture: 'Example mode' };
+$('#mode-indicator').dataset.mode = modeLabels[mode] ? mode : 'online';
+$('#mode-indicator-label').textContent = modeLabels[mode] ?? modeLabels.online;
 let temperatureView = null;
 const journeySteps = mountJourneySteps($('#step-list'));
 const routes = () => !state.submitted ? [] : routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
