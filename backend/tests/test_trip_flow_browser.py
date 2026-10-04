@@ -195,3 +195,78 @@ def test_one_route_and_same_route_roles_are_explicit(browser_page, supported):
     assert page.locator(".comparison-card").count() == 1
     page.unroute("**/api/map?mode=fixture")
     page.unroute("**/api/comparison**")
+
+
+@pytest.mark.parametrize("pair_index", [0, 1])
+def test_dated_real_provider_payload_in_joined_screen(browser_page, pair_index):
+    """Replay freshly checked local API replies; never treat saved output as live."""
+    import json
+    from pathlib import Path
+
+    path = Path(".cache/t30-checked-payloads.json")
+    if not path.exists():
+        pytest.skip("Needs local checked T30 provider replies; see handoff/T30.md")
+    layer = json.loads(path.read_text())[pair_index]
+    endpoints = [
+        ([7.590209, 47.548055], [7.588921, 47.558082]),
+        (
+            [7.602287769317627, 47.56437301635742],
+            [7.594012260437012, 47.554317474365234],
+        ),
+    ][pair_index]
+    page = browser_page
+    requests = []
+
+    def addresses(route):
+        is_start = route.request.post_data_json["query"] == "Checked public start"
+        point = endpoints[0 if is_start else 1]
+        route.fulfill(
+            json={
+                "places": [
+                    {
+                        "id": "checked-start" if is_start else "checked-end",
+                        "name": "Checked public start"
+                        if is_start
+                        else "Checked public destination",
+                        "lon": point[0],
+                        "lat": point[1],
+                    }
+                ],
+                "status": "available",
+            }
+        )
+
+    def walking(route):
+        if route.request.method != "POST":
+            route.continue_()
+            return
+        requests.append(route.request.post_data_json)
+        route.fulfill(json=layer)
+
+    page.route("**/api/addresses", addresses)
+    page.route("**/api/walking-routes", walking)
+    page.goto(page.base_url)
+    page.locator("#origin-input:not([disabled])").wait_for()
+    page.locator("#origin-input").fill("Checked public start")
+    page.locator("#origin-suggestions button").click()
+    page.locator("#destination-input").fill("Checked public destination")
+    page.locator("#suggestions button").click()
+    page.locator("#calculate-journey").click()
+    page.locator(".comparison-secondary").first.wait_for()
+    assert requests[0]["start"] == endpoints[0]
+    assert requests[0]["end"] == endpoints[1]
+    assert page.locator("#shade-mode").is_disabled()
+    for feature in layer["features"]:
+        page.locator(f'.comparison-secondary[data-route-id="{feature["id"]}"]').click()
+        instructions = page.locator("#step-list").inner_text()
+        assert "Directions unavailable" not in instructions
+        for step in feature["directions"]["steps"]:
+            assert step["text"] in instructions
+        assert feature["directions"]["route_id"] == feature["id"]
+        assert "selected destination" in instructions
+        page.locator("#back-to-plan").click()
+    assert len(requests) == 1
+    page.locator("#departure-later").click()
+    assert page.locator("#step-list").inner_text() == ""
+    page.unroute("**/api/addresses", addresses)
+    page.unroute("**/api/walking-routes", walking)

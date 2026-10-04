@@ -1,4 +1,7 @@
 import {
+  mountJourneySteps
+} from './journey-steps.js';
+import {
   routeAmenities,
   amenityLabel,
   plannedRestStops
@@ -72,6 +75,7 @@ const state = {
 };
 const $ = (selector) => document.querySelector(selector);
 let temperatureView = null;
+const journeySteps = mountJourneySteps($('#step-list'));
 const routes = () => !state.submitted ? [] : routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
 const routePairSelected = () => state.origin?.id === 'sbb' && state.destination?.id === 'marktplatz';
@@ -314,35 +318,6 @@ function selectPreference(preference) {
   }
 }
 
-function routeSteps() {
-  if (!selectedRoute()) return [];
-  return [
-    ['Walking route', 'Turn-by-turn directions unavailable. Inspect the selected street route on the map.',
-      'Provider maneuvers are not integrated yet. Turn-by-turn directions remain unavailable.'
-    ]
-  ];
-}
-
-function appendStep([type, instruction, note]) {
-  const item = document.createElement('li');
-  if (['Rest', 'Pause', 'Water'].includes(type)) item.className = 'care-step';
-  const heading = document.createElement('strong');
-  const icons = {
-    Rest: 'armchair',
-    Pause: 'pause',
-    Water: 'droplets',
-    Wayfinding: 'landmark'
-  };
-  if (icons[type]) heading.append(icon(icons[type]));
-  heading.append(document.createTextNode(type));
-  const text = document.createElement('p');
-  text.textContent = instruction;
-  const detail = document.createElement('small');
-  detail.textContent = note;
-  item.append(heading, text);
-  $('#step-list').append(item);
-}
-
 function activeComparison() {
   if (state.comparisonJob?.status !== 'ready') return null;
   return state.comparisonJob.choices[state.preference === 'fast' ? 'fastest_overall' : state.preference === 'shade' ? 'more_shade' : 'baseline'];
@@ -438,9 +413,9 @@ function renderJourney() {
   $('#selected-journey').hidden = !state.submitted || !route;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
-  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fast' : state.preference === 'shade' ? 'Recommended' : 'Balanced';
   const fast = fastestRoute();
   const recommended = recommendedRouteId();
+  $('#journey-mode').textContent = state.preference === 'fast' && state.selectedRouteId === fast?.id ? 'Fast' : state.preference === 'shade' && state.selectedRouteId === recommended ? 'Recommended' : 'Manual inspection';
   $('#fast-mode').disabled = !fast;
   $('#shade-mode').disabled = !recommended;
   $('#fast-mode').setAttribute('aria-pressed', String(state.preference === 'fast' && state.selectedRouteId === fast?.id));
@@ -452,11 +427,9 @@ function renderJourney() {
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
   $('#steps-summary').textContent = route ? `${Math.round(route.route.distance_m)} m · ${Math.round(route.route.duration_s/60)} min walking` : 'Walking route unavailable for this selection.';
-  const steps = routeSteps();
-  const arrival = steps.at(-1)?.[0] === 'Arrive' ? steps.pop() : null;
-  steps.forEach(appendStep);
-  plannedRestStops(state.route, route?.route.duration_s, stopSettings.rest_interval_minutes).forEach(stop => appendStep(['Rest', `Planned pause after ${stop.walk_minutes} minutes walking.`, 'On-route planning prompt; seating not guaranteed.']));
-  if (arrival) appendStep(arrival);
+  journeySteps.update(route ?? null, {
+    amenities: visibleAmenities()
+  });
   $('#source-status').textContent = `${state.amenitiesStatus} · ${fountainsNearRoute().length} real fountains within ${FOUNTAIN_BUFFER_M} m`;
   renderRouteOptions();
   renderNearby();
@@ -508,13 +481,7 @@ function renderJourney() {
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
   $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
-  const notes = $('#route-step-notes');
-  notes.replaceChildren();
-  routeSteps().forEach(([type, instruction, note]) => {
-    const p = document.createElement('p');
-    p.textContent = `${type}: ${note}`;
-    notes.append(p);
-  });
+  $('#route-step-notes').textContent = route?.directions?.route_id === route?.id && route?.directions ? 'Directions are provider maneuvers for the selected route geometry. Access and temporary closures remain unverified.' : 'Selected-route directions unavailable; no turns are inferred from the map.';
   $('#calculate-journey').disabled = state.busy || !state.origin || !state.destination;
   $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Calculate';
   $('#cancel-journey').hidden = !state.busy;
@@ -540,8 +507,9 @@ function renderPetLegend() {
 }
 
 const map = createMap($('#map'), showFeature, (message) => {
-  $('#basemap-status').textContent = message;
-  $('#basemap-status').hidden = !message.includes('unavailable');
+  const unavailable = message.includes('unavailable');
+  $('#basemap-status').textContent = unavailable ? message : '';
+  $('#basemap-status').hidden = !unavailable;
 }, (message) => {
   $('#pet-status').textContent = message;
 }, showRouteTemperature);
@@ -764,8 +732,12 @@ async function refresh() {
 function showMap(route = null) {
   document.body.dataset.view = 'map';
   map.updateSize();
-  if (route) map.focus(route);
-  else map.focusCoordinates(tripCoordinates());
+  if (route) {
+    map.focus(route);
+    $('#map').focus({
+      preventScroll: true
+    });
+  } else map.focusCoordinates(tripCoordinates());
 }
 
 function showPlan() {

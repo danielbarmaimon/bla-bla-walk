@@ -872,7 +872,7 @@
   font-size: 0.8rem;
 }
 
-.route-app #step-list {
+.route-app #step-list ol {
   margin: var(--space-5) 0;
   padding-left: var(--space-5);
 }
@@ -892,7 +892,8 @@
   font-size: 1rem;
 }
 
-.route-app #step-list li.care-step {
+.route-app #step-list li[data-kind="prompt"],
+.route-app #step-list li[data-kind="amenity"] {
   border-left: 3px solid var(--poc-teal);
   padding-left: var(--space-3);
 }
