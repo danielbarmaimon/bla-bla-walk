@@ -8,12 +8,13 @@ import {
 } from './layer-badges.js';
 
 const $ = selector => document.querySelector(selector);
-const baselDay = () => new Intl.DateTimeFormat('en-CA', {
+const baselDate = date => new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Zurich',
   year: 'numeric',
   month: '2-digit',
   day: '2-digit'
-}).format(new Date());
+}).format(date);
+const baselDay = () => baselDate(new Date());
 
 export function chooseTemperaturePalette(profile, forecast, settings, day, choice = 'auto', today = baselDay()) {
   if (choice !== 'auto') return {
@@ -47,6 +48,18 @@ export async function routeTemperatureView(map, mode, onUpdate) {
     loading = true,
     forecastRequested = false;
   let validation = null;
+  function requestForecast() {
+    if (forecastRequested) return;
+    forecastRequested = true;
+    fetch(`/api/palette-forecast?mode=${encodeURIComponent(mode)}`).then(reply => {
+      if (!reply.ok) throw new Error('Forecast unavailable');
+      return reply.json();
+    }).then(data => {
+      forecast = data;
+    }).catch(() => {
+      forecast = null;
+    }).finally(onUpdate);
+  }
   const theme = getComputedStyle(document.documentElement);
   const colour = name => theme.getPropertyValue(`--temperature-${name}`).trim();
   const palettes = {
@@ -72,14 +85,7 @@ export async function routeTemperatureView(map, mode, onUpdate) {
       const profile = temperatureProfile(route, layer, settings);
       const day = $('#departure-time').value.slice(0, 10) || baselDay();
       const choice = $('#temperature-palette').value;
-      if (choice === 'auto' && (!profile.coverage || profile.stale || day !== baselDay()) && !loading && !forecastRequested) {
-        forecastRequested = true;
-        fetch(`/api/palette-forecast?mode=${encodeURIComponent(mode)}`).then(reply => reply.json()).then(data => {
-          forecast = data;
-        }).catch(() => {
-          forecast = null;
-        }).finally(onUpdate);
-      }
+      if (route) requestForecast();
       const selected = chooseTemperaturePalette(profile, forecast, settings, day, choice);
       const palette = palettes[selected.name];
       const visible = badgeActive('#temperature-route-toggle') && routeVisible;
@@ -124,6 +130,15 @@ export async function routeTemperatureView(map, mode, onUpdate) {
         legend.append(link);
       }
       return profile;
+    },
+    forecastForArrival(date) {
+      if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return null;
+      const day = baselDate(date);
+      return {
+        day,
+        value: Number.isFinite(forecast?.days?.[day]) ? forecast.days[day] : null,
+        availability: forecast?.availability ?? 'missing'
+      };
     }
   };
 }

@@ -485,6 +485,7 @@ function renderJourney() {
     profile: temperatureProfile,
     evidence: routeEvidence,
     departureTime: $('#departure-time').value,
+    forecastForArrival: date => temperatureView.forecastForArrival(date),
     pointFractions,
     pixelForFraction: fraction => map.getRoutePointPixel(state.route, fraction)
   });

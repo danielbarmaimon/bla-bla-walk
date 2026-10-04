@@ -31,19 +31,21 @@ function supportedShadePercentage(evidence, startMetres, endMetres) {
   return shaded / covered * 100;
 }
 
-export function routePointDetails(route, profile, evidence, fraction, departureTime) {
+export function routePointDetails(route, profile, evidence, fraction, departureTime, forecastForArrival) {
   const segments = profile?.segments ?? [];
   const index = Math.min(segments.length - 1, Math.floor(fraction * segments.length));
-  const temperature = segments[index]?.estimate?.value;
   const distance = route?.route?.distance_m;
   const duration = route?.route?.duration_s;
   const departureMilliseconds = new Date(departureTime).getTime();
   const arrivalTime = Number.isFinite(duration) && duration >= 0 && Number.isFinite(departureMilliseconds) ?
     new Date(departureMilliseconds + duration * fraction * 1000) : null;
+  const temperatureForecast = arrivalTime ? forecastForArrival?.(arrivalTime) : null;
   const startMetres = Number.isFinite(distance) ? distance * (index / Math.max(1, segments.length)) : null;
   const endMetres = Number.isFinite(distance) ? distance * ((index + 1) / Math.max(1, segments.length)) : null;
   return {
-    temperature: Number.isFinite(temperature) ? temperature : null,
+    temperature: Number.isFinite(temperatureForecast?.value) ? temperatureForecast.value : null,
+    temperatureForecastDay: temperatureForecast?.day ?? null,
+    temperatureForecastAvailability: temperatureForecast?.availability ?? 'missing',
     arrivalTime,
     remainingMetres: Number.isFinite(distance) && distance >= 0 ? distance * (1 - fraction) : null,
     remainingSeconds: Number.isFinite(duration) && duration >= 0 ? duration * (1 - fraction) : null,
@@ -128,16 +130,19 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
   }
 
   function formatDetails(fraction) {
-    const detail = routePointDetails(latest.route, latest.profile, latest.evidence, fraction, latest.departureTime);
+    const detail = routePointDetails(latest.route, latest.profile, latest.evidence, fraction,
+      latest.departureTime, latest.forecastForArrival);
     card.replaceChildren();
     const heading = document.createElement('h3');
     heading.id = 'route-node-title';
     heading.textContent = `Route point · ${Math.round(fraction * 100)}%`;
     const list = document.createElement('dl');
-    const arrivalLabel = detail.arrivalTime ?
-      new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(detail.arrivalTime) : null;
+    const forecastLabel = detail.temperatureForecastDay ?
+      `${detail.temperatureForecastAvailability === 'stale' ? 'Saved ' : ''}Basel daily mean · ${detail.temperatureForecastDay}` : null;
     const rows = [
-      ['Temperature', arrivalLabel ? `Unavailable · no hourly forecast for ~${arrivalLabel} arrival` : 'Unavailable · arrival-time forecast unavailable'],
+      ['Temperature forecast', detail.temperature == null ?
+        forecastLabel ? `Unavailable · no forecast for ${detail.temperatureForecastDay}` : 'Unavailable · arrival date unavailable' :
+        `${detail.temperature.toFixed(1)} °C · ${forecastLabel}`],
       ['Distance left', detail.remainingMetres == null ? 'Unavailable' : `${Math.round(detail.remainingMetres)} m`],
       ['ETA', detail.remainingSeconds == null ? 'Unavailable' : `in ${Math.round(detail.remainingSeconds / 60)} min`]
     ];

@@ -1,4 +1,7 @@
-"""Route-point detail interactions use existing route, sensor and shade results."""
+"""Route-point details reuse route timing, forecast and supported shade results."""
+
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from conftest import open_example
@@ -64,6 +67,13 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
             }
         ),
     )
+    forecast_day = datetime.now(ZoneInfo("Europe/Zurich")).date().isoformat()
+    page.route(
+        "**/api/palette-forecast?mode=fixture",
+        lambda route: route.fulfill(
+            json={"days": {forecast_day: 23.4}, "availability": "current"}
+        ),
+    )
     page.goto(page.base_url)
     show_route_with_points(page)
 
@@ -78,7 +88,8 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
     card = page.locator(".route-node-card")
     card.wait_for(state="visible")
     assert "Temperature" in card.inner_text()
-    assert "Unavailable" in card.inner_text()
+    assert "23.4 °C" in card.inner_text()
+    assert "Basel daily mean" in card.inner_text()
     assert "Local segment shadow" not in card.inner_text()
     assert page.evaluate(
         """() => {
@@ -94,7 +105,6 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
     page.mouse.click(point[0] + 48, point[1])
     page.mouse.move(10, 10)
     assert card.is_visible()
-    assert "no hourly forecast for ~" in card.inner_text()
     assert page.locator(".route-node-close").count() == 0
     page.locator("#back-to-plan").click()
     page.locator(".comparison-secondary").last.click()
@@ -130,18 +140,34 @@ def test_route_point_details_uses_only_complete_current_shade_samples(browser_pa
               {start_metres:37.5,end_metres:50,state:1}
             ]
           };
-          const supported=routePointDetails(route,profile,evidence,0.375,'2026-10-04T10:00:00Z');
+          const forecastForArrival=date=>({
+            day:new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(date),
+            value:new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Zurich',year:'numeric',month:'2-digit',day:'2-digit'}).format(date)==='2026-10-05'?18:23,
+            availability:'current'
+          });
+          const supported=routePointDetails(route,profile,evidence,0.375,'2026-10-04T10:00:00Z',forecastForArrival);
+          const nextDay=routePointDetails(route,profile,evidence,0.375,'2026-10-04T22:58:00Z',forecastForArrival);
+          const missingForecast=routePointDetails(route,profile,evidence,0.375,'2026-10-04T10:00:00Z',date=>({
+            day:'2026-10-04',value:null,availability:'missing'
+          }));
           const unknown=routePointDetails(route,profile,{
             ...evidence,samples:[{start_metres:25,end_metres:50,state:0}]
           },0.375);
           const stale=routePointDetails(route,profile,{
             ...evidence,shade_state:'stale'
           },0.375);
-          return {supported:{...supported,arrivalTime:supported.arrivalTime.toISOString()},unknown,stale};
+          return {
+            supported:{...supported,arrivalTime:supported.arrivalTime.toISOString()},
+            nextDay:{...nextDay,arrivalTime:nextDay.arrivalTime.toISOString()},
+            missingForecast:{temperature:missingForecast.temperature,temperatureForecastDay:missingForecast.temperatureForecastDay},
+            unknown,stale
+          };
         }"""
     )
     assert result["supported"] == {
-        "temperature": 21,
+        "temperature": 23,
+        "temperatureForecastDay": "2026-10-04",
+        "temperatureForecastAvailability": "current",
         "arrivalTime": "2026-10-04T10:06:15.000Z",
         "remainingMetres": 62.5,
         "remainingSeconds": 625,
@@ -149,3 +175,10 @@ def test_route_point_details_uses_only_complete_current_shade_samples(browser_pa
     }
     assert result["unknown"]["shadePercentage"] is None
     assert result["stale"]["shadePercentage"] is None
+    assert result["nextDay"]["temperature"] == 18
+    assert result["nextDay"]["temperatureForecastDay"] == "2026-10-05"
+    assert result["nextDay"]["arrivalTime"] == "2026-10-04T23:04:15.000Z"
+    assert result["missingForecast"] == {
+        "temperature": None,
+        "temperatureForecastDay": "2026-10-04",
+    }
