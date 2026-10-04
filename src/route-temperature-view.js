@@ -41,6 +41,23 @@ export function chooseTemperaturePalette(profile, forecast, settings, day, choic
   };
 }
 
+export function nearestForecastHour(forecast, arrivalTime) {
+  if (forecast?.availability !== 'current' || !(arrivalTime instanceof Date) ||
+      !Number.isFinite(arrivalTime.getTime())) return null;
+  let nearest = null;
+  let nearestDifference = 30 * 60 * 1000;
+  for (const hour of forecast.hours ?? []) {
+    const timestamp = Date.parse(hour.valid_time);
+    if (!Number.isFinite(timestamp) || !Number.isFinite(hour.temperature_c)) continue;
+    const difference = Math.abs(timestamp - arrivalTime.getTime());
+    if (difference <= nearestDifference) {
+      nearest = { value: hour.temperature_c, validTime: new Date(timestamp) };
+      nearestDifference = difference;
+    }
+  }
+  return nearest;
+}
+
 export async function routeTemperatureView(map, mode, onUpdate) {
   const settings = await fetch('/config/route-temperature.json').then(reply => reply.json());
   let layer = null,
@@ -126,17 +143,17 @@ export async function routeTemperatureView(map, mode, onUpdate) {
       if (forecast?.provenance) {
         const link = document.createElement('a');
         link.href = forecast.provenance.source_url;
-        link.textContent = `Weather data by Open-Meteo · CC BY 4.0 · palette only · retrieved ${forecast.provenance.retrieved_at}`;
+        link.textContent = `${forecast.availability === 'stale' ? 'Saved ' : ''}Weather data by Open-Meteo · CC BY 4.0 · fixed Basel point · retrieved ${forecast.provenance.retrieved_at}`;
         legend.append(link);
       }
       return profile;
     },
     forecastForArrival(date) {
       if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return null;
-      const day = baselDate(date);
+      const nearest = nearestForecastHour(forecast, date);
       return {
-        day,
-        value: Number.isFinite(forecast?.days?.[day]) ? forecast.days[day] : null,
+        value: nearest?.value ?? null,
+        validTime: nearest?.validTime ?? null,
         availability: forecast?.availability ?? 'missing'
       };
     }

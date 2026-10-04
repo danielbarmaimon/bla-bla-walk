@@ -44,7 +44,7 @@ export function routePointDetails(route, profile, evidence, fraction, departureT
   const endMetres = Number.isFinite(distance) ? distance * ((index + 1) / Math.max(1, segments.length)) : null;
   return {
     temperature: Number.isFinite(temperatureForecast?.value) ? temperatureForecast.value : null,
-    temperatureForecastDay: temperatureForecast?.day ?? null,
+    temperatureForecastTime: temperatureForecast?.validTime ?? null,
     temperatureForecastAvailability: temperatureForecast?.availability ?? 'missing',
     arrivalTime,
     remainingMetres: Number.isFinite(distance) && distance >= 0 ? distance * (1 - fraction) : null,
@@ -137,12 +137,8 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
     heading.id = 'route-node-title';
     heading.textContent = `Route point · ${Math.round(fraction * 100)}%`;
     const list = document.createElement('dl');
-    const forecastLabel = detail.temperatureForecastDay ?
-      `${detail.temperatureForecastAvailability === 'stale' ? 'Saved ' : ''}Basel daily mean · ${detail.temperatureForecastDay}` : null;
     const rows = [
-      ['Temperature forecast', detail.temperature == null ?
-        forecastLabel ? `Unavailable · no forecast for ${detail.temperatureForecastDay}` : 'Unavailable · arrival date unavailable' :
-        `${detail.temperature.toFixed(1)} °C · ${forecastLabel}`],
+      ['Temperature', detail.temperature == null ? 'Unavailable' : `${detail.temperature.toFixed(1)} °C`],
       ['Distance left', detail.remainingMetres == null ? 'Unavailable' : `${Math.round(detail.remainingMetres)} m`],
       ['ETA', detail.remainingSeconds == null ? 'Unavailable' : `in ${Math.round(detail.remainingSeconds / 60)} min`]
     ];
@@ -151,6 +147,7 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
       const dt = document.createElement('dt');
       dt.textContent = term;
       const dd = document.createElement('dd');
+      if (term === 'Temperature') dd.className = 'route-node-temperature-value';
       dd.textContent = value;
       list.append(dt, dd);
     });

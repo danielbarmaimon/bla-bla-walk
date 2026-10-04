@@ -789,6 +789,10 @@
   overflow-wrap: anywhere;
 }
 
+.route-app .route-node-temperature-value {
+  white-space: nowrap;
+}
+
 .route-app #route-node-control {
   margin: var(--space-3) 0;
 }
