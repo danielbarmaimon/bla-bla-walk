@@ -56,7 +56,9 @@ def test_order_distance_and_route_identity():
         assert [s.kind for s in steps] == ["start", "turn", "arrive"]
         assert [s.at_metres for s in steps] == [0, 1000, 2100]
         assert sum(s.duration_s for s in steps) == feature.route.duration_s
-        assert steps[1].text == "Turn left on the unnamed path"
+        assert steps[1].text == (
+            "Turn left. After First street; towards the selected destination"
+        )
         assert "selected destination" in steps[-1].text
 
 
@@ -112,14 +114,14 @@ def test_unavailable_instead_of_invented_steps(change):
 
 def test_roundabout_continue_and_unnamed_exit():
     assert instruction_text({"type": "continue", "modifier": "uturn"}, None) == (
-        "Make a U-turn on the unnamed path",
+        "Make a U-turn",
         "turn",
     )
     assert instruction_text({"type": "roundabout", "exit": 3}, "Ring")[0] == (
         "At the roundabout, take exit 3 on Ring"
     )
     assert instruction_text({"type": "roundabout"}, None)[0] == (
-        "Follow the roundabout on the unnamed path"
+        "Follow the roundabout"
     )
     assert instruction_text({"type": "continue", "modifier": "straight"}, "Road") == (
         "Continue straight on Road",
@@ -148,3 +150,26 @@ def test_provider_request_includes_steps():
         )
     assert observed[0].url.params["steps"] == "true"
     assert observed[0].url.params["overview"] == "full"
+
+
+def test_missing_names_use_route_streets_without_renaming_segments():
+    route = maneuver_route()
+    steps = route["legs"][0]["steps"]
+    steps[0]["name"] = ""
+    steps[1]["name"] = "Hammerstrasse"
+    result = provider_directions(route, "test", 1)
+    assert result.steps[0].text == (
+        "Start walking. Route continues to Hammerstrasse in 1000 m"
+    )
+    assert result.steps[0].street_name is None
+    assert result.steps[1].street_name == "Hammerstrasse"
+    assert "unnamed" not in " ".join(s.text for s in result.steps)
+    assert result.steps[-1].text == "Arrive at the selected destination"
+
+
+def test_provider_road_reference_is_preserved_without_guessing_a_name():
+    route = maneuver_route()
+    route["legs"][0]["steps"][1]["ref"] = "Mapped road reference"
+    result = provider_directions(route, "test", 1)
+    assert result.steps[1].street_name == "Mapped road reference"
+    assert result.steps[1].text == "Turn left on Mapped road reference"
