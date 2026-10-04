@@ -256,3 +256,14 @@ Notes: reuse current APIs and ranking. If both roles share one route, explain it
 T20 broad shared-contract redesign, T26 construction-driven rerouting, T28 standalone new trip component system and T29 new arbitrary-route calculation orchestrator are deferred. The short plan reuses existing contracts and puts essential UI/loading work inside T27/T30. Also defer city-wide optimal shaded-path search, tree/terrain shadows, new routing engines, transit, phone/report features and external deployment. Preserving available evidence and a tested fallback takes priority over claiming these exist.
 
 Full T8/T10/T6 acceptance remains unchanged. The presentation must reflect the actual merged build, including unavailable recommendation, construction, directions or shade states. Launch prompts and model settings are in TASK_START.md.
+
+## M7: inspect conditions along a calculated route
+
+Follow-up after the M6 joined-flow acceptance; this is outside the short-session launch queue.
+
+#### T32 Show details for a selected route point
+Owner: unassigned
+Needs: T31, T30
+Files: src/route-node-details.js, src/map.js, src/route-planner.css, backend/tests/test_route_node_details_browser.py, handoff/T32.md; extend an existing interface only if the current route response cannot supply required values, with its decision line in docs/decisions.md
+Done when: hovering over a calculated route point on desktop, or tapping/clicking it on touch, opens a compact readable detail card for that point. It shows the corresponding temperature, remaining distance to the destination and estimated time remaining; it includes the local route-segment shadow percentage only when supported data is available and otherwise omits that row. The card stays near the selected point without covering the route or controls, can be dismissed, and works with keyboard focus. Moving to another point updates the values; selecting another route clears or updates the selection. Missing temperature or route-progress data is labelled unavailable rather than guessed.
+Notes: derive remaining distance and ETA from the selected route's geometry and supported timing data. Use the existing temperature and shade results; do not interpolate or imply measurements the sources do not support. Keep hover transient and tap/click selection usable on touch screens.
