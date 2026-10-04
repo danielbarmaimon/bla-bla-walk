@@ -79,3 +79,7 @@ With limited next-session time, prioritize route-specific steps, the existing sh
 ## Follow-up: inspect a point on the selected route
 
 After M6 acceptance, let a person inspect a calculated route point using hover on desktop or tap/click on touch. Show its corresponding temperature, remaining distance and estimated time to the destination. Include the local route-segment shadow percentage only when supported data is available. Keep the detail card compact, dismissible and keyboard-accessible; missing evidence stays unavailable. T32 in [the plan](plan.md#t32-show-details-for-a-selected-route-point) owns the implementation.
+
+## Map feature popups (2026-10-04)
+
+Clicking a temperature station or fountain opens a compact popup beside its map marker. A station popup shows its name, temperature reading and observation time; a fountain popup shows its name only. Missing station reading or observation time is shown as “Unknown.” Clicking elsewhere on the map dismisses the popup. Keep the interaction lightweight and preserve the underlying map; the existing full feature inspector is not part of this interaction because it appears not to be working reliably. The first implementation covers temperature stations and fountains; other feature types need their own concise content rules before joining this popup.
