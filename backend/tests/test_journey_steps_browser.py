@@ -1,8 +1,9 @@
 """Focused renderer harness, with no edits to the shared app entry points."""
 
 import pytest
-from bla_bla_walk.instructions import provider_directions
 from test_journey_instructions import maneuver_route
+
+from bla_bla_walk.instructions import provider_directions
 
 pytestmark = pytest.mark.browser
 
@@ -31,8 +32,8 @@ def test_route_switch_missing_and_route_ordered_prompts(browser_page):
     )
     rows = page.locator("#journey-harness li").all_text_contents()
     assert rows[0].startswith("Start walking on First street. Walk 1000 m")
-    assert "water candidate" in rows[1]
-    assert "15 minutes walking" in rows[2]
+    assert not any("public fountain" in row for row in rows)
+    assert "15 minutes walking" in rows[1]
     assert "30 minutes walking" in rows[-2]
     assert "selected destination" in rows[-1]
     assert page.locator("#journey-harness script").count() == 0

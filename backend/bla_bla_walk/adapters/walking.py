@@ -11,6 +11,7 @@ import httpx
 
 from ..instructions import provider_directions
 from ..interfaces import LineGeometry, MapFeature, MapLayer, Provenance, RouteMetrics
+from ..walking_preferences import choose_routes
 from .addresses import ROOT, inside_basel, search_settings
 
 _request_lock = threading.Lock()
@@ -27,11 +28,15 @@ def reserve_request(interval):
         _last_request = now
 
 
-def fetch_routes(request, settings):
+def fetch_routes(request, settings, waypoint=None):
     """Bound streamed replies; persist neither queries nor results."""
     coordinates = ";".join(
         ",".join(f"{coordinate:.7f}" for coordinate in point)
-        for point in (request.start, request.end)
+        for point in (
+            (request.start, waypoint, request.end)
+            if waypoint
+            else (request.start, request.end)
+        )
     )
     reserve_request(settings["minimum_request_interval_seconds"])
     with httpx.Client(
@@ -60,6 +65,46 @@ def fetch_routes(request, settings):
         raise OSError("Invalid walking provider reply") from error
 
 
+def detour_routes(request, settings, polygons):
+    """Ask the foot network for bounded alternatives, never draw links."""
+    ax, ay = request.start
+    bx, by = request.end
+    scale = math.cos(math.radians((ay + by) / 2))
+    dx, dy = (bx - ax) * scale, by - ay
+    length = math.hypot(dx, dy)
+    offset = min(settings["detour_offset_metres"], length * 111320 / 3) / 111320
+    candidates = []
+    for side in (-1, 1):
+        point = (
+            (ax + bx) / 2 - side * dy / length * offset / scale,
+            (ay + by) / 2 + side * dx / length * offset,
+        )
+        if not inside_basel(*point, polygons):
+            continue
+        time.sleep(settings["minimum_request_interval_seconds"])
+        try:
+            payload = fetch_routes(request, settings, waypoint=point)
+            if payload.get("code") != "Ok":
+                continue
+            waypoints = payload.get("waypoints", [])
+            if len(waypoints) != 3 or any(
+                not 0 <= float(p["distance"]) <= settings["max_snap_metres"]
+                for p in waypoints
+            ):
+                continue
+            candidates.extend(payload.get("routes", [])[:1])
+        except (
+            httpx.HTTPError,
+            OSError,
+            OverflowError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ):
+            continue
+    return candidates
+
+
 def route_feature(route, index, settings, provenance, speed):
     """Validate network lines without connecting buildings with invented paths."""
     geometry = route["geometry"]
@@ -86,8 +131,9 @@ def route_feature(route, index, settings, provenance, speed):
             f"OSM walking estimate assumes {speed:g} m/s. "
             "Endpoints snap to the pedestrian network, "
             f"up to {settings['max_snap_metres']}m. "
-            "Temporary closures, local access and shade are unverified. "
-            "No current-departure shade comparison is available for this route."
+            "Temporary closures and local access are unverified. "
+            "Building-only shade sampling is an approximation at departure; "
+            "shade along the full walk is not guaranteed."
         ),
     )
 
@@ -129,11 +175,22 @@ def walking_routes(request):
         route_feature(route, index, settings, provenance, speed)
         for index, route in enumerate(payload["routes"][: settings["max_routes"]])
     ]
+    shortest = min(f.route.distance_m for f in features)
+    for route in detour_routes(request, settings, polygons):
+        try:
+            feature = route_feature(route, len(features), settings, provenance, speed)
+        except (OSError, KeyError, TypeError, ValueError):
+            continue
+        if feature.route.distance_m <= shortest * settings["detour_max_ratio"]:
+            features.append(feature)
+    features = choose_routes(
+        features, request.departure_time or datetime.now(UTC), settings
+    )
     return MapLayer(
         id="selected-walking-routes",
         label="Selected walking routes",
         kind="route",
         availability="unknown",
         features=features,
-        explanation="Street geometry for selected endpoints; access and shade unknown.",
+        explanation="Fast and Recommended walking choices. " + features[1].explanation,
     )

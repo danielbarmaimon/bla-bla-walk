@@ -41,7 +41,7 @@
     },
     "MapFeature": {
       "additionalProperties": false,
-      "description": "One display feature, with explicit evidence and unknown values.",
+      "description": "One display feature, with explicit evidence and unknown values.\n\nroute_role labels walking choices, not verified access or complete shade.",
       "properties": {
         "id": {
           "title": "Id",
@@ -215,6 +215,22 @@
             }
           ],
           "default": null
+        },
+        "route_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "fast",
+                "recommended"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route Role"
         }
       },
       "required": [

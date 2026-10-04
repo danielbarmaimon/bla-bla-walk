@@ -3,12 +3,13 @@
 from datetime import UTC, datetime
 
 import pytest
+from conftest import open_example
+from test_comparison_api import LocalShade
+
 from bla_bla_walk.adapters.routes import load_demo_routes
 from bla_bla_walk.evaluation import compare_choices, compare_routes
 from bla_bla_walk.interfaces import ComparisonJob, MapSnapshot
 from bla_bla_walk.route_shade import calculate_walking_evidence
-from conftest import open_example
-from test_comparison_api import LocalShade
 
 pytestmark = pytest.mark.browser
 
@@ -134,6 +135,8 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         )
         == 1
     )
+    if page.locator("#departure-time").is_hidden():
+        page.locator("#back-to-plan").click()
     page.locator("#departure-time").fill("2026-10-03T15:00")
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_enabled()
@@ -214,6 +217,7 @@ def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
         ".includes('Prepared shade inputs unavailable')"
     )
     assert page.locator(".comparison-primary:disabled").count() == 2
+    page.locator("#back-to-plan").click()
     page.locator("#destination-input").fill("Museum")
     page.wait_for_selector("#suggestions button")
     page.locator("#suggestions button").first.click()

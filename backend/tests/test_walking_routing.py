@@ -3,14 +3,25 @@
 from unittest.mock import patch
 
 import pytest
+from fastapi.testclient import TestClient
+
 from bla_bla_walk.adapters.walking import reserve_request, walking_routes
 from bla_bla_walk.interfaces import WalkingRouteRequest
 from bla_bla_walk.main import app
-from fastapi.testclient import TestClient
 
 START = (7.590209, 47.548055)
 END = (7.606272, 47.537456)
 COORDINATES = [START, (7.599, 47.541), END]
+
+
+@pytest.fixture(autouse=True)
+def local_evidence_only():
+    with (
+        patch("bla_bla_walk.adapters.walking.detour_routes", return_value=[]),
+        patch("bla_bla_walk.walking_preferences.construction_sites", return_value=None),
+        patch("bla_bla_walk.walking_preferences.shade_fraction", return_value=None),
+    ):
+        yield
 
 
 def payload():

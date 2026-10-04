@@ -23,6 +23,7 @@ export interface MapFeature {
   rest_type?: "bench" | "park" | "indoor" | null;
   opening_hours?: string | null;
   directions?: WalkingDirections | null;
+  route_role?: "fast" | "recommended" | null;
 }
 
 export interface MapLayer {

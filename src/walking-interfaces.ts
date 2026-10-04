@@ -5,4 +5,5 @@ export interface WalkingRouteRequest {
   start: [number, number];
   end: [number, number];
   mode?: "fixture" | "online" | "offline";
+  departure_time?: string | null;
 }

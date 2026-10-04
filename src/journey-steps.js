@@ -1,5 +1,5 @@
 import {
-  plannedRestStops
+  amenitiesAtRestStops
 } from './route-amenities.js';
 import {
   routeGeometry,
@@ -11,6 +11,7 @@ import {
 
 // A nearby mapped centre is a reference, never a verified visible turn marker.
 const LANDMARK_REFERENCE_METRES = 25;
+const COLLAPSE_CANDIDATES_ABOVE = 2;
 
 function walkingTime(seconds) {
   return seconds < 60 ? `${Math.round(seconds)} sec` : `${Math.round(seconds / 60)} min`;
@@ -58,19 +59,11 @@ export function journeyItems(route, amenities = [], landmarks = WAYFINDING_PLACE
       kind: step.kind,
     };
   }) : [];
-  items.push(...plannedRestStops(geometry, route.route.duration_s).map((stop) => ({
+  items.push(...amenitiesAtRestStops(geometry, route.route.duration_s, amenities).map((stop) => ({
     fraction: stop.fraction,
     kind: 'prompt',
     text: `${stop.walk_minutes} minutes walking: consider water and a rest. No stop is verified here.`,
-  })));
-  items.push(...amenities.filter((item) => Number.isFinite(item.fraction) &&
-    item.fraction >= 0 && item.fraction < 1).map(({
-    fraction,
-    feature
-  }) => ({
-    fraction,
-    kind: 'amenity',
-    text: `Nearby ${feature.kind === 'fountain' ? 'water candidate' : 'rest candidate'}: ${feature.label}. Access${feature.kind === 'fountain' ? ', drinking water' : ''} and availability need checking; a diversion is not included.`,
+    amenities: stop.amenities,
   })));
   return items.sort((a, b) => a.fraction - b.fraction);
 }
@@ -95,6 +88,25 @@ export function mountJourneySteps(container) {
       const row = document.createElement('li');
       row.dataset.kind = item.kind;
       row.textContent = item.text;
+      if (item.amenities?.length) {
+        const group = document.createElement(item.amenities.length > COLLAPSE_CANDIDATES_ABOVE ? 'details' : 'div');
+        if (item.amenities.length > COLLAPSE_CANDIDATES_ABOVE) {
+          const summary = document.createElement('summary');
+          summary.textContent = `${item.amenities.length} nearby water and bench candidates`;
+          group.append(summary);
+        }
+        const candidates = document.createElement('ul');
+        for (const {
+            feature
+          }
+          of item.amenities) {
+          const candidate = document.createElement('li');
+          candidate.textContent = `${feature.kind === 'fountain' ? 'Water' : 'Bench'}: ${feature.label}. Access and availability need checking; a diversion is not included.`;
+          candidates.append(candidate);
+        }
+        group.append(candidates);
+        row.append(group);
+      }
       list.append(row);
     }
     container.append(list);

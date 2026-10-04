@@ -236,7 +236,10 @@ class WalkingDirections(ContractModel):
 
 
 class MapFeature(ContractModel):
-    """One display feature, with explicit evidence and unknown values."""
+    """One display feature, with explicit evidence and unknown values.
+
+    route_role labels walking choices, not verified access or complete shade.
+    """
 
     id: str
     label: str
@@ -256,6 +259,7 @@ class MapFeature(ContractModel):
     rest_type: Literal["bench", "park", "indoor"] | None = None
     opening_hours: str | None = None
     directions: WalkingDirections | None = None
+    route_role: Literal["fast", "recommended"] | None = None
 
 
 class MapLayer(ContractModel):
@@ -372,11 +376,12 @@ class TripComparison(ContractModel):
 
 
 class WalkingRouteRequest(ContractModel):
-    """Ephemeral Basel coordinates for provider pedestrian-network geometry."""
+    """Ephemeral endpoints and optional shade sampling time (defaults to now)."""
 
     start: Position
     end: Position
     mode: Literal["fixture", "online", "offline"] = "online"
+    departure_time: AwareDatetime | None = None
 
 
 class AddressSearchRequest(ContractModel):

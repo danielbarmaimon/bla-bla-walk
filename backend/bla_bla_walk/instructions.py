@@ -107,7 +107,7 @@ def provider_directions(route, route_id, speed):
         ):
             return None
         previous_index = 0
-        for raw in raw_steps:
+        for raw_index, raw in enumerate(raw_steps):
             maneuver = raw["maneuver"]
             location = maneuver["location"]
             matching_index = next(
@@ -126,6 +126,15 @@ def provider_directions(route, route_id, speed):
                 return None
             text, kind = instruction_text(maneuver, street)
             distance = float(raw["distance"])
+            if kind == "arrive" and raw_index != len(raw_steps) - 1:
+                if distance == 0:
+                    continue
+                text, kind = "Continue through the route waypoint", "continue"
+            elif kind == "start" and raw_index != 0:
+                text, kind = (
+                    "Continue walking" + (f" on {street}" if street else ""),
+                    "continue",
+                )
             steps.append(
                 WalkingInstruction(
                     kind=kind,

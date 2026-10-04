@@ -6,6 +6,7 @@ import {
 } from './journey-steps.js';
 import {
   routeAmenities,
+  amenitiesAtRestStops,
   amenityLabel,
   plannedRestStops
 } from './route-amenities.js';
@@ -67,7 +68,8 @@ const state = {
   tripVersion: 0,
   busy: false,
   calculationKind: null,
-  preference: 'fast',
+  preference: 'shade',
+  tipsVersion: null,
   selectedRouteId: 'demo-route-a',
   route: null,
   comparisonJob: null,
@@ -267,8 +269,10 @@ function tripCoordinates() {
 }
 
 function invalidateTrip(message = 'Choose your start and destination, then calculate.') {
+  $('#preparation-tips').close();
   state.tripVersion += 1;
   state.submitted = false;
+  showPlan();
   state.busy = false;
   state.calculationKind = null;
   state.walkingLayer = null;
@@ -308,7 +312,7 @@ function setOrigin(place, message) {
 
 function recommendedRouteId() {
   const winner = state.comparisonJob?.status === 'ready' ? state.comparisonJob.choices.more_shade?.winner : null;
-  return routes().some(route => route.id === winner) ? winner : null;
+  return routes().some(route => route.id === winner) ? winner : routes().find(route => route.route_role === 'recommended')?.id ?? routes().find(route => route.id !== fastestRoute()?.id)?.id ?? fastestRoute()?.id;
 }
 
 function fastestRoute() {
@@ -366,8 +370,9 @@ function renderNearby() {
   const details = $('#nearby-details');
   details.hidden = !state.route;
   if (details.hidden) return;
-  const fountains = visibleAmenities().filter(item => item.feature.kind === 'fountain');
-  const stopCandidates = visibleAmenities().filter(item => item.feature.kind === 'rest');
+  const restAmenities = amenitiesAtRestStops(state.route, selectedRoute()?.route.duration_s, visibleAmenities()).flatMap(stop => stop.amenities);
+  const fountains = restAmenities.filter(item => item.feature.kind === 'fountain');
+  const stopCandidates = restAmenities.filter(item => item.feature.kind === 'rest');
   const planned = plannedRestStops(state.route, selectedRoute()?.route.duration_s, stopSettings.rest_interval_minutes);
   $('#nearby-summary').textContent = `Route stops · ${fountains.length} fountains, ${stopCandidates.filter(item=>item.feature.rest_type==='bench').length} benches · ${planned.length} planned rests`;
   const list = $('#nearby-list');
@@ -426,14 +431,23 @@ function renderJourney() {
   $('#journey-mode').textContent = state.preference === 'fast' && state.selectedRouteId === fast?.id ? 'Fast' : state.preference === 'shade' && state.selectedRouteId === recommended ? 'Recommended' : 'Manual inspection';
   $('#fast-mode').disabled = !fast;
   $('#shade-mode').disabled = !recommended;
+  $('#fast-duration').textContent = fast ? `${Math.round(fast.route.duration_s / 60)} min` : '';
+  const recommendedRoute = routes().find(item => item.id === recommended);
+  $('#recommended-duration').textContent = recommendedRoute ? `${Math.round(recommendedRoute.route.duration_s / 60)} min` : '';
+  if (!routePairSelected() && recommendedRoute) $('#construction-status').textContent = recommendedRoute.explanation;
+  else $('#construction-status').textContent = 'Construction avoidance unavailable for the saved comparison; active permit polygons are checked for new online routes.';
   $('#fast-mode').setAttribute('aria-pressed', String(state.preference === 'fast' && state.selectedRouteId === fast?.id));
   $('#shade-mode').setAttribute('aria-pressed', String(state.preference === 'shade' && state.selectedRouteId === recommended));
   $('#balanced-mode').setAttribute('aria-pressed', String(state.preference === 'balanced'));
   $('#route-role-status').textContent = recommended ? (fast?.id === recommended || JSON.stringify(fast?.geometry) === JSON.stringify(routes().find(route => route.id === recommended)?.geometry) ? 'Fast and Recommended use the same route.' : 'Fast and Recommended follow distinct routes.') : `${routes().length === 1 ? 'One walking route available. ' : ''}Recommended unavailable; inspect available routes manually.`;
-  $('#preparation-tips').hidden = !state.busy;
+  if (route && state.submitted && !state.busy && state.tipsVersion !== state.tripVersion) {
+    state.tipsVersion = state.tripVersion;
+    showMap(route);
+    $('#preparation-tips').showModal();
+  }
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
-  $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
+  $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Recommended can take longer to favor modeled building shade and avoid mapped active construction sites. See route evidence in Information sources.';
   $('#steps-summary').textContent = route ? `${Math.round(route.route.distance_m)} m · ${Math.round(route.route.duration_s/60)} min walking` : 'Walking route unavailable for this selection.';
   journeySteps.update(route ?? null, {
     amenities: visibleAmenities()
@@ -513,7 +527,7 @@ function renderJourney() {
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
-  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
+  $('#route-display-info').textContent = 'Fast uses the lowest walking-time estimate. Recommended prefers mapped construction avoidance and available building-shade evidence; unknown shade is not guaranteed.';
   $('#route-step-notes').textContent = route?.directions?.route_id === route?.id && route?.directions ? 'Directions are provider maneuvers for the selected route geometry. Access and temporary closures remain unverified.' : 'Selected-route directions unavailable; no turns are inferred from the map.';
   $('#calculate-journey').disabled = state.busy || !state.origin || !state.destination;
   $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Calculate';
@@ -605,7 +619,7 @@ const calculation = journeyCalculation((job, message) => {
   state.comparisonJob = job;
   if (state.preference === 'shade') {
     if (recommendedRouteId()) state.selectedRouteId = recommendedRouteId();
-    else state.preference = 'fast';
+
   }
   if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
   if (state.calculationKind === 'comparison') {
@@ -623,9 +637,9 @@ const walking = walkingRouting(mode, routingSettings, (layer, message) => {
   state.routingStatus = message;
   if (state.calculationKind === 'walking') {
     state.busy = !layer && message.startsWith('Calculating');
-    $('#trip-status').textContent = layer ? 'Routes ready. Shade comparison unavailable for this pair.' : message;
+    $('#trip-status').textContent = layer ? 'Routes ready. Recommended is selected by default.' : message;
   }
-  state.selectedRouteId = layer?.features[0]?.id ?? null;
+  state.selectedRouteId = layer ? (state.preference === 'fast' ? fastestRoute()?.id : recommendedRouteId()) : null;
   syncWalkingLayers();
   renderJourney();
 });
@@ -661,6 +675,7 @@ async function findRoutes() {
   invalidateTrip();
   const version = state.tripVersion;
   state.submitted = true;
+  state.preference = 'shade';
   state.busy = true;
   if (routePairSelected()) {
     state.calculationKind = 'comparison';
@@ -668,7 +683,7 @@ async function findRoutes() {
       state.busy = false;
       $('#trip-status').textContent = 'Saved example unavailable. Retry after data loads.';
     } else {
-      state.selectedRouteId = [...routes()].sort((a, b) => a.route.duration_s - b.route.duration_s)[0].id;
+      state.selectedRouteId = recommendedRouteId();
       syncWalkingLayers();
       renderJourney();
       await calculation.start(date.toISOString());
@@ -677,7 +692,7 @@ async function findRoutes() {
     }
   } else {
     state.calculationKind = 'walking';
-    walking.start([state.origin.lon, state.origin.lat], [state.destination.lon, state.destination.lat]);
+    walking.start([state.origin.lon, state.origin.lat], [state.destination.lon, state.destination.lat], date.toISOString());
   }
   renderJourney();
 }
@@ -754,7 +769,7 @@ async function refresh() {
     renderLayers();
     renderFeatures();
     if (routes().length && routePairSelected()) {
-      state.selectedRouteId = [...routes()].sort((a, b) => a.route.duration_s - b.route.duration_s)[0].id;
+      state.selectedRouteId = recommendedRouteId();
 
     }
     renderJourney();
@@ -853,6 +868,7 @@ $('#show-information').addEventListener('click', () => {
   $('#information-sources').open = true;
 });
 $('#back-to-plan').addEventListener('click', showPlan);
+$('#close-tips').addEventListener('click', () => $('#preparation-tips').close());
 $('#try-example').addEventListener('click', () => {
   setOrigin(FALLBACK_START, 'Example start selected');
   selectDestination(MARKTPLATZ);

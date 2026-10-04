@@ -970,11 +970,12 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.route-app[data-view="map"] .route-layout {
+.route-app[data-view="map"][data-trip="start"] .route-layout {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.route-app[data-view="map"] .planner {
+.route-app[data-view="map"][data-trip="start"] .planner,
+.route-app[data-view="map"] #planner-form {
   display: none;
 }
 
@@ -1176,4 +1177,27 @@
 
 .route-app .route-mode {
   margin-top: var(--space-3);
+}
+
+.route-app #preparation-tips {
+  border: 1px solid var(--poc-line);
+  border-radius: var(--space-3);
+  background: var(--poc-white);
+  color: var(--poc-ink);
+  padding: var(--space-6);
+  max-width: min(90vw, 32rem);
+}
+
+.route-app #preparation-tips::backdrop {
+  background: var(--text-muted);
+  opacity: var(--control-disabled-opacity);
+}
+
+.route-app #close-tips {
+  float: right;
+}
+
+.route-app .planner .steps {
+  border: 0;
+  padding: 0;
 }

@@ -161,7 +161,18 @@ class ShadeService:
         response.shade.requested_time = request.requested_time
         return response, hit
 
-    def _calculate(self, request, context):
+    def sample(self, request: ShadeRequest, points):
+        """Evaluate sparse building-model receivers without caching a partial raster.
+
+        Ordinary respond/cache results stay complete for their requested corridor.
+        This internal route-ranking path preserves the same model and input gaps.
+        """
+        context = self.context(request)
+        if context[6] is None:
+            raise ValueError("Sparse walking samples require the building model")
+        return self._calculate(request, context, sample_points=points)
+
+    def _calculate(self, request, context, sample_points=None):
         (
             _,
             manifest,
@@ -205,6 +216,17 @@ class ShadeService:
             selection[row : row + height, col : col + width] = city & corridor
             receivers &= selection
             flags = None
+        if sample_points is not None:
+            selection = np.zeros(receivers.shape, dtype=bool)
+            for x, y in sample_points:
+                sample_row = int((halo_bounds[3] - y) // cell)
+                sample_col = int((x - halo_bounds[0]) // cell)
+                if (
+                    0 <= sample_row < selection.shape[0]
+                    and 0 <= sample_col < selection.shape[1]
+                ):
+                    selection[sample_row, sample_col] = True
+            receivers &= selection
         latitude, longitude, rotation = solar_location(bounds)
         states, metadata = self.calculator(
             surface,

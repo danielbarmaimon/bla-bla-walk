@@ -18,7 +18,8 @@
       </header>
 
       <main class="route-layout">
-        <section class="planner" aria-labelledby="planner-title">
+        <section class="planner" aria-label="Trip planner and walking guide">
+          <div id="planner-form">
           <div class="section-heading">
             <p class="kicker">BASEL, SWITZERLAND</p>
             <h1 id="planner-title">Where are you going?</h1>
@@ -65,13 +66,29 @@
           <button id="calculate-journey" class="primary-button" type="button" disabled>Calculate</button>
           <button id="cancel-journey" class="text-button" type="button" hidden>Cancel</button>
           <p id="trip-status" role="status" aria-live="polite">Choose your start and destination.</p>
-          <section id="preparation-tips" hidden aria-label="While your route is calculated"><h2>Prepare for your walk</h2><ul id="trip-tips"></ul></section>
+
 
 
           <div class="quick-heading"><div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div><p id="quick-place-status">Choose a start first</p></div>
           <div class="quick-grid" id="quick-grid"></div>
           <button class="example-button" id="try-example" type="button" hidden disabled>Try SBB → Marktplatz example</button>
 
+          </div>
+            <aside class="steps" aria-labelledby="steps-title">
+              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p></div>
+          <fieldset class="route-mode">
+            <legend>Compare routes</legend>
+            <div class="segmented">
+              <button id="fast-mode" type="button" aria-pressed="false"><span data-icon="fast-forward" aria-hidden="true"></span>Fast <small id="fast-duration"></small></button>
+              <button id="shade-mode" type="button" aria-pressed="true"><span data-icon="trees" aria-hidden="true"></span>Recommended <small id="recommended-duration"></small></button>
+            </div>
+            <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
+          </fieldset>
+              <p id="route-role-status" role="status"></p>
+              <div id="step-list"></div>
+              <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
+              <details class="nearby-details" id="interior-list-section" hidden><summary>Supermarkets</summary><ul id="interior-list"></ul></details>
+            </aside>
         </section>
 
         <section class="map-screen" aria-label="Route map and directions">
@@ -93,7 +110,7 @@
               <button type="button" class="layer-badge" id="shade-samples-toggle" aria-pressed="false">Shading</button>
               <button type="button" class="layer-badge" id="weather-stations-toggle" aria-pressed="false">Weather stations</button>
               <button type="button" class="layer-badge" id="fountains-layer-toggle" aria-pressed="false">Fountains</button>
-              <button type="button" class="layer-badge" id="landmark-toggle" aria-pressed="false">Landmarks</button>
+              <button type="button" class="layer-badge" id="landmark-toggle" aria-pressed="true">Landmarks</button>
               <button type="button" class="layer-badge" id="cool-place-toggle" aria-pressed="false">Interior space</button>
             </div></details>
           </div>
@@ -103,12 +120,7 @@
               <p class="map-overlay" id="basemap-status" role="status">Loading Basel basemap…</p>
               <div class="map-pick-banner" id="map-pick-banner" role="status" hidden>Tap the map to place your destination.</div>
             </div>
-            <aside class="steps" aria-labelledby="steps-title">
-              <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p></div>
-              <div id="step-list"></div>
-              <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
-              <details class="nearby-details" id="interior-list-section" hidden><summary>Supermarkets</summary><ul id="interior-list"></ul></details>
-            </aside>
+
           </div>
         </section>
       </main>
@@ -123,16 +135,9 @@
             <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
             <h2 id="journey-title"></h2><p id="journey-summary"></p>
 
-          <fieldset class="route-mode">
-            <legend>Compare routes</legend>
-            <div class="segmented">
-              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="fast-forward" aria-hidden="true"></span>Fast</button>
-              <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>Recommended</button>
-            </div>
-            <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
-          </fieldset>
+
             <p class="comparison-control-status" id="comparison-control-status" role="status">Choose a departure and calculate.</p>
-            <p id="route-role-status" role="status"></p>
+
             <div id="route-options" class="route-options"></div>
           </section>
 <section id="comparison-evidence" aria-label="Route calculation evidence"></section>
@@ -171,5 +176,6 @@
     <script src="/vendor/ol.js"></script>
     <script src="/vendor/ajv2020.js"></script>
     <script type="module" src="/src/main.js"></script>
+    <dialog id="preparation-tips" aria-labelledby="tips-title"><button id="close-tips" class="text-button" type="button">Close</button><h2 id="tips-title">Prepare for your walk</h2><ul id="trip-tips"></ul></dialog>
   </body>
 </html>
