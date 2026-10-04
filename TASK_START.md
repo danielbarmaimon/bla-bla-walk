@@ -96,6 +96,14 @@ Start T27 for account D. Use $hack-build and $hack-design. Follow TASK_START.md'
 Start T30 for account D after T27 merges. Use $hack-build. Follow TASK_START.md's short-session metaprompt and M6/T30. Finish Fast (Lucide fast-forward) and Recommended (trees) choice, both distinct supported paths on the map and selected-route steps below. Integrate A's maneuver renderer and B's checked shade evidence using their handoffs; fixtures allow UI work while waiting, but final acceptance requires real integration. Make badges smaller, centred and without underline while retaining focus/pressed state; remove the successful basemap-status sentence and keep actual errors/attribution. Show real calculation status plus 3–4 concise officially sourced preparation tips. Keep details in Information sources. One available route, same-route roles and unsupported recommendation must be honest. Integrate optional landmarks/shadow areas only if ready; do not wait for them or start a new backend orchestrator. Hand off to C for T31.
 ```
 
+### Follow-up after M6 · T32 · Route point details
+
+**Start:** after T30 and T31 are accepted and merged. This follow-up is outside the short-session M6 queue.
+
+```text
+Start T32 after M6 acceptance. Use $hack-build. Read M7/T32 in docs/plan.md and this launch guide's shared metaprompt. Add compact details for a selected point on the calculated route: temperature, remaining distance and ETA, plus local segment shadow percentage only when supported data is available. Support desktop hover and keyboard focus, with tap/click selection on touch; keep the card readable without obscuring the route or controls. Reuse current route, temperature and shade results; label missing data unavailable instead of guessing. Only extend an existing interface if required, and add its decision line in the same change. Complete T32 only.
+```
+
 ### Presenter — five-minute storytelling pitch
 
 This is your separate presentation chat, **not an extra engineering task for A–D**. English. **Model:** GPT-6.1 Sol · **Effort:** Low (Light). Select it, then paste:
