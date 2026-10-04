@@ -522,10 +522,13 @@ function renderJourney() {
     pointFractions,
     pixelForFraction: fraction => map.getRoutePointPixel(state.route, fraction)
   });
+  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
+  if (badgeActive('#shade-samples-toggle') && (!route || !routePairSelected() || state.comparisonJob?.status !== 'ready')) {
+    $('#route-display-info').textContent = 'Shading appears only after calculating SBB → Marktplatz.';
+  }
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
-  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
   $('#route-step-notes').textContent = route?.directions?.route_id === route?.id && route?.directions ? 'Directions are provider maneuvers for the selected route geometry. Access and temporary closures remain unverified.' : 'Selected-route directions unavailable; no turns are inferred from the map.';
   $('#calculate-journey').disabled = state.busy || !state.origin || !state.destination;
   $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Calculate';
