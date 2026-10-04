@@ -1,7 +1,8 @@
 # T10 shared prepared-data snapshot
 
 State: done; versioned, offline-installable snapshot prepared on
-`data/t10-shared-shade-snapshot` and included in PR #56 with the regional fix.
+`data/t10-shared-shade-snapshot`. Its replacement PR includes the regional fix
+from PR #56, so the combined PR supersedes that preparation-only PR.
 
 Done: committed archive is 41,938,457 bytes (41.9MB), expanding to 71,265,138
 bytes across 254 files: the 17,432 building footprints, building manifest and tile
@@ -25,9 +26,15 @@ main's walking-directions changes, 84 focused/contract/instruction tests passed;
 changed-file Ruff checks pass. Existing missing local demo/rest-stop outputs
 remain outside this task, as recorded by the preparation-fix handoff.
 
-Next: approve and merge updated PR #56, then teammates can pull and run
+Next: approve and merge the combined snapshot PR, then teammates can pull and run
 `python scripts/install_shade_snapshot.py` followed by
 `python scripts/prepare_building_shade.py --offline`. Restart a running server
 after installation. The preparation fix is included because regional coverage
 constraints require the corrected loader. No merge has been authorized. T23's
 full 248-sample journey comparison remains the next separate acceptance task.
+
+Sharing note: updating the old PR branch was blocked by the push guard because
+its update range included a pre-existing upstream web merge carrying a real-name
+attribution. Publishing this new branch passed the unchanged guard: its range
+excludes commits already on remote branches and checks the new local commits.
+No upstream history was rewritten and no guard was bypassed.
