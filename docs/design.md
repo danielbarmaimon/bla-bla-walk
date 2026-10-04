@@ -13,7 +13,7 @@ The user scenario proposed for review is an older person travelling to a grocery
 
 ### Proposed journey flow (three minutes)
 1. Open Basel, toggle sensor temperatures, fountains and calculated shade. Inspect a feature's source, timestamp and uncertainty.
-2. Search for a Basel-Stadt street address for the start or destination; official building-address lookup now supports selecting map coordinates online. Select both endpoints and departure, then press Find routes to request FOSSGIS foot-network geometry; shade/access ranking for new pairs remains unavailable. Compare eligible trips for the checked endpoint pair. Keep the existing Basel SBB–Marktplatz walk as the current checked example; do not imply a specific Migros route is verified.
+2. Search for a Basel-Stadt street address for the start or destination; official building-address lookup now supports selecting map coordinates online. Select both endpoints and departure, then press Calculate to request FOSSGIS foot-network geometry; shade/access ranking for new pairs remains unavailable. Compare eligible trips for the checked endpoint pair. Keep the existing Basel SBB–Marktplatz walk as the current checked example; do not imply a specific Migros route is verified.
 3. Choose Fastest overall or More shade. Show walking time/distance, shaded/exposed/unknown lengths, benches, fountains and confirmed closures. If transit is admitted, show walking access, wait, ride, transfers and schedule/live status separately.
 4. Choose Now or another departure time. Recalculate shade along outdoor walking legs; show the recommendation and its evidence.
 5. Disconnect a source: show retained observations as stale and saved shade results with their original effective time.

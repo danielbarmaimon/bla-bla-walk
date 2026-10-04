@@ -257,7 +257,7 @@ function tripCoordinates() {
   return [state.origin, state.destination].filter(Boolean).map(place => [place.lon, place.lat]);
 }
 
-function invalidateTrip(message = 'Choose your start and destination, then find routes.') {
+function invalidateTrip(message = 'Choose your start and destination, then calculate.') {
   state.tripVersion += 1;
   state.submitted = false;
   state.busy = false;
@@ -518,7 +518,7 @@ function renderJourney() {
     notes.append(p);
   });
   $('#calculate-journey').disabled = state.busy || !state.origin || !state.destination;
-  $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Find routes';
+  $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Calculate';
   $('#cancel-journey').hidden = !state.busy;
   $('#planner-title').closest('.planner').setAttribute('aria-busy', String(state.busy));
 }
@@ -664,17 +664,18 @@ $('#departure-time').step = '1';
 setDepartureNow();
 $('#departure-time').addEventListener('input', () => {
   $('#departure-time').setCustomValidity('');
-  invalidateTrip('Departure changed. Find routes again.');
+  invalidateTrip('Departure changed. Calculate again.');
 });
 $('#departure-now').addEventListener('click', setDepartureNow);
 $('#departure-later').addEventListener('click', () => {
   $('#departure-picker').hidden = false;
   $('#departure-now').setAttribute('aria-pressed', 'false');
   $('#departure-later').setAttribute('aria-pressed', 'true');
+  invalidateTrip('Departure changed. Calculate again.');
   $('#departure-time').focus();
 });
 $('#calculate-journey').addEventListener('click', () => void findRoutes());
-$('#cancel-journey').addEventListener('click', () => invalidateTrip('Calculation cancelled. You can find routes again.'));
+$('#cancel-journey').addEventListener('click', () => invalidateTrip('Calculation cancelled. You can calculate again.'));
 
 function updatePreferences() {
   calculation.setPreferences({
@@ -820,7 +821,7 @@ $('#back-to-plan').addEventListener('click', showPlan);
 $('#try-example').addEventListener('click', () => {
   setOrigin(FALLBACK_START, 'Example start selected');
   selectDestination(MARKTPLATZ);
-  $('#trip-status').textContent = 'Saved example selected. Find routes to compare.';
+  $('#trip-status').textContent = 'Saved example selected. Calculate to compare.';
 });
 
 
