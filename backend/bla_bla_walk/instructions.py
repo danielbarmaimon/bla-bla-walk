@@ -22,7 +22,7 @@ def instruction_text(maneuver, street):
     """Plain English from maneuver fields, including unnamed roads and exits."""
     kind = maneuver["type"]
     modifier = maneuver.get("modifier")
-    road = f" on {street}" if street else " on the unnamed path"
+    road = f" on {street}" if street else ""
     direction = f" {modifier}" if modifier in MODIFIERS else ""
     if modifier == "uturn" and kind != "depart" and kind != "arrive":
         return "Make a U-turn" + road, "turn"
@@ -50,6 +50,35 @@ def instruction_text(maneuver, street):
     if kind == "new name" or kind in {"continue", "notification", "use lane"}:
         return "Continue" + direction + road, "continue"
     raise ValueError("Unsupported maneuver")
+
+
+def add_street_context(steps):
+    """Locate unlabelled segments between actual provider-named route streets.
+
+    A later street is a route reference, never the claimed name of an unnamed
+    segment or an inferred intersection. Keep every provider turn intact.
+    """
+    previous_street = None
+    for index, step in enumerate(steps):
+        if step.street_name:
+            previous_street = step.street_name
+            continue
+        if step.kind == "arrive":
+            continue
+        following = next((s for s in steps[index + 1 :] if s.street_name), None)
+        references = []
+        if previous_street:
+            references.append(f"After {previous_street}")
+        if following:
+            remaining = round(following.at_metres - step.at_metres)
+            subject = "route" if previous_street else "Route"
+            references.append(
+                f"{subject} continues to {following.street_name} in {remaining} m"
+            )
+        elif previous_street:
+            references.append("towards the selected destination")
+        if references:
+            step.text += ". " + "; ".join(references)
 
 
 def provider_directions(route, route_id, speed):
@@ -92,7 +121,7 @@ def provider_directions(route, route_id, speed):
             if matching_index is None:
                 return None
             previous_index = matching_index
-            street = raw.get("name") or None
+            street = raw.get("name") or raw.get("ref") or None
             if street is not None and not isinstance(street, str):
                 return None
             text, kind = instruction_text(maneuver, street)
@@ -114,6 +143,7 @@ def provider_directions(route, route_id, speed):
             at_metres += distance
         if not math.isclose(at_metres, route["distance"], abs_tol=2, rel_tol=0.001):
             return None
+        add_street_context(steps)
         return WalkingDirections(route_id=route_id, steps=steps)
     except (KeyError, TypeError, ValueError, ValidationError):
         return None

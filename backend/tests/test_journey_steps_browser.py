@@ -40,6 +40,8 @@ def test_route_switch_missing_and_route_ordered_prompts(browser_page):
       const second = structuredClone(firstRoute); second.id = 'second';
       second.directions.route_id = 'second';
       second.directions.steps[0].text = 'Start walking on Another street';
+      second.directions.steps[0].street_name = 'Another street';
+      second.directions.steps[1].text = 'Turn left. After Another street';
       steps.update(second);
     }""")
     text = page.locator("#journey-harness").inner_text()
@@ -57,3 +59,78 @@ def test_route_switch_missing_and_route_ordered_prompts(browser_page):
     assert page.locator("#journey-harness [data-kind=prompt]").count() == 1
     page.evaluate("steps.dispose()")
     assert page.locator("#journey-harness").inner_text() == ""
+
+
+def test_named_references_are_near_the_maneuver_and_clear_on_route_change(browser_page):
+    page = browser_page
+    page.goto(page.base_url)
+    route = maneuver_route()
+    feature = {
+        "id": "landmark-route",
+        "geometry": route["geometry"],
+        "route": {"distance_m": 2100, "duration_s": 2100},
+        "directions": provider_directions(route, "landmark-route", 1).model_dump(
+            mode="json"
+        ),
+    }
+    # Synthetic named-place evidence checks matching, not real Migros coverage.
+    result = page.evaluate(
+        """async feature => {
+      const {journeyItems} = await import('/src/journey-steps.js');
+      const near = {label:'Test shop', sourceUrl:'https://example.com/mapped',
+        coordinates:feature.directions.steps[1].location};
+      const far = {label:'Distant church', sourceUrl:'https://example.com/mapped',
+        coordinates:[7.7,47.6]};
+      const unsourced = {label:'Invented Migros', coordinates:near.coordinates};
+      const items = journeyItems(feature, [], [near,far,unsourced]);
+      const changed = structuredClone(feature);
+      changed.directions.steps.forEach(s => {
+        s.location = changed.geometry.coordinates[0];
+      });
+      return {items, changed:journeyItems(changed, [], [near,far,unsourced])};
+    }""",
+        feature,
+    )
+    text = " ".join(item["text"] for item in result["items"])
+    assert "Near Test shop (mapped reference; visibility unverified)" in text
+    assert "Distant church" not in text and "Invented Migros" not in text
+    assert "Test shop" not in " ".join(item["text"] for item in result["changed"])
+    assert "unnamed" not in text
+    assert "After First street" in text
+
+
+def test_short_segments_show_seconds(browser_page):
+    page = browser_page
+    page.goto(page.base_url)
+    result = page.evaluate("""async () => {
+      const {journeyItems} = await import('/src/journey-steps.js');
+      return journeyItems({id:'short',geometry:{type:'LineString',
+        coordinates:[[7.59,47.55],[7.591,47.55]]},
+        route:{distance_m:6,duration_s:6},directions:{route_id:'short',steps:[{
+          text:'Turn right on Test street',kind:'turn',location:[7.59,47.55],
+          at_metres:0,distance_m:6,duration_s:6}]}})[0].text;
+    }""")
+    assert "about 6 sec" in result and "1 min" not in result
+
+
+def test_named_saved_shops_can_be_references_but_illustrations_cannot(browser_page):
+    page = browser_page
+    page.goto(page.base_url)
+    result = page.evaluate("""async () => {
+      const {journeyItems} = await import('/src/journey-steps.js');
+      const route = {id:'shop-route',geometry:{type:'LineString',
+        coordinates:[[7.59,47.55],[7.591,47.55]]},
+        route:{distance_m:75,duration_s:75},directions:{route_id:'shop-route',
+          steps:[{text:'Turn left',kind:'turn',location:[7.59,47.55],
+            at_metres:0,distance_m:75,duration_s:75}]}};
+      const candidate = {fraction:0,feature:{label:'Test named supermarket',
+        kind:'rest',rest_type:'indoor',geometry:{type:'Point',
+          coordinates:[7.59,47.55]},
+        provenance:{fixture:false,source_url:'https://example.com/mapped'}}};
+      const real = journeyItems(route,[candidate],[])[0].text;
+      candidate.feature.provenance.fixture = true;
+      const fixture = journeyItems(route,[candidate],[])[0].text;
+      return {real,fixture};
+    }""")
+    assert "Near Test named supermarket" in result["real"]
+    assert "Near Test named supermarket" not in result["fixture"]
