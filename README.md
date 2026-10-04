@@ -59,10 +59,26 @@ All route calculation and rescoring use local inputs in every mode. Online mode
 refreshes provider layers independently; offline mode makes no external requests.
 No transit service is admitted. The prepared local offline journey has been
 validated; the online external-server journey remains unverified. Each target
-machine still needs its own prepared datasets. See the
+machine needs the prepared datasets; the committed shade snapshot supplies the
+building footprints and compact survey inputs without provider downloads. See the
 [T6 acceptance record](handoff/t6-integration.md) for evidence and the remaining check.
 
 ## Download data before offline use
+
+For building shade and the saved route comparison, first install the committed
+**41.9MB prepared snapshot** without internet access:
+
+```sh
+python scripts/install_shade_snapshot.py
+python scripts/prepare_building_shade.py --offline
+```
+
+This restores the existing local loader paths from checksum-verified data included
+in the Git checkout. It preserves differing local data unless `--replace` is
+explicitly requested. Stop the server before replacement and restart afterward.
+See the [snapshot notes and licences](data/prepared/README.md). This replaces the
+building/survey downloads for the saved demo; browser libraries, basemaps and
+observation/fountain caches still need their separate preparation below.
 
 With the project environment active and internet available, run from the repository root:
 
@@ -144,7 +160,7 @@ python scripts/prepare_building_shade.py --endpoint https://overpass.osm.ch/api/
 
 This source is admitted only within the verified Basel-Stadt boundary and requested halo. Cross-boundary receiver/ray coverage stays unknown; it cannot establish clear sunlight beyond that area. GET batches have distinct resumable identities. Unparseable provider date markers are retained separately and labelled unknown, never replaced with retrieval time. Source constraints and transport are recorded in the local manifest and cache identity.
 
-The sanitized footprint cache stays local under `.cache/buildings`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
+The active footprint cache lives under `.cache/buildings`; grids and flags live under `data/geometry/`. These runtime directories remain ignored. The committed [prepared snapshot](data/prepared/README.md) restores their verified contents without provider requests. Its geometry manifest includes the locally prepared survey assets; the building workflow selects the 25 survey tile pairs intersecting the two routes and their halo. Footprint provenance, original source dates and coverage constraints are preserved. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
 
 Reproduce full-polyline, cold/warm, concurrent, seam, night and offline API checks:
 

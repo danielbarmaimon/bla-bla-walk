@@ -88,6 +88,14 @@ Observed ground/shade accuracy and full-city coverage remain separate work.
 
 ### Local building-cache restoration, 2026-10-04
 
+The [versioned prepared shade snapshot](../data/prepared/README.md) now distributes
+the sanitized building database and checksum-verified compact survey artifacts
+with their original manifests. The OSM database remains ODbL 1.0; survey artifacts
+retain © swisstopo attribution and the open-data terms. Installation is local and
+makes no provider calls. Acquisition checkpoints and unrelated provider caches
+are excluded. Sharing this snapshot does not change source freshness, coverage
+constraints or physical-validation limits.
+
 The configured global service was unavailable on this clone. The [Swiss Overpass service](https://overpass.osm.ch/) supplied 72 completed, sanitized GET batches containing 17,432 building/part footprints. The [OSM instance register](https://wiki.openstreetmap.org/wiki/Overpass_API#Instances_with_data_only_for_a_specific_region) declares Switzerland coverage; the [SOSM terms](https://sosm.ch/about/terms-of-service/) apply. Attribution remains © OpenStreetMap contributors / ODbL 1.0, with surveyed roof evidence © swisstopo.
 
 This restoration constrains model support to the official Basel-Stadt boundary already admitted in the tile inventory, intersected with the requested halo. A ray leaving that area remains unknown unless a known in-area blocker proves building shade. Complete batch retrieval does not claim international halo coverage, full-city receiver validation or current physical shade. One unresolved building extent remains unknown. The provider's raw source marker `117480` is not an interpretable date: provider source freshness is explicitly unknown; UTC retrieval times are separately retained. Footprints contain source ID, geometry, optional mapped metre height and unresolved flag only, with no raw name/address/contact tags.

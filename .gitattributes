@@ -5,6 +5,7 @@
 .githooks/* text eol=lf
 # Native geometry metadata pins this JSON's byte checksum across operating systems.
 data/source-manifest.json text eol=lf
+data/prepared/*.zip binary
 
 # Append-only logs with one line per entry: keep both sides when two branches add lines.
 docs/decisions.md merge=union
