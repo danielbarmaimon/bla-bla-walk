@@ -1,5 +1,7 @@
 # Pick a task and start
 
+**Tomorrow's short plan and copyable prompts are below: one or two tasks per account, plus your five-minute storytelling prompt.**
+
 This is the team's task launcher. Read [HACKAMRHEIN.md](HACKAMRHEIN.md) for first-time setup. [ROADMAP.md](ROADMAP.md) shows the sequence and dependencies. [docs/plan.md](docs/plan.md) is the source of truth for each task's acceptance check. [TEAM.md](TEAM.md) maps **slots** (work areas) to GitHub usernames.
 
 Open this repository in Codex. Start one fresh chat per task. Choose the suggested model and effort under the message box; use **Advanced** when needed and keep **Fast mode off**. Copy one prompt below into that chat. Codex handles branching, checks, handoff and the pull request.
@@ -20,6 +22,105 @@ Each launch prompt invokes these instructions:
 > Read AGENTS.md and HACKAMRHEIN.md. Read TEAM.md, ROADMAP.md and docs/plan.md. Apply my local profile. Use the named task skill. Check the task's Needs against merged main. Check handoff/ for active ownership. If blocked, name the exact dependency. Start my selected task when ready. Work in my own clone. Create a task branch from current main. Respect listed file ownership. Follow the task's Done when. Work one checkable step first. Save handoff before changing chats. Run relevant checks and the privacy guard. Commit and push completed checkpoints. Open a pull request after completion. Ask before merging that pull request. Keep replies brief.
 
 For a long task, complete one checkpoint. Save its state in handoff/. Continue in a fresh chat. For shared T10 and T6, complete only your assigned portion. Open a PR for that portion. Merge it before the next portion. Mark the parent task done after its full acceptance check passes.
+
+## Tomorrow: short four-account plan
+
+**Start here. At most two tasks each.** Assign A–D tomorrow. These are account lanes, distinct from older A–F team slots. The feature stack and plan are merged on main at or after `1554167`; no T20 setup task is needed. Use a separate clone and fresh chat for each task. Keep Fast mode off; select the model/effort below before pasting. Model availability is checked by the local picker; Light means Low.
+
+| Account | Start now | Second task | Settings |
+|---|---|---|---|
+| A | P0 T22 — real route-specific steps | P2 T21 — landmarks, optional | Sol Medium → Luna High |
+| B | P0 T23 — existing shade diagnosis/repair | P2 T24 — actual shadow-area overlay, optional | Sol High → Sol Medium |
+| C | P1 T25 — construction evidence/capability check | P0 T31 — joined-flow checks and saved fallback | Luna High → Luna High |
+| D | P0 T27 — concise start form/one Calculate | P0 T30 — route choice/map/steps/loading integration | Sol Medium → Sol Medium |
+
+“Sol” = **GPT-6.1 Sol** (`gpt-6.1-sol`); “Luna” = **GPT-6 Luna** (`gpt-6-luna`). A/B second tasks are optional; protect D's integration and C's fallback first. Current main and relevant handoffs determine readiness. [M6 in the plan](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience) owns acceptance and exact file lists.
+
+### Short-session metaprompt
+
+Every prompt below includes this metaprompt by reference:
+
+> Read AGENTS.md and my local profile, then TEAM.md, M6 in docs/plan.md and my task's handoff. Follow TASK_START.md's shared metaprompt using the short-session M6 queue, which replaces the old T20–T31 launch sequence. In my own clone, update from current merged main and create a task branch. Verify Needs; PRs #43–#49 are already merged. Respect A/B/C/D file ownership: A owns maneuver backend/necessary additive contracts; B owns shade; C owns construction audit/acceptance docs; D alone edits shared browser entry points and CSS. Reuse current APIs and code. Do one checkable checkpoint first, with no broad redesign or extra task. Keep missing/stale/unsupported states truthful. Coordinate required shared-contract changes through A and regenerate with a decision line. Save a handoff with exact integration hooks and evidence. Run relevant checks, doc check and privacy guard; commit/push, open a reviewed PR, and ask before merging unless that PR already has explicit approval. Never deploy externally. Stop optional scope if essential integration/fallback is unfinished. Keep replies brief and show the working result.
+
+### A — journey steps first
+
+**Model:** GPT-6.1 Sol · **Effort:** Medium.
+
+```text
+Start T22 for account A. Use $hack-build and $hack-interface only if an additive contract change is needed. Follow TASK_START.md's short-session metaprompt. Read M6/T22 in docs/plan.md. Request and normalize actual walking-provider maneuvers, tied to the selected route ID/geometry, and export the journey renderer for D. Check two Basel address pairs and route switching; never invent turns or reuse demo destination text. Do not edit D's main/map/index/CSS. Reuse the current API; provide D one checked payload and clear mount/update hooks. Complete only this checkpoint.
+```
+
+**Optional second task:** GPT-6 Luna · High.
+
+```text
+Start T21 for account A only after T22 is ready and merged. Use $hack-build. Follow TASK_START.md's short-session metaprompt and M6/T21. Restore route-near landmark candidates without a demo-route-a special case, reusing admitted saved places first. Export markers for D, preserve source positions/dates and unknown visibility. Keep coverage limitations explicit. Skip if steps or integration are unfinished.
+```
+
+### B — shade diagnosis first
+
+**Model:** GPT-6.1 Sol · **Effort:** High.
+
+```text
+Start T23 for account B. Use $hack-build and $hack-unstuck. Follow TASK_START.md's short-session metaprompt and M6/T23. Trace the existing real building-shadow model from prepared inputs through shade API, saved-route samples and ranking. Reproduce two daylight times, night and missing data; repair only a demonstrated defect. Supply D checked evidence and layer/progress hooks. Preserve unknown coverage/access, exact effective time and building-only limits. No new shade engine, tree/terrain promises, full-city recomputation or edits to D's browser files. Complete a bounded verified checkpoint.
+```
+
+**Optional second task:** GPT-6.1 Sol · Medium.
+
+```text
+Start T24 for account B only after T23 is ready and merged. Use $hack-build. Follow TASK_START.md's short-session metaprompt and M6/T24. Export an isolated OpenLayers area overlay from actual existing ShadeResponse cells; verify alignment and time replacement in one supported viewport. Distinguish shade/unknown/night and supply D mount/update/dispose hooks. No fabricated shadow patches or city-wide expansion. Skip if pipeline repair or integration is unfinished.
+```
+
+### C — construction evidence, then verification/fallback
+
+**Model:** GPT-6 Luna · **Effort:** High. If source semantics defeat this checkpoint, escalate to GPT-6.1 Sol Medium.
+
+```text
+Start T25 for account C. Use $hack-build. Follow TASK_START.md's short-session metaprompt and M6/T25. Verify current official construction data for reusable spatial geometry, active dates, freshness and confirmed pedestrian-closure meaning. Recheck the known 100335 gap and whether the current router can avoid closed edges. Supply D a concise truthful construction status and record the next action if evidence is unavailable. No invented coordinates, blanket blockage rules, rerouting engine or shared app-file edits. Save source/licence evidence for T31.
+```
+
+**Second task, protect this:** GPT-6 Luna · High.
+
+```text
+Start T31 for account C. Use $hack-build, $hack-review and $hack-demo. Follow TASK_START.md's short-session metaprompt and M6/T31. Prepare smoke checks while A/B/D work; final acceptance waits for merged T22/T23/T25/T30. Test saved and arbitrary address pairs, route-specific steps, selection, changed time, mobile/keyboard flow, source/calculation failures and truthful unavailable states. Include optional landmarks/area shadows only if ready. Consolidate source/limit docs and test a local dated fallback explicitly labelled saved, never live. Do not add features or deploy externally. Record actual build/latency and remaining gaps.
+```
+
+### D — concise start, then finish the journey
+
+**Model:** GPT-6.1 Sol · **Effort:** Medium for both tasks.
+
+```text
+Start T27 for account D. Use $hack-build and $hack-design. Follow TASK_START.md's short-session metaprompt and M6/T27. Simplify the current start page to Start, Destination, Departure/Now, existing nearby-place shortcuts and one Calculate action. Reuse address lookup/GPS/map pins and existing APIs; clear stale results on changes and avoid duplicate route fetches. Own shared browser entry points/CSS exclusively. Keep arbitrary-route shade/access unknowns. Save a working checkpoint, then continue T30 in a fresh chat after merge.
+```
+
+```text
+Start T30 for account D after T27 merges. Use $hack-build. Follow TASK_START.md's short-session metaprompt and M6/T30. Finish Fast (Lucide fast-forward) and Recommended (trees) choice, both distinct supported paths on the map and selected-route steps below. Integrate A's maneuver renderer and B's checked shade evidence using their handoffs; fixtures allow UI work while waiting, but final acceptance requires real integration. Make badges smaller, centred and without underline while retaining focus/pressed state; remove the successful basemap-status sentence and keep actual errors/attribution. Show real calculation status plus 3–4 concise officially sourced preparation tips. Keep details in Information sources. One available route, same-route roles and unsupported recommendation must be honest. Integrate optional landmarks/shadow areas only if ready; do not wait for them or start a new backend orchestrator. Hand off to C for T31.
+```
+
+### Presenter — five-minute storytelling pitch
+
+This is your separate presentation chat, **not an extra engineering task for A–D**. English. **Model:** GPT-6.1 Sol · **Effort:** Low (Light). Select it, then paste:
+
+```text
+Help me prepare and deliver Bla Bla Walk's English five-minute pitch. Use $hack-demo and $hack-build for the presentation deliverables, not new product features. Follow TASK_START.md's shared metaprompt, read AGENTS.md, my local profile, docs/design.md, docs/pitch.md, docs/demo.md, docs/SOURCES.md and the latest merged handoffs. Check what actually works in the current local app; do not pitch tomorrow's planned features as delivered. Respect local-only delivery.
+
+Focus on storytelling and follow these seven beats in this exact order. The five-minute solution pitch totals 300 seconds:
+Storytelling Point | Pacing | Recommended Time % | What Is Needed (Description)
+1. Create Curiosity | Moderate | 15% / 45s / 0:00–0:45 | Hold back key information.
+2. Create Tension | Slow | 15% / 45s / 0:45–1:30 | Make stakes feel important.
+3. Specific Moment | Slow | 30% / 90s / 1:30–3:00 | Use vivid, tangible details.
+4. Change Pace | Variable | 10% / 30s / 3:00–3:30 | Slow for emotion, speed setup.
+5. Unexpected Twist | Quick | 10% / 30s / 3:30–4:00 | Surprise audience with turns.
+6. Personal Story | Slow | 10% / 30s / 4:00–4:30 | Show humanity, build connection.
+7. Land Takeaway | Punchy | 10% / 30s / 4:30–5:00 | Make the message clear.
+
+Start with one concise question about a true experience I can tell and who speaks/clicks; draft the rest while waiting. Do not invent my personal story, user testimony, field validation or statistics. If no true story is available, label an illustrative scenario clearly and leave a private presenter fill-in. No real names, health details or personal data in committed material. Curiosity may delay the solution reveal; it must not conceal important limitations.
+
+Use one concrete Basel walking situation to connect all beats. Let the 90-second Specific Moment contain the verified demo or a dated saved fallback. Cover the problem, what we built, how it works and why it is interesting through the story. Make the twist a truthful insight about the limits of distance-only planning or what the team actually discovered; do not invent a shade benefit or closure detour. Keep plain English, human stakes, crisp transitions, intentional pauses and one memorable takeaway. Sources/licences, AI assistance and limitations must stay concise and visible, including measured vs interpolated/synthetic/saved/unavailable and the building-only shadow approximation where relevant. Prepare likely jury questions with short evidence-based answers and a short route if a live source fails.
+
+Write the timed script and speaker/click cues in docs/pitch.md, with a minimal slide outline; update docs/demo.md with setup, exact demo actions, timing, fallback and likely jury answers. Offer a realistic word budget for each beat, then adjust for my measured speaking speed and click delays. Test the local fallback and label dated output saved, never live.
+
+After the five-minute solution pitch, preserve the separately required 42-second HackAmRhein reflection at 5:00–5:42 about what we learned, what surprised us, what broke or what we will remember. Keep it outside the seven percentages. Rehearse the full 5:42 twice with a timer and trim after run one without changing the beat order or 300-second solution budget. A human rehearsal is not completed until I actually perform it; record measured times, never simulated timing as a rehearsal. Keep the event submission/venue instructions already recorded in docs/demo.md, and do not claim form submission without evidence. Commit/push checked deliverables through the privacy guard, open a reviewed PR and ask before merging unless explicitly approved.
+```
 
 ## Core demo work queue
 
@@ -185,31 +286,3 @@ Start T17 for Slot D. Use $hack-build. Follow TASK_START.md's shared metaprompt.
 ## When a task is blocked
 
 Wait for its named prerequisites. Check whether they are merged into `main` and whether a handoff already exists. Review active pull requests and coordinate with the task owner. After a dependency merges, recheck `main` and start the next task whose `Needs` are all met.
-
-## Next-session four-account launch prompts
-
-These temporary A–D lanes are assigned by the team tomorrow; they are distinct from the older A–F team slots. Follow the shared metaprompt and M6 in docs/plan.md. D completes T20 once before all four accounts start their independent queues. Each account uses its own clone and starts each task in a fresh chat. Do not edit the plan from feature tasks.
-
-```text
-Start T20 for temporary lane D. Use $hack-build and $hack-interface. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Establish the reviewed feature baseline through PR #48 and freeze the common journey contract/fixtures. Do not merge any PR without explicit approval. Record the resulting main commit and component signatures for lanes A–D.
-```
-
-After T20 merges, start these four concurrently:
-
-```text
-Start T21 for temporary lane A. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Own only T21’s listed landmark files; keep shared entry points and contracts with their assigned owners. Export route-wide landmark candidates for integration. Hand off, then start T22 in a fresh chat after T21 merges.
-```
-
-```text
-Start T23 for temporary lane B. Use $hack-build and $hack-unstuck. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Trace real geometry through shadow calculation, route scoring and display; reuse the existing building model and keep unknowns. Own only listed diagnostic/shade files. Hand off, then start T24 after T23 merges.
-```
-
-```text
-Start T25 for temporary lane C. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Verify an authoritative spatial construction/closure source and its pedestrian meaning. Keep caution separate from blockage. Own only listed construction files. Start T26 only after source admission; later own backend integration T29.
-```
-
-```text
-Start T27 for temporary lane D. Use $hack-build and $hack-design. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Build the requested concise trip form in isolated components against T20 fixtures. Keep existing index/main/map untouched until T30. Hand off, then start T28; later own browser integration T30 and acceptance T31.
-```
-
-For the next task in a lane, use: `Start T<number> for temporary lane <letter>. Use $hack-build. Follow TASK_START.md’s shared metaprompt and M6 in docs/plan.md. Respect listed ownership and verify every Needs before beginning.`

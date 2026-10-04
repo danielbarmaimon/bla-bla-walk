@@ -137,29 +137,21 @@ These are suggested role slots for the remaining work, not assigned people. Repl
 3. **Two alternatives compare:** T4, T8–T10, T9, and T5 supply observations, shade, routes, and explained comparisons.
 4. **Demo is repeatable:** T6 connects the journey; T7 prepares the three-minute story and dated offline fallback.
 
-## Next-session priority: four-account journey improvements
+## Next-session priority: short four-account journey work
 
-[M6 in the plan](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience) takes priority over the optional phone/report extensions. Lane labels are temporary and distinct from earlier team slots.
+[M6](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience) replaces the longer next-session sequence: one or two tasks per account, from the already merged baseline. Detailed acceptance/ownership is in the plan; ready prompts/settings are in TASK_START.md.
 
 ```mermaid
 flowchart LR
-  T20["T20 · Baseline and contracts"] --> T21["A · T21 Landmarks"]
-  T21 --> T22["A · T22 Journey steps"]
-  T20 --> T23["B · T23 Shade diagnosis"]
-  T23 --> T24["B · T24 Corridors and shadow overlay"]
-  T20 --> T25["C · T25 Construction admission"]
-  T25 --> T26["C · T26 Closure avoidance"]
-  T20 --> T27["D · T27 Simple trip form"]
-  T27 --> T28["D · T28 Choice and progress"]
-  T22 --> T29["C · T29 Backend integration"]
-  T24 --> T29
-  T26 -. "if admitted" .-> T29
-  T21 --> T30["D · T30 Browser integration"]
-  T22 --> T30
-  T24 --> T30
-  T28 --> T30
-  T29 --> T31["T31 · Real integration and fallback checks"]
-  T30 --> T31
+  A["A · P0 T22 Journey steps"] -. "optional" .-> A2["A · P2 T21 Landmarks"]
+  B["B · P0 T23 Shade repair"] -. "optional" .-> B2["B · P2 T24 Shadow areas"]
+  C["C · P1 T25 Construction audit"] --> C2["C · P0 T31 Verify + fallback"]
+  D["D · P0 T27 Simple form"] --> D2["D · P0 T30 Route choice + integration"]
+  A --> D2
+  B --> D2
+  D2 --> C2
+  A2 -. "only if ready" .-> D2
+  B2 -. "only if ready" .-> D2
 ```
 
-Backend and browser integration can proceed together against the frozen contract; final acceptance waits for both. See the plan for exact dependencies and file ownership.
+All four primary tasks start together. Optional second tasks cannot delay D's integration or C's fallback. Broad contract redesign, a new arbitrary-route orchestrator and construction rerouting are deferred.
