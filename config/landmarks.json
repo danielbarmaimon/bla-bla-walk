@@ -1,0 +1,9 @@
+{
+  "route_buffer_metres": 150,
+  "max_markers": 20,
+  "layer_z_index": 8,
+  "icon_scale": 1,
+  "known_places_checked_at": "2026-10-03",
+  "coverage_note": "Three saved OSM square/building centres plus named real saved stop candidates when supplied. Limited coverage; nearby does not mean visible or familiar.",
+  "source_note": "Reuse src/wayfinding-places.js and admitted RouteAmenities. The 150 m corridor is a display filter, not a verified turn, entrance or diversion. No provider downloads."
+}
