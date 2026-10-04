@@ -1,4 +1,7 @@
 import {
+  constructionMarkers
+} from './route-construction.js';
+import {
   savedLandmarkEvidence
 } from './route-landmarks.js';
 import {
@@ -59,6 +62,7 @@ const FALLBACK_START = {
 };
 const MARKTPLATZ = PLACES.find((place) => place.id === 'marktplatz');
 const mode = new URLSearchParams(location.search).get('mode') || 'online';
+let constructionSettings = null;
 const state = {
   snapshot: null,
   stationLayer: null,
@@ -78,6 +82,7 @@ const state = {
   routingStatus: '',
   amenities: null,
   amenitiesStatus: 'Loading real route-stop data…',
+  constructionSnapshot: null,
 };
 const $ = (selector) => document.querySelector(selector);
 let temperatureView = null;
@@ -421,6 +426,7 @@ function renderJourney() {
   document.body.dataset.trip = state.submitted ? 'results' : 'start';
   $('#temperature-sample').replaceChildren();
   const destination = state.destination;
+  const visible = visibleRouteIds(routes(), recommendedRouteId(), badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
   const route = selectedRoute();
   state.route = route ? routeGeometry(route.geometry.coordinates) : null;
   $('#selected-journey').hidden = !state.submitted || !route;
@@ -517,10 +523,11 @@ function renderJourney() {
       },
     },
   }));
+  const day = $('#departure-time').value.slice(0, 10);
+  if (constructionSettings && badgeActive('#construction-toggle')) markers.push(...constructionMarkers(routes().filter(item => visible.includes(item.id)), state.constructionSnapshot, day, constructionSettings));
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
-  const visible = visibleRouteIds(routes(), recommendedRouteId(), badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
   if (route && ![fastestRoute()?.id, recommendedRouteId()].includes(route.id)) visible.push(route.id);
   map.setRouteVisibility(visible);
   temperatureView?.render(routes().filter(item => visible.includes(item.id)).map(item => ({
@@ -883,6 +890,22 @@ $('#show-information').addEventListener('click', () => {
 });
 $('#back-to-plan').addEventListener('click', showPlan);
 $('#close-tips').addEventListener('click', () => $('#preparation-tips').close());
+
+async function refreshConstruction() {
+  try {
+    constructionSettings ??= await fetch('/config/construction-sites.json').then(reply => reply.json());
+    const reply = await fetch(`/api/construction-sites?mode=${encodeURIComponent(mode)}`);
+    if (!reply.ok) throw new Error('Construction snapshot unavailable');
+    state.constructionSnapshot = await reply.json();
+    const snapshot = state.constructionSnapshot;
+    $('#construction-source-status').textContent = `${snapshot.availability === 'current' ? 'Daily' : 'Saved / unavailable'} construction snapshot · ${snapshot.sites.length} current/upcoming polygons · retrieved ${snapshot.provenance?.retrieved_at ?? 'unavailable'}. Icons show sites within ${constructionSettings.near_route_metres} m of visible routes; mapped sites do not confirm pedestrian closures.`;
+    renderJourney();
+  } catch {
+    $('#construction-source-status').textContent = 'Construction snapshot unavailable; mapped closures remain unverified.';
+  }
+  if (mode === 'online') setTimeout(refreshConstruction, constructionSettings?.browser_refresh_ms ?? 3600000);
+}
+void refreshConstruction();
 $('#try-example').addEventListener('click', () => {
   setOrigin(FALLBACK_START, 'Example start selected');
   selectDestination(MARKTPLATZ);

@@ -315,3 +315,9 @@ Fixture mode uses invented overlays. Online/offline provider modes use admitted 
 The six-person work split is proposed in [ROADMAP.md](ROADMAP.md). Contributors still need to choose role slots and add their GitHub usernames in [TEAM.md](TEAM.md).
 
 Map stop circles use Lucide droplets (Water), rocking-chair (Bench), and clock-fading (Rest). Same-type stops within 38 screen pixels collapse into counted circles; zooming separates them. Tap a count to inspect its members. Cluster anchors remain on a member’s route position, and original source records remain intact.
+
+## Daily construction snapshot
+
+Construction checks reuse a sanitized daily cache, shared by running app processes and retained across restarts. First online use each Basel calendar day refreshes current/upcoming official project and permit geometry; open browsers check hourly. Offline reads saved data only. A failed refresh preserves the old snapshot with a saved/stale label and withholds current avoidance claims. No contact, free-text or document fields are imported.
+
+The active **Construction** badge under **More** shows site icons within approximately 100 m of either visible route, filtered by the departure date. Tap for mapped date ranges, retrieval time and source attribution. Hiding a route removes sites exclusive to that path. These are mapped caution areas, not confirmed pedestrian closures. Bounds and proximity settings live in `config/construction-sites.json`; `.cache/construction.sqlite3` remains local. [Source details](docs/SOURCES.md).

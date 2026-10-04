@@ -9,7 +9,7 @@ export interface LineGeometry {
 export interface MapFeature {
   id: string;
   label: string;
-  kind: "observation" | "fountain" | "shade" | "route" | "rest";
+  kind: "observation" | "fountain" | "shade" | "route" | "rest" | "construction";
   geometry: PointGeometry | LineGeometry | PolygonGeometry;
   availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
   explanation: string;
@@ -29,7 +29,7 @@ export interface MapFeature {
 export interface MapLayer {
   id: string;
   label: string;
-  kind: "observation" | "fountain" | "shade" | "route" | "rest";
+  kind: "observation" | "fountain" | "shade" | "route" | "rest" | "construction";
   availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
   explanation: string;
   features: (MapFeature)[];

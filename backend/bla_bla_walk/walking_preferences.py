@@ -7,10 +7,10 @@ from pathlib import Path
 from threading import Lock
 from zoneinfo import ZoneInfo
 
-import httpx
 from rasterio.warp import transform
 from shapely.geometry import LineString, shape
 
+from .adapters.construction import construction_snapshot
 from .interfaces import ShadeRequest, ShadeState
 from .shade_service import ShadeService
 
@@ -80,63 +80,20 @@ def _sample_shade_fraction(route, departure, settings):
 
 
 def construction_sites(departure, settings):
-    """Read only dated geometry, not contact or descriptive personal fields.
-
-    Active permits are cautions, not confirmed pedestrian closures. Incomplete
-    pagination and provider failure explicitly withhold the avoidance claim.
-    """
-    day = departure.astimezone(ZoneInfo("Europe/Zurich")).date().isoformat()
-    polygons = []
-    try:
-        with httpx.Client(timeout=settings["construction_timeout_seconds"]) as client:
-            projects = client.get(
-                settings["construction_projects_endpoint"],
-                params={
-                    "select": "id",
-                    "where": f"datum_von <= date'{day}' AND datum_bis >= date'{day}'",
-                    "limit": 100,
-                },
-            )
-            projects.raise_for_status()
-            project_data = projects.json()
-            if project_data["total_count"] > 100:
-                return None
-            ids = [str(int(record["id"])) for record in project_data["results"]]
-            if not ids:
-                return []
-            for offset in range(0, settings["construction_max_records"], 100):
-                response = client.get(
-                    settings["construction_endpoint"],
-                    params={
-                        "select": "geo_shape",
-                        "where": (
-                            f"begehrenid in ({','.join(ids)}) "
-                            f"AND datum_von <= date'{day}' "
-                            f"AND datum_bis >= date'{day}'"
-                        ),
-                        "limit": 100,
-                        "offset": offset,
-                    },
-                )
-                response.raise_for_status()
-                payload = response.json()
-                for record in payload["results"]:
-                    geometry = record.get("geo_shape")
-                    if not geometry:
-                        return None
-                    polygon = shape(geometry.get("geometry", geometry))
-                    if (
-                        polygon.is_empty
-                        or not polygon.is_valid
-                        or polygon.geom_type not in ("Polygon", "MultiPolygon")
-                    ):
-                        return None
-                    polygons.append(polygon)
-                if offset + 100 >= payload["total_count"]:
-                    return polygons
-    except (httpx.HTTPError, ValueError, KeyError, TypeError):
-        pass
-    return None
+    """Use the daily complete snapshot; stale input withholds avoidance."""
+    snapshot = construction_snapshot()
+    day = departure.astimezone(ZoneInfo("Europe/Zurich")).date()
+    if (
+        snapshot.availability != "current"
+        or not snapshot.covers_from
+        or day < snapshot.covers_from
+    ):
+        return None
+    return [
+        shape(site.geometry.model_dump())
+        for site in snapshot.sites
+        if site.starts_on <= day <= site.ends_on
+    ]
 
 
 def choose_routes(features, departure, settings):

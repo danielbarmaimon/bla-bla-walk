@@ -13,9 +13,5 @@
   "shade_max_samples": 80,
   "shade_max_tiles": 6,
   "shade_min_known_fraction": 0.8,
-  "construction_endpoint": "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100018/records",
-  "construction_projects_endpoint": "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100335/records",
-  "construction_timeout_seconds": 10,
-  "construction_max_records": 500,
   "user_agent": "BlaBlaWalk-HackAmRhein/0.1 (https://github.com/danielbarmaimon/bla-bla-walk)"
 }

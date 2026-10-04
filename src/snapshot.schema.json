@@ -57,7 +57,8 @@
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction"
           ],
           "title": "Kind",
           "type": "string"
@@ -263,7 +264,8 @@
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction"
           ],
           "title": "Kind",
           "type": "string"

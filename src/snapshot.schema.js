@@ -58,7 +58,8 @@ export const snapshotSchema = {
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction"
           ],
           "title": "Kind",
           "type": "string"
@@ -264,7 +265,8 @@ export const snapshotSchema = {
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction"
           ],
           "title": "Kind",
           "type": "string"

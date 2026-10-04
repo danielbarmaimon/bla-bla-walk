@@ -5,7 +5,7 @@ import json
 import math
 from datetime import UTC, datetime
 from types import SimpleNamespace
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from shapely.geometry import LineString
 
@@ -111,29 +111,43 @@ def test_sparse_positive_shade_never_credits_unknown_samples():
         assert shade_fraction(route, DEPARTURE, settings) is None
 
 
-def test_missing_permit_geometry_withholds_avoidance_claim():
-    projects = MagicMock()
-    projects.json.return_value = {"total_count": 1, "results": [{"id": 123}]}
-    permits = MagicMock()
-    permits.json.return_value = {"total_count": 1, "results": [{"geo_shape": None}]}
-    client = MagicMock()
-    client.__enter__.return_value = client
-    client.get.side_effect = [projects, permits]
-    with patch("bla_bla_walk.walking_preferences.httpx.Client", return_value=client):
+def test_stale_construction_cache_withholds_avoidance():
+    from bla_bla_walk.interfaces import ConstructionSnapshot
+
+    with patch(
+        "bla_bla_walk.walking_preferences.construction_snapshot",
+        return_value=ConstructionSnapshot(availability="stale"),
+    ):
         assert construction_sites(DEPARTURE, SETTINGS) is None
-    assert client.get.call_args_list[0].kwargs["params"]["select"] == "id"
-    assert client.get.call_args_list[1].kwargs["params"]["select"] == "geo_shape"
 
 
 def test_construction_intervals_use_basel_date_near_midnight():
-    projects = MagicMock()
-    projects.json.return_value = {"total_count": 0, "results": []}
-    client = MagicMock()
-    client.__enter__.return_value = client
-    client.get.return_value = projects
-    with patch("bla_bla_walk.walking_preferences.httpx.Client", return_value=client):
+    from datetime import date
+
+    from bla_bla_walk.interfaces import ConstructionSite, ConstructionSnapshot
+
+    site = ConstructionSite(
+        id="site",
+        project_id="123",
+        starts_on=date(2026, 10, 4),
+        ends_on=date(2026, 10, 4),
+        geometry={
+            "type": "Polygon",
+            "coordinates": [
+                [[7.59, 47.55], [7.60, 47.55], [7.60, 47.56], [7.59, 47.55]]
+            ],
+        },
+    )
+    snapshot = ConstructionSnapshot(
+        sites=[site], availability="current", covers_from=date(2026, 10, 4)
+    )
+    with patch(
+        "bla_bla_walk.walking_preferences.construction_snapshot", return_value=snapshot
+    ):
         assert (
-            construction_sites(datetime(2026, 10, 3, 22, 30, tzinfo=UTC), SETTINGS)
-            == []
+            len(construction_sites(datetime(2026, 10, 3, 22, 30, tzinfo=UTC), SETTINGS))
+            == 1
         )
-    assert "2026-10-04" in client.get.call_args.kwargs["params"]["where"]
+        assert (
+            construction_sites(datetime(2026, 10, 3, 12, tzinfo=UTC), SETTINGS) is None
+        )

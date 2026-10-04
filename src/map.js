@@ -136,9 +136,9 @@ export function createMap(
     source: contextFeatures,
     zIndex: 8,
     style: (marker) => new Style({
-      image: marker.get('kind') === 'landmark' ? new Icon({
-        src: '/src/icons/landmark.svg',
-        color: theme.getPropertyValue('--poc-landmark').trim(),
+      image: ['landmark', 'construction'].includes(marker.get('kind')) ? new Icon({
+        src: `/src/icons/${marker.get('kind') === 'construction' ? 'construction' : 'landmark'}.svg`,
+        color: theme.getPropertyValue(marker.get('kind') === 'construction' ? '--exposed' : '--poc-landmark').trim(),
         width: 24,
         height: 24,
       }) : new CircleStyle({
@@ -281,7 +281,7 @@ export function createMap(
 
   /** Inspect admitted point types without opening the full feature inspector. */
   function inspectFeature(feature, coordinate) {
-    if (!['observation', 'fountain'].includes(feature.kind) || feature.geometry?.type !== 'Point') return false;
+    if (!['observation', 'fountain', 'construction'].includes(feature.kind) || (feature.kind !== 'construction' && feature.geometry?.type !== 'Point')) return false;
     preparePopup(feature.label);
     if (feature.kind === 'observation') {
       const reading = document.createElement('p');
@@ -291,6 +291,16 @@ export function createMap(
       const timestamp = document.createElement('p');
       timestamp.textContent = `Observed: ${time && Number.isFinite(time.getTime()) ? time.toLocaleString(undefined, { timeZoneName: 'short' }) : 'Unknown'}`;
       stopMenu.append(reading, timestamp);
+    }
+    if (feature.kind === 'construction') {
+      const detail = document.createElement('p');
+      detail.textContent = feature.explanation;
+      const link = document.createElement('a');
+      link.href = feature.provenance.source_url;
+      link.textContent = feature.provenance.attribution;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      stopMenu.append(detail, link);
     }
     openPopup(coordinate);
     return true;

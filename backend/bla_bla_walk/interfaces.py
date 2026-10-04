@@ -22,7 +22,7 @@ Longitude = Annotated[float, Field(ge=-180, le=180)]
 Latitude = Annotated[float, Field(ge=-90, le=90)]
 Position = tuple[Longitude, Latitude]
 Availability = Literal["current", "stale", "missing", "unknown", "unsupported"]
-LayerKind = Literal["observation", "fountain", "shade", "route", "rest"]
+LayerKind = Literal["observation", "fountain", "shade", "route", "rest", "construction"]
 
 
 class ContractModel(BaseModel):
@@ -278,6 +278,25 @@ class RouteAmenities(ContractModel):
 
     fountains: MapLayer
     rest_stops: MapLayer
+
+
+class ConstructionSite(ContractModel):
+    """Dated official permit polygon, clipped to its associated project interval."""
+
+    id: str
+    project_id: str
+    starts_on: date
+    ends_on: date
+    geometry: PolygonGeometry
+
+
+class ConstructionSnapshot(ContractModel):
+    """Daily city snapshot; older data cannot establish current avoidance."""
+
+    sites: list[ConstructionSite] = Field(default_factory=list)
+    availability: Availability = "missing"
+    covers_from: date | None = None
+    provenance: Provenance | None = None
 
 
 class MapSnapshot(ContractModel):
