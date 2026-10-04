@@ -81,5 +81,6 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: Replaces the earlier four-lane T20–T31 launch sequence with at most two tasks per account: A T22/optional T21, B T23/optional T24, C T25/T31, D T27/T30; start from merged baseline without T20, reuse APIs, defer new construction routing/orchestrator, protect integration/fallback, and add the presenter’s seven-beat 300-second story plus separate 42-second reflection.
 
 - 2026-10-04: T27 approved by @ltorrecilla: form beside map on desktop, form-first mobile, empty endpoints and explicit Find routes; full role selection and preparation tips remain T30.
+- 2026-10-04: T22 adds optional MapFeature.directions with ordered provider maneuvers tied to the geometry-derived route ID; request OSRM steps with the existing geometry call and use configured walking speed for step time. Missing or inconsistent evidence remains unavailable; saved-route turns are never inferred. A exports the isolated renderer for D's T30 integration.
 
 - 2026-10-04: T27 account D follow-up uses the requested Calculate label and invalidates results when switching departure mode; preserves the merged PR #51 layout, current APIs and arbitrary-route unknown shade/access. Shared browser entry points/CSS stay with D through T30.
