@@ -749,8 +749,8 @@
 
 .route-app .route-node-target {
   position: absolute;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 4rem;
+  height: 4rem;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -767,21 +767,13 @@
 }
 
 .route-app .route-node-card h3 {
-  margin: 0 3.5rem var(--space-2) 0;
+  margin: 0 0 var(--space-2);
   font-size: 1rem;
-}
-
-.route-app .route-node-close {
-  position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
-  min-height: 2rem;
-  padding: 0 var(--space-2);
 }
 
 .route-app .route-node-card dl {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: max-content minmax(0, 1fr);
   gap: var(--space-1) var(--space-3);
   margin: 0;
 }
@@ -794,6 +786,7 @@
   margin: 0;
   font-weight: 700;
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .route-app #route-node-control {

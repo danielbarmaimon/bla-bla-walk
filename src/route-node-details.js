@@ -1,5 +1,5 @@
 export const MAX_VISIBLE_ROUTE_POINTS = 48;
-const ROUTE_POINT_HIT_RADIUS = 40;
+const ROUTE_POINT_HIT_RADIUS = 56;
 
 function supportedShadePercentage(evidence, startMetres, endMetres) {
   if (!evidence || evidence.shade_state !== 'current' ||
@@ -31,16 +31,20 @@ function supportedShadePercentage(evidence, startMetres, endMetres) {
   return shaded / covered * 100;
 }
 
-export function routePointDetails(route, profile, evidence, fraction) {
+export function routePointDetails(route, profile, evidence, fraction, departureTime) {
   const segments = profile?.segments ?? [];
   const index = Math.min(segments.length - 1, Math.floor(fraction * segments.length));
   const temperature = segments[index]?.estimate?.value;
   const distance = route?.route?.distance_m;
   const duration = route?.route?.duration_s;
+  const departureMilliseconds = new Date(departureTime).getTime();
+  const arrivalTime = Number.isFinite(duration) && duration >= 0 && Number.isFinite(departureMilliseconds) ?
+    new Date(departureMilliseconds + duration * fraction * 1000) : null;
   const startMetres = Number.isFinite(distance) ? distance * (index / Math.max(1, segments.length)) : null;
   const endMetres = Number.isFinite(distance) ? distance * ((index + 1) / Math.max(1, segments.length)) : null;
   return {
     temperature: Number.isFinite(temperature) ? temperature : null,
+    arrivalTime,
     remainingMetres: Number.isFinite(distance) && distance >= 0 ? distance * (1 - fraction) : null,
     remainingSeconds: Number.isFinite(duration) && duration >= 0 ? duration * (1 - fraction) : null,
     shadePercentage: supportedShadePercentage(evidence, startMetres, endMetres)
@@ -124,20 +128,16 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
   }
 
   function formatDetails(fraction) {
-    const detail = routePointDetails(latest.route, latest.profile, latest.evidence, fraction);
+    const detail = routePointDetails(latest.route, latest.profile, latest.evidence, fraction, latest.departureTime);
     card.replaceChildren();
     const heading = document.createElement('h3');
     heading.id = 'route-node-title';
     heading.textContent = `Route point · ${Math.round(fraction * 100)}%`;
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.className = 'route-node-close';
-    close.textContent = 'Close';
-    close.setAttribute('aria-label', 'Close route point details');
-    close.addEventListener('click', dismiss);
     const list = document.createElement('dl');
+    const arrivalLabel = detail.arrivalTime ?
+      new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(detail.arrivalTime) : null;
     const rows = [
-      ['Temperature', detail.temperature == null ? 'Unavailable' : `${detail.temperature.toFixed(1)} °C (estimated)`],
+      ['Temperature', arrivalLabel ? `Unavailable · no hourly forecast for ~${arrivalLabel} arrival` : 'Unavailable · arrival-time forecast unavailable'],
       ['Distance left', detail.remainingMetres == null ? 'Unavailable' : `${Math.round(detail.remainingMetres)} m`],
       ['ETA', detail.remainingSeconds == null ? 'Unavailable' : `in ${Math.round(detail.remainingSeconds / 60)} min`]
     ];
@@ -149,7 +149,7 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
       dd.textContent = value;
       list.append(dt, dd);
     });
-    card.append(heading, close, list);
+    card.append(heading, list);
     card.hidden = false;
   }
 
@@ -235,6 +235,12 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
     const fraction = latest.pointFractions[Number(slider.value)];
     select(fraction, latest.pixelForFraction?.(fraction), 'keyboard');
   });
+  slider.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && selected) {
+      dismiss();
+      slider.blur();
+    }
+  });
 
   function attachMap(map) {
     return map.onViewChange(positionPoints);
@@ -247,14 +253,17 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
       if (!cardHovered && selected?.source === 'hover') dismiss();
     }, 0);
   });
-  pointTargets.addEventListener('click', event => {
-    const target = event.target.closest('.route-node-target');
-    if (!target) return;
+  mapWrap.addEventListener('click', event => {
+    if (event.target.closest('.route-node-card, .ol-control, .map-overlay, .map-pick-banner')) return;
+    const target = nearestPointTarget(event.clientX, event.clientY);
+    if (!target) {
+      if (selected?.source === 'selection') dismiss();
+      return;
+    }
     event.stopPropagation();
-    const nearest = nearestPointTarget(event.clientX, event.clientY) ?? target;
-    const fraction = Number(nearest.dataset.fraction);
+    const fraction = Number(target.dataset.fraction);
     select(fraction, latest?.pixelForFraction?.(fraction), 'selection');
-  });
+  }, true);
 
   return {
     update(data) {

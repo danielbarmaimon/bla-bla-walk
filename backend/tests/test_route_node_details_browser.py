@@ -71,6 +71,9 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
     page.evaluate("window.tripFlowMap.updateSize()")
     point = route_point_pixel(page, 8)
     assert point is not None
+    assert page.locator(".route-node-target").first.evaluate(
+        "element => getComputedStyle(element).backgroundColor"
+    ) == "rgba(0, 0, 0, 0)"
     page.mouse.move(*point)
     card = page.locator(".route-node-card")
     card.wait_for(state="visible")
@@ -88,9 +91,11 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
         }"""
     )
 
-    page.mouse.click(*point)
+    page.mouse.click(point[0] + 48, point[1])
     page.mouse.move(10, 10)
     assert card.is_visible()
+    assert "no hourly forecast for ~" in card.inner_text()
+    assert page.locator(".route-node-close").count() == 0
     page.locator("#back-to-plan").click()
     page.locator(".comparison-secondary").last.click()
     assert card.is_hidden()
@@ -101,7 +106,7 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
     first_heading = card.locator("h3").inner_text()
     page.keyboard.press("End")
     assert card.locator("h3").inner_text() != first_heading
-    page.get_by_role("button", name="Close route point details").click()
+    page.keyboard.press("Escape")
     assert card.is_hidden()
     assert not errors
     page.unroute("**/vendor/ol.js", capture_map)
@@ -125,18 +130,19 @@ def test_route_point_details_uses_only_complete_current_shade_samples(browser_pa
               {start_metres:37.5,end_metres:50,state:1}
             ]
           };
-          const supported=routePointDetails(route,profile,evidence,0.375);
+          const supported=routePointDetails(route,profile,evidence,0.375,'2026-10-04T10:00:00Z');
           const unknown=routePointDetails(route,profile,{
             ...evidence,samples:[{start_metres:25,end_metres:50,state:0}]
           },0.375);
           const stale=routePointDetails(route,profile,{
             ...evidence,shade_state:'stale'
           },0.375);
-          return {supported,unknown,stale};
+          return {supported:{...supported,arrivalTime:supported.arrivalTime.toISOString()},unknown,stale};
         }"""
     )
     assert result["supported"] == {
         "temperature": 21,
+        "arrivalTime": "2026-10-04T10:06:15.000Z",
         "remainingMetres": 62.5,
         "remainingSeconds": 625,
         "shadePercentage": 50,

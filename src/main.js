@@ -484,6 +484,7 @@ function renderJourney() {
     route,
     profile: temperatureProfile,
     evidence: routeEvidence,
+    departureTime: $('#departure-time').value,
     pointFractions,
     pixelForFraction: fraction => map.getRoutePointPixel(state.route, fraction)
   });
