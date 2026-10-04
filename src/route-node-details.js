@@ -1,4 +1,5 @@
 export const MAX_VISIBLE_ROUTE_POINTS = 48;
+const ROUTE_POINT_HIT_RADIUS = 40;
 
 function supportedShadePercentage(evidence, startMetres, endMetres) {
   if (!evidence || evidence.shade_state !== 'current' ||
@@ -89,6 +90,39 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
     }, 0);
   });
 
+  function nearestPointTarget(clientX, clientY) {
+    let nearest = null;
+    let nearestDistance = ROUTE_POINT_HIT_RADIUS;
+    pointTargets.querySelectorAll('.route-node-target:not([hidden])').forEach(target => {
+      const bounds = target.getBoundingClientRect();
+      const distance = Math.hypot(clientX - (bounds.left + bounds.width / 2),
+        clientY - (bounds.top + bounds.height / 2));
+      if (distance <= nearestDistance) {
+        nearest = target;
+        nearestDistance = distance;
+      }
+    });
+    return nearest;
+  }
+
+  function handlePointerMove(event) {
+    if (event.pointerType === 'touch' || event.target.closest('.route-node-card')) return;
+    if (event.target.closest('.ol-control, .map-overlay, .map-pick-banner')) {
+      pointHovered = false;
+      if (selected?.source === 'hover') dismiss();
+      return;
+    }
+    const target = nearestPointTarget(event.clientX, event.clientY);
+    pointHovered = Boolean(target);
+    if (!target) {
+      if (!cardHovered && selected?.source === 'hover') dismiss();
+      return;
+    }
+    const fraction = Number(target.dataset.fraction);
+    if (selected?.source === 'hover' && selected.fraction === fraction) return;
+    select(fraction, latest?.pixelForFraction?.(fraction), 'hover');
+  }
+
   function formatDetails(fraction) {
     const detail = routePointDetails(latest.route, latest.profile, latest.evidence, fraction);
     card.replaceChildren();
@@ -122,7 +156,6 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
   function dismiss() {
     selected = null;
     card.hidden = true;
-    pointTargets.querySelectorAll('.is-selected').forEach(target => target.classList.remove('is-selected'));
   }
 
   function select(fraction, pixel, source = 'selection') {
@@ -131,8 +164,6 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
     const closest = latest.pointFractions.reduce((best, item, index) =>
       Math.abs(item - fraction) < Math.abs(latest.pointFractions[best] - fraction) ? index : best, 0);
     slider.value = String(closest);
-    pointTargets.querySelectorAll('.is-selected').forEach(target => target.classList.remove('is-selected'));
-    pointTargets.children[closest]?.classList.add('is-selected');
     formatDetails(fraction);
     positionCard(pixel);
   }
@@ -209,6 +240,22 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
     return map.onViewChange(positionPoints);
   }
 
+  mapWrap.addEventListener('pointermove', handlePointerMove);
+  mapWrap.addEventListener('pointerleave', () => {
+    setTimeout(() => {
+      pointHovered = false;
+      if (!cardHovered && selected?.source === 'hover') dismiss();
+    }, 0);
+  });
+  pointTargets.addEventListener('click', event => {
+    const target = event.target.closest('.route-node-target');
+    if (!target) return;
+    event.stopPropagation();
+    const nearest = nearestPointTarget(event.clientX, event.clientY) ?? target;
+    const fraction = Number(nearest.dataset.fraction);
+    select(fraction, latest?.pixelForFraction?.(fraction), 'selection');
+  });
+
   return {
     update(data) {
       if (activeRouteId !== data.route?.id) dismiss();
@@ -220,27 +267,13 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
       if (!latest) sliderHost.hidden = true;
       else sliderHost.hidden = false;
       pointTargets.replaceChildren();
-      data.pointFractions?.forEach((fraction, index) => {
+      data.pointFractions?.forEach(fraction => {
         const target = document.createElement('button');
         target.type = 'button';
         target.tabIndex = -1;
         target.className = 'route-node-target';
         target.dataset.fraction = String(fraction);
         target.setAttribute('aria-label', `Inspect route point ${Math.round(fraction * 100)}%`);
-        target.addEventListener('pointerenter', () => {
-          pointHovered = true;
-          select(fraction, latest?.pixelForFraction?.(fraction), 'hover');
-        });
-        target.addEventListener('pointerleave', () => {
-          setTimeout(() => {
-            pointHovered = false;
-            if (!cardHovered && selected?.source === 'hover') dismiss();
-          }, 0);
-        });
-        target.addEventListener('click', event => {
-          event.stopPropagation();
-          select(fraction, latest?.pixelForFraction?.(fraction), 'selection');
-        });
         pointTargets.append(target);
       });
       positionPoints();

@@ -749,32 +749,17 @@
 
 .route-app .route-node-target {
   position: absolute;
-  width: 2rem;
-  height: 2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: transparent;
+  appearance: none;
+  outline: none;
   pointer-events: auto;
   transform: translate(-50%, -50%);
   cursor: pointer;
-}
-
-.route-app .route-node-target::after {
-  position: absolute;
-  inset: 0.6rem;
-  border: 2px solid var(--surface-raised);
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 1px var(--text-primary);
-  content: "";
-}
-
-.route-app .route-node-target.is-selected::after {
-  inset: 0.35rem;
-  border-width: 3px;
-  background: var(--surface-raised);
-  box-shadow: 0 0 0 2px var(--accent);
 }
 
 .route-app .route-node-target[hidden] {
