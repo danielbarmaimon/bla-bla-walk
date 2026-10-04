@@ -1120,3 +1120,63 @@
   border-radius: 6px;
   cursor: pointer;
 }
+
+.route-app .start-departure {
+  margin: var(--space-4) 0;
+}
+
+.route-app .field-label {
+  display: block;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+}
+
+.route-app .departure-choices {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.route-app .departure-choices [aria-pressed="true"] {
+  background: var(--poc-teal-light);
+  border-color: var(--poc-teal);
+}
+
+.route-app #departure-picker input {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--poc-line);
+}
+
+.route-app #departure-picker label {
+  display: block;
+  margin: var(--space-2) 0;
+}
+
+.route-app #calculate-journey {
+  width: 100%;
+}
+
+.route-app #calculate-journey:disabled {
+  opacity: var(--control-disabled-opacity);
+  cursor: default;
+}
+
+.route-app #trip-status {
+  font-size: var(--text-label);
+  color: var(--poc-muted);
+  margin: var(--space-2) 0 var(--space-4);
+}
+
+.route-app #destination-status {
+  font-size: var(--text-label);
+  color: var(--poc-muted);
+}
+
+.route-app[data-trip="start"] .map-controls {
+  display: none;
+}
+
+.route-app .route-mode {
+  margin-top: var(--space-3);
+}

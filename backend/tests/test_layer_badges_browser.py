@@ -1,6 +1,7 @@
 """Independent route visibility, equal tap controls and planned rest cadence."""
 
 import pytest
+from conftest import open_example
 
 pytestmark = pytest.mark.browser
 
@@ -10,10 +11,11 @@ def test_badge_defaults_and_layout(browser_page):
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(page.base_url)
+    open_example(page)
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
-    page.locator("#show-route").click()
+    page.locator(".comparison-secondary").first.click()
     assert page.locator(".map-controls input[type=checkbox]").count() == 0
     assert page.locator("#primary-layers [aria-pressed=true]").count() == 6
     assert not page.locator("#more-layers").evaluate("e=>e.open")
@@ -44,7 +46,8 @@ def test_badge_defaults_and_layout(browser_page):
         "e=>{e.value='2026-10-04T12:00';"
         "e.dispatchEvent(new Event('input',{bubbles:true}));}"
     )
-    page.locator("#show-route").click()
+    page.locator("#calculate-journey").click()
+    page.locator(".comparison-secondary").first.click()
     page.locator("#more-layers").evaluate("e=>e.open=true")
     page.locator("#cool-place-toggle").click()
     assert page.locator("#interior-list-section").evaluate("e=>!e.hidden")

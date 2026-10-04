@@ -79,3 +79,5 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: Plan next-session work in four temporary lanes A–D, usernames assigned tomorrow; freeze baseline/contracts first, run disjoint landmark/direction, shade, construction and UX work concurrently, then give shared backend/browser integration to C/D respectively; prioritize this journey work over optional phone/report extensions and retain local-only delivery.
 
 - 2026-10-04: Replaces the earlier four-lane T20–T31 launch sequence with at most two tasks per account: A T22/optional T21, B T23/optional T24, C T25/T31, D T27/T30; start from merged baseline without T20, reuse APIs, defer new construction routing/orchestrator, protect integration/fallback, and add the presenter’s seven-beat 300-second story plus separate 42-second reflection.
+
+- 2026-10-04: T27 approved by @ltorrecilla: form beside map on desktop, form-first mobile, empty endpoints and explicit Find routes; full role selection and preparation tips remain T30.

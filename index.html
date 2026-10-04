@@ -14,9 +14,7 @@
         <a class="brand" href="/" aria-label="Bla Bla Walk home">
           <span class="brand-mark" aria-hidden="true">B</span><span>Bla Bla Walk</span>
         </a>
-        <nav class="mode-nav" aria-label="Data mode">
-          <a href="/?mode=fixture">Example</a><a href="/?mode=online">Online</a><a href="/?mode=offline">Offline</a>
-        </nav>
+        <a id="show-information" href="#information-sources">Information</a>
       </header>
 
       <main class="route-layout">
@@ -24,21 +22,21 @@
           <div class="section-heading">
             <p class="kicker">BASEL, SWITZERLAND</p>
             <h1 id="planner-title">Where are you going?</h1>
-            <p class="intro">Compare checked walking options and the information available along them.</p>
+
           </div>
 
           <div class="journey-fields">
             <div class="field-block">
-              <label for="origin-input">Starting point</label>
+              <label for="origin-input">Start</label>
               <div class="input-wrap">
                 <span class="input-icon" data-icon="map-pin" aria-hidden="true"></span>
                 <input id="origin-input" disabled autocomplete="off" placeholder="Search a Basel street and number" role="combobox" aria-autocomplete="list" aria-controls="origin-suggestions" aria-expanded="false">
-                <button class="inside-button" id="gps-button" type="button">Use GPS</button>
+                <button class="inside-button" id="gps-button" type="button">Use my location</button>
               </div>
               <div class="suggestions" id="origin-suggestions" role="listbox" aria-label="Suggested starting addresses" hidden></div>
               <div class="field-actions">
                 <button class="text-button" id="pick-origin" type="button">Choose start on map</button>
-                <span id="origin-status" role="status">Using Basel SBB demo start</span>
+                <span id="origin-status" role="status">Choose an address or use your location.</span>
               </div>
             </div>
             <div class="field-block">
@@ -53,55 +51,39 @@
             </div>
           </div>
 
-          <p class="helper">Online address search: © swisstopo. Queries are sent to geo.admin.ch; this app does not save them. Offline: use map pins or sample places.</p>
+          <div class="start-departure">
+            <span class="field-label">Departure</span>
+            <div class="departure-choices">
+              <button id="departure-now" type="button" aria-pressed="true">Now</button>
+              <button id="departure-later" type="button" aria-pressed="false">Choose time</button>
+            </div>
+            <div id="departure-picker" hidden>
+              <label for="departure-time">Date and time</label>
+              <input id="departure-time" type="datetime-local" aria-describedby="trip-status">
+            </div>
+          </div>
+          <button id="calculate-journey" class="primary-button" type="button" disabled>Find routes</button>
+          <button id="cancel-journey" class="text-button" type="button" hidden>Cancel</button>
+          <p id="trip-status" role="status" aria-live="polite">Choose your start and destination.</p>
+          <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
+            <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
+            <h2 id="journey-title"></h2><p id="journey-summary"></p>
 
           <fieldset class="route-mode">
-            <legend>What matters most?</legend>
+            <legend>Compare routes</legend>
             <div class="segmented">
               <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest overall</button>
               <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
             <button id="balanced-mode" type="button" aria-pressed="false">Balanced</button></div>
             <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
-            <button class="example-button" id="try-example" type="button">Use Basel SBB → Marktplatz routes</button>
           </fieldset>
-
-          <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
-            <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
-            <h2 id="journey-title"></h2><p id="journey-summary"></p>
-            <div class="comparison-controls" aria-label="Trip comparison settings">
-              <div class="departure-control">
-                <label for="departure-time">Departure time</label>
-                <div class="departure-input-row">
-                  <input id="departure-time" type="datetime-local" aria-describedby="comparison-control-status">
-                  <button id="departure-now" type="button">Now</button>
-                </div>
-              </div>
-              <div class="detour-control">
-                <label for="shade-detour-limit">More shade extra-time limit</label>
-                <select id="shade-detour-limit" aria-describedby="comparison-control-status">
-                  <option value="none">No extra limit</option>
-                  <option value="5">Up to 5 minutes</option>
-                </select>
-              </div>
-            </div>
-            <button id="calculate-journey" class="example-button" type="button">Calculate this departure</button>
-            <button id="retry-walking-route" class="example-button" type="button" hidden>Recalculate walking route</button>
-            <p class="helper">Online walking routes send endpoint coordinates to FOSSGIS, whose service logs requests. © OpenStreetMap contributors · Routing by OSRM (FOSSGIS). <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Fix the map</a></p>
-            <p class="helper">Times use your device’s local timezone. No planned stops are included; rest cues are optional and unverified.</p>
-            <details class="weight-controls"><summary>Balanced comparison weights</summary>
-              <label>Shade <input id="weight-shade" type="range" min="0" max="1" step="0.1" value="0.5"></label>
-              <label>Walking duration <input id="weight-duration" type="range" min="0" max="1" step="0.1" value="0.4"></label>
-              <label>Verified water <input id="weight-water" type="range" min="0" max="1" step="0.1" value="0.1"></label>
-              <p>Weights rescore saved metrics. Unknown evidence never gains credit.</p>
-            </details>
             <p class="comparison-control-status" id="comparison-control-status" role="status">Choose a departure and calculate.</p>
             <div id="route-options" class="route-options"></div>
-            <button class="primary-button" id="show-route" type="button">See route and evidence <span data-icon="arrow-right" aria-hidden="true"></span></button>
           </section>
 
-          <div class="quick-heading"><div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div><p>Sample places</p></div>
+          <div class="quick-heading"><div><p class="kicker">ONE TAP AWAY</p><h2>Go somewhere nearby</h2></div><p id="quick-place-status">Choose a start first</p></div>
           <div class="quick-grid" id="quick-grid"></div>
-          <p class="prototype-note">The quick places are a small interaction sample, not a complete or verified Basel place directory. Checked walking geometry is available only for the SBB → Marktplatz pair.</p>
+          <button class="example-button" id="try-example" type="button" disabled>Try SBB → Marktplatz example</button>
 
         </section>
 
@@ -144,6 +126,24 @@
         </section>
       </main>
       <footer class="information-footer"><details id="information-sources"><summary>Information sources</summary>
+        <nav class="mode-nav" aria-label="Data mode">
+          <a href="/?mode=fixture">Example</a><a href="/?mode=online">Online</a><a href="/?mode=offline">Offline</a>
+        </nav>
+          <p class="helper">Online address search: © swisstopo. Queries are sent to geo.admin.ch; this app does not save them. Offline: use map pins or sample places.</p>
+            <p class="helper">Online walking routes send endpoint coordinates to FOSSGIS, whose service logs requests. © OpenStreetMap contributors · Routing by OSRM (FOSSGIS). <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Fix the map</a></p>
+            <p class="helper">Times use your device’s local timezone. No planned stops are included; rest cues are optional and unverified.</p>
+<details><summary>Advanced comparison settings</summary>              <div class="detour-control">
+                <label for="shade-detour-limit">More shade extra-time limit</label>
+                <select id="shade-detour-limit" aria-describedby="comparison-control-status">
+                  <option value="none">No extra limit</option>
+                  <option value="5">Up to 5 minutes</option>
+                </select>
+              </div>            <details class="weight-controls"><summary>Balanced comparison weights</summary>
+              <label>Shade <input id="weight-shade" type="range" min="0" max="1" step="0.1" value="0.5"></label>
+              <label>Walking duration <input id="weight-duration" type="range" min="0" max="1" step="0.1" value="0.4"></label>
+              <label>Verified water <input id="weight-water" type="range" min="0" max="1" step="0.1" value="0.1"></label>
+              <p>Weights rescore saved metrics. Unknown evidence never gains credit.</p>
+            </details></details>
         <p id="mode-notice" role="status">Loading selected data mode…</p>
         <p id="source-status" role="status"></p><p id="route-candidate-notes"></p><p id="route-display-info"></p>
         <p id="pet-status" role="status">Heatmap is a fixed historical PET scenario, available online only.</p>

@@ -57,8 +57,12 @@ const MARKTPLATZ = PLACES.find((place) => place.id === 'marktplatz');
 const mode = new URLSearchParams(location.search).get('mode') || 'fixture';
 const state = {
   snapshot: null,
-  origin: FALLBACK_START,
-  destination: MARKTPLATZ,
+  origin: null,
+  destination: null,
+  submitted: false,
+  tripVersion: 0,
+  busy: false,
+  calculationKind: null,
   preference: 'fast',
   selectedRouteId: 'demo-route-a',
   route: null,
@@ -71,9 +75,9 @@ const state = {
 };
 const $ = (selector) => document.querySelector(selector);
 let temperatureView = null;
-const routes = () => routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
+const routes = () => !state.submitted ? [] : routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
 const selectedRoute = () => routes().find((route) => route.id === state.selectedRouteId) ?? routes()[0];
-const routePairSelected = () => state.origin.id === 'sbb' && state.destination?.id === 'marktplatz';
+const routePairSelected = () => state.origin?.id === 'sbb' && state.destination?.id === 'marktplatz';
 const fountainsNearRoute = () => state.route && state.amenities ? nearbyFeatures(state.route, state.amenities.fountains.features, FOUNTAIN_BUFFER_M) : [];
 
 function icon(name) {
@@ -188,28 +192,84 @@ function distanceMetres(a, b) {
   return 12742000 * Math.asin(Math.sqrt(arc));
 }
 
-function closestPlace(category) {
-  return PLACES.filter((place) => place.category === category && place.id !== state.origin.id).sort((a, b) => distanceMetres(state.origin, a) - distanceMetres(state.origin, b))[0];
-}
-
 function renderQuickPlaces() {
   const grid = $('#quick-grid');
   grid.replaceChildren();
-  CATEGORIES.forEach(([category, iconName]) => {
-    const place = closestPlace(category);
-    if (!place) return;
+  if (!state.origin) {
+    $('#quick-place-status').textContent = 'Choose a start first';
+    return;
+  }
+  const data = state.amenities;
+  const groups = data ? [
+    ['Supermarket', 'shopping-basket', data.rest_stops.features.filter(f => f.rest_type === 'indoor')],
+    ['Fountain', 'droplets', data.fountains.features],
+    ['Park', 'trees', data.rest_stops.features.filter(f => f.rest_type === 'park')],
+  ] : [];
+  const actual = groups.flatMap(([category, iconName, features]) => {
+    const candidates = features.map(f => ({
+      id: f.id,
+      name: f.label,
+      lon: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1]
+    }));
+    const place = candidates.sort((a, b) => distanceMetres(state.origin, a) - distanceMetres(state.origin, b))[0];
+    return place ? [{
+      category,
+      iconName,
+      place,
+      sample: false
+    }] : [];
+  });
+  const choices = actual.length ? actual : CATEGORIES.slice(0, 3).flatMap(([category, iconName]) => {
+    const place = PLACES.filter(p => p.category === category && p.id !== state.origin.id)
+      .sort((a, b) => distanceMetres(state.origin, a) - distanceMetres(state.origin, b))[0];
+    return place ? [{
+      category,
+      iconName,
+      place,
+      sample: true
+    }] : [];
+  });
+  $('#quick-place-status').textContent = actual.length ? 'Mapped places · access/hours unverified' : 'Sample places';
+  for (const {
+      category,
+      iconName,
+      place,
+      sample
+    }
+    of choices) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'quick-tile';
-    button.append(icon(iconName));
     const title = document.createElement('strong');
     title.textContent = category;
     const label = document.createElement('small');
     label.textContent = place.name;
-    button.append(title, label);
-    button.addEventListener('click', () => selectDestination(place));
+    const distance = document.createElement('small');
+    distance.textContent = `${sample ? 'Sample · ' : ''}${Math.round(distanceMetres(state.origin, place))} m straight-line`;
+    button.append(icon(iconName), title, label, distance);
+    button.onclick = () => selectDestination(place);
     grid.append(button);
-  });
+  }
+}
+
+function tripCoordinates() {
+  return [state.origin, state.destination].filter(Boolean).map(place => [place.lon, place.lat]);
+}
+
+function invalidateTrip(message = 'Choose your start and destination, then find routes.') {
+  state.tripVersion += 1;
+  state.submitted = false;
+  state.busy = false;
+  state.calculationKind = null;
+  state.walkingLayer = null;
+  state.routingStatus = '';
+  state.chosenRouteId = null;
+  calculation.clear();
+  walking.clear();
+  syncWalkingLayers();
+  $('#trip-status').textContent = message;
+  renderJourney();
 }
 
 function setPins() {
@@ -217,33 +277,24 @@ function setPins() {
 }
 
 function selectDestination(place) {
-  calculation.clear();
   state.destination = place;
-  updateWalkingRoute();
+  invalidateTrip();
   $('#destination-input').value = place.name;
   $('#suggestions').hidden = true;
   renderJourney();
   setPins();
-  map.focusCoordinates([
-    [state.origin.lon, state.origin.lat],
-    [place.lon, place.lat]
-  ]);
+  map.focusCoordinates(tripCoordinates());
 }
 
 function setOrigin(place, message) {
-  calculation.clear();
   state.origin = place;
-  updateWalkingRoute();
+  invalidateTrip();
   $('#origin-input').value = place.name;
   $('#origin-status').textContent = message;
   renderQuickPlaces();
   renderJourney();
   setPins();
-  map.focusCoordinates([
-    [place.lon, place.lat], ...state.destination ? [
-      [state.destination.lon, state.destination.lat]
-    ] : []
-  ]);
+  map.focusCoordinates(tripCoordinates());
 }
 
 function selectPreference(preference) {
@@ -382,11 +433,12 @@ function renderNearby() {
 }
 
 function renderJourney() {
+  document.body.dataset.trip = state.submitted ? 'results' : 'start';
   $('#temperature-sample').replaceChildren();
   const destination = state.destination;
   const route = selectedRoute();
   state.route = route ? routeGeometry(route.geometry.coordinates) : null;
-  $('#selected-journey').hidden = !destination;
+  $('#selected-journey').hidden = !state.submitted || !route;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
   $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : state.preference === 'shade' ? 'More shade' : 'Balanced';
@@ -465,8 +517,10 @@ function renderJourney() {
     p.textContent = `${type}: ${note}`;
     notes.append(p);
   });
-  $('#calculate-journey').disabled = !routePairSelected() || !routes().length || state.comparisonJob?.status === 'running';
-  $('#retry-walking-route').hidden = routePairSelected();
+  $('#calculate-journey').disabled = state.busy || !state.origin || !state.destination;
+  $('#calculate-journey').textContent = state.busy ? 'Finding routes…' : 'Find routes';
+  $('#cancel-journey').hidden = !state.busy;
+  $('#planner-title').closest('.planner').setAttribute('aria-busy', String(state.busy));
 }
 
 function renderPetLegend() {
@@ -489,6 +543,7 @@ function renderPetLegend() {
 
 const map = createMap($('#map'), showFeature, (message) => {
   $('#basemap-status').textContent = message;
+  $('#basemap-status').hidden = !message.includes('unavailable');
 }, (message) => {
   $('#pet-status').textContent = message;
 }, showRouteTemperature);
@@ -518,6 +573,7 @@ fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => 
 }).then(data => {
   state.amenities = data;
   state.amenitiesStatus = `Route candidates: IWB ${data.fountains.availability} · OSM ${data.rest_stops.availability}; source dates in details`;
+  renderQuickPlaces();
   renderJourney();
 }).catch(() => {
   state.amenitiesStatus = 'Real route-stop data unavailable; no candidates inferred.';
@@ -527,6 +583,11 @@ installLayerBadges(renderJourney);
 const calculation = journeyCalculation((job, message) => {
   state.comparisonJob = job;
   if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
+  if (state.calculationKind === 'comparison') {
+    $('#trip-status').textContent = message;
+    if (job && job.status !== 'running') state.busy = false;
+    if (!job && !message.startsWith('Choose a departure') && !message.startsWith('Checking local')) state.busy = false;
+  }
   $('#comparison-control-status').textContent = `${message}${job?.status === 'running' ? ` ${job.completed_samples} of ${job.total_samples} samples completed.` : ''}`;
   renderJourney();
 });
@@ -534,6 +595,10 @@ const routingSettings = await fetch('/config/walking-routing.json').then(respons
 const walking = walkingRouting(mode, routingSettings, (layer, message) => {
   state.walkingLayer = layer;
   state.routingStatus = message;
+  if (state.calculationKind === 'walking') {
+    state.busy = !layer && message.startsWith('Calculating');
+    $('#trip-status').textContent = layer ? 'Routes ready. Shade comparison unavailable for this pair.' : message;
+  }
   state.selectedRouteId = layer?.features[0]?.id ?? null;
   syncWalkingLayers();
   renderJourney();
@@ -541,7 +606,7 @@ const walking = walkingRouting(mode, routingSettings, (layer, message) => {
 
 function displayLayers() {
   const layers = state.snapshot?.layers ?? [];
-  const routeLayer = routePairSelected() ? layers.find(layer => layer.kind === 'route') : state.walkingLayer;
+  const routeLayer = !state.submitted ? null : routePairSelected() ? layers.find(layer => layer.kind === 'route') : state.walkingLayer;
   return [...layers.filter(layer => layer.kind !== 'route'), ...routeLayer ? [routeLayer] : []];
 }
 
@@ -551,37 +616,65 @@ function syncWalkingLayers() {
   renderFeatures();
 }
 
-function updateWalkingRoute() {
-  state.walkingLayer = null;
-  state.chosenRouteId = null;
-  walking.clear();
-  if (routePairSelected()) {
-    syncWalkingLayers();
+async function findRoutes() {
+  if (state.busy) return;
+  if (!state.origin || !state.destination) {
+    $('#trip-status').textContent = 'Choose both addresses from the suggestions, or pin them on the map.';
     return;
   }
-  walking.start([state.origin.lon, state.origin.lat], [state.destination.lon, state.destination.lat]);
+  const date = $('#departure-now').getAttribute('aria-pressed') === 'true' ? new Date() : new Date($('#departure-time').value);
+  if ($('#departure-now').getAttribute('aria-pressed') === 'true') $('#departure-time').value = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+  if (!Number.isFinite(date.getTime())) {
+    $('#trip-status').textContent = 'Choose a valid departure time.';
+    return;
+  }
+  invalidateTrip();
+  const version = state.tripVersion;
+  state.submitted = true;
+  state.busy = true;
+  if (routePairSelected()) {
+    state.calculationKind = 'comparison';
+    if (!routes().length) {
+      state.busy = false;
+      $('#trip-status').textContent = 'Saved example unavailable. Retry after data loads.';
+    } else {
+      state.selectedRouteId = [...routes()].sort((a, b) => a.route.duration_s - b.route.duration_s)[0].id;
+      syncWalkingLayers();
+      renderJourney();
+      await calculation.start(date.toISOString());
+      if (version !== state.tripVersion) return;
+      state.busy = state.comparisonJob?.status === 'running';
+    }
+  } else {
+    state.calculationKind = 'walking';
+    walking.start([state.origin.lon, state.origin.lat], [state.destination.lon, state.destination.lat]);
+  }
+  renderJourney();
 }
-$('#retry-walking-route').addEventListener('click', updateWalkingRoute);
 
 function setDepartureNow() {
   const now = new Date();
-  $('#departure-time').value = new Date(now.getTime() - now.getTimezoneOffset() * 60_000).toISOString().slice(0, 19);
-  calculation.clear();
+  $('#departure-time').value = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 19);
+  $('#departure-picker').hidden = true;
+  $('#departure-now').setAttribute('aria-pressed', 'true');
+  $('#departure-later').setAttribute('aria-pressed', 'false');
+  invalidateTrip();
 }
 $('#departure-time').step = '1';
 setDepartureNow();
 $('#departure-time').addEventListener('input', () => {
   $('#departure-time').setCustomValidity('');
-  calculation.clear();
-  renderJourney();
+  invalidateTrip('Departure changed. Find routes again.');
 });
 $('#departure-now').addEventListener('click', setDepartureNow);
-$('#calculate-journey').addEventListener('click', () => {
-  const input = $('#departure-time');
-  const date = new Date(input.value);
-  input.setCustomValidity(Number.isFinite(date.getTime()) ? '' : 'Choose a valid departure time.');
-  if (input.reportValidity()) void calculation.start(date.toISOString());
+$('#departure-later').addEventListener('click', () => {
+  $('#departure-picker').hidden = false;
+  $('#departure-now').setAttribute('aria-pressed', 'false');
+  $('#departure-later').setAttribute('aria-pressed', 'true');
+  $('#departure-time').focus();
 });
+$('#calculate-journey').addEventListener('click', () => void findRoutes());
+$('#cancel-journey').addEventListener('click', () => invalidateTrip('Calculation cancelled. You can find routes again.'));
 
 function updatePreferences() {
   calculation.setPreferences({
@@ -610,7 +703,7 @@ async function refresh() {
     });
     if (!response.ok) throw new Error('Map API unavailable');
     state.snapshot = parseSnapshot(await response.json());
-    if (!routes().length) {
+    if (!state.snapshot.layers.some(layer => layer.kind === 'route')) {
       const routeResponse = await fetch('/api/walking-routes', {
         signal: AbortSignal.timeout(10_000)
       });
@@ -649,17 +742,14 @@ async function refresh() {
 function showMap() {
   document.body.dataset.view = 'map';
   map.updateSize();
-  map.focusCoordinates([
-    [state.origin.lon, state.origin.lat], ...(state.destination ? [
-      [state.destination.lon, state.destination.lat]
-    ] : [])
-  ]);
+  map.focusCoordinates(tripCoordinates());
 }
 
 function showPlan() {
   document.body.dataset.view = 'plan';
   map.setPicking(null);
   $('#map-pick-banner').hidden = true;
+  requestAnimationFrame(() => map.updateSize());
 }
 
 function pickOnMap(kind) {
@@ -674,11 +764,8 @@ function pickOnMap(kind) {
     if (pickedKind === 'origin') setOrigin(place, 'Map point selected');
     else selectDestination(place);
     $('#map-pick-banner').hidden = true;
-    map.focusCoordinates([
-      [state.origin.lon, state.origin.lat], ...(state.destination ? [
-        [state.destination.lon, state.destination.lat]
-      ] : [])
-    ]);
+    map.focusCoordinates(tripCoordinates());
+    showPlan();
   });
   showMap();
 }
@@ -715,20 +802,29 @@ function useGps() {
 const searchSettings = await fetch('/config/address-search.json').then(response => response.json());
 addressSearch($('#destination-input'), $('#suggestions'), $('#destination-status'), mode, selectDestination, PLACES, searchSettings);
 addressSearch($('#origin-input'), $('#origin-suggestions'), $('#origin-status'), mode, place => setOrigin(place, 'Address selected'), PLACES, searchSettings);
+for (const kind of ['origin', 'destination']) $(`#${kind}-input`).addEventListener('input', () => {
+  state[kind] = null;
+  invalidateTrip('Choose a matching address from the suggestions.');
+  setPins();
+  if (kind === 'origin') renderQuickPlaces();
+});
 $('#gps-button').addEventListener('click', useGps);
 $('#pick-origin').addEventListener('click', () => pickOnMap('origin'));
 $('#pick-destination').addEventListener('click', () => pickOnMap('destination'));
 $('#fast-mode').addEventListener('click', () => selectPreference('fast'));
 $('#shade-mode').addEventListener('click', () => selectPreference('shade'));
-$('#show-route').addEventListener('click', showMap);
+$('#show-information').addEventListener('click', () => {
+  $('#information-sources').open = true;
+});
 $('#back-to-plan').addEventListener('click', showPlan);
 $('#try-example').addEventListener('click', () => {
   setOrigin(FALLBACK_START, 'Example start selected');
   selectDestination(MARKTPLATZ);
-  showMap();
+  $('#trip-status').textContent = 'Saved example selected. Find routes to compare.';
 });
 
 
+$('#try-example').disabled = false;
 renderQuickPlaces();
 setPins();
 renderPetLegend();

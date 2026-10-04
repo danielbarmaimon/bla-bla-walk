@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from bla_bla_walk.adapters.walking import walking_routes
 from bla_bla_walk.interfaces import WalkingRouteRequest
+from conftest import open_example
 from test_walking_routing import COORDINATES, END, START, payload
 
 pytestmark = pytest.mark.browser
@@ -47,6 +48,7 @@ def test_address_route_drawn_and_replaced(browser_page):
         ),
     )
     page.goto(page.base_url)
+    open_example(page, calculate=False)
     page.wait_for_function(
         "window.ol && document.querySelector('#mode-notice')"
         ".textContent.includes('Example mode')"
@@ -64,6 +66,7 @@ def test_address_route_drawn_and_replaced(browser_page):
     }""")
     page.locator("#destination-input").fill("Public venue")
     page.locator("#suggestions button").click()
+    page.locator("#calculate-journey").click()
     page.wait_for_function(
         "document.querySelector('#journey-summary').textContent.includes('street-following')"
     )
@@ -72,8 +75,9 @@ def test_address_route_drawn_and_replaced(browser_page):
     assert len(drawn) == len(COORDINATES)
     assert drawn[-1] == pytest.approx(END)
     assert "2,100" in page.locator("#route-options").inner_text()
-    assert page.locator("#calculate-journey").is_disabled()
+    assert page.locator("#calculate-journey").is_enabled()
     page.locator("#try-example").click()
+    page.locator("#calculate-journey").click()
     assert (
         "checked walking alternatives" in page.locator("#journey-summary").inner_text()
     )
@@ -108,19 +112,23 @@ def test_failed_new_route_has_no_demo_line(browser_page):
         ),
     )
     page.goto(page.base_url)
+    open_example(page, calculate=False)
     page.locator("#destination-input").fill("Public venue")
     page.locator("#suggestions button").click()
+    page.locator("#calculate-journey").click()
     page.wait_for_function(
         "document.querySelector('#journey-summary')"
         ".textContent.includes('Walking route unavailable')"
     )
     assert page.locator("#route-options").inner_text() == ""
-    assert page.locator("#retry-walking-route").is_visible()
+    assert page.locator("#calculate-journey").is_enabled()
 
 
 def test_late_response_and_offline_never_overwrite_current_route(browser_page):
     page = browser_page
     page.goto(page.base_url)
+    open_example(page, calculate=False)
+    page.locator("#calculate-journey").click()
     page.wait_for_function(
         "document.querySelector('#nearby-summary').textContent.includes('Route stops')"
         " && document.querySelector('#mode-notice')"

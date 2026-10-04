@@ -238,7 +238,7 @@ Done when: test the saved pair, two arbitrary address pairs, route switching, ch
 Notes: start preparatory smoke checks while other lanes work; final acceptance waits for their merged checkpoints. A test cannot declare unknown routes safe or close original T8/T10/T6 gaps. Preserve no-external-deployment preference. Do not add optional features during acceptance. Save fallback even if a feature must be omitted.
 
 #### T27 Simplify the start form and calculation trigger
-Owner: D
+Owner: @ltorrecilla (T27 start-page UI; temporary lane D)
 Needs: merged baseline through PR #49
 Files: index.html, src/main.js, src/route-planner.css, src/theme.css, backend/tests/test_trip_form_browser.py, handoff/T27.md
 Done when: mobile and keyboard users see Start, Destination, Departure time/Now, existing nearby-place shortcuts and one Calculate action with less prose. Preserve official address lookup and GPS/map pins. Changing fields clears stale results; Calculate resolves the selected pair through existing APIs once and begins supported comparison without asking the person to choose Fast/Recommended first. No extra geometry fetch occurs just to render two route roles.

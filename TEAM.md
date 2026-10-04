@@ -38,3 +38,5 @@ Assign usernames tomorrow. Temporary A–D labels are distinct from the older si
 | D | TBD | T27 concise form → T30 integrated choice/map/steps | Shared browser entry points and CSS |
 
 Start all four primary tasks together from merged main at or after 1554167; no T20 prerequisite. Protect integration/fallback before optional features. A/B provide modules and evidence to D; C verifies the merged result. Required contract additions go through A. No shared working directory and no external deployment.
+
+T27 start-page UI is claimed by @ltorrecilla; its approved proposal is in docs/start-page-proposal.md and state in handoff/T27.md. T30 map/results integration ownership remains to be assigned.

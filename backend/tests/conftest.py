@@ -62,8 +62,30 @@ def browser_page():
             page.base_url = url
             # Real basemap request is checked separately; failure is deterministic here.
             page.route("https://wmts.geo.bs.ch/**", lambda route: route.abort())
+            # Basic UI tests must not start a minutes-long real shade job.
+            # Journey tests override this with labelled synthetic evidence.
+            page.route(
+                "**/api/comparison**",
+                lambda route: route.fulfill(
+                    status=503,
+                    json={"detail": "Shade unavailable in basic browser fixture"},
+                ),
+            )
             yield page
             browser.close()
     finally:
         server.terminate()
         server.wait(timeout=5)
+
+
+def open_example(page, calculate=True):
+    """Explicitly select the saved pair through the actual start-page controls."""
+    page.locator("#origin-input:not([disabled])").wait_for()
+    page.locator("#try-example").click()
+    page.wait_for_function(
+        "document.querySelector('#mode-notice').textContent.includes('mode')"
+        " && !document.querySelector('#mode-notice').textContent.includes('Loading')"
+    )
+    if calculate:
+        page.locator("#calculate-journey").click()
+        page.locator(".comparison-card").first.wait_for()

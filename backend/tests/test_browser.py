@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from conftest import open_example
 
 ROOT = Path(__file__).resolve().parents[2]
 pytestmark = pytest.mark.browser
@@ -11,6 +12,7 @@ pytestmark = pytest.mark.browser
 def open_map(page):
     """Wait for synthetic sources beside the saved walking pair."""
     page.goto(page.base_url)
+    open_example(page)
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
@@ -114,6 +116,8 @@ def test_api_failure_and_recovery(browser_page):
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
+    assert page.locator("#features button").count() == 3
+    open_example(page)
     assert page.locator("#features button").count() == 5
 
 
@@ -122,7 +126,7 @@ def test_narrow_screen_and_browser_contract(browser_page):
     page.set_viewport_size({"width": 390, "height": 844})
     open_map(page)
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-    page.get_by_role("button", name="Use Basel SBB").click()
+    page.locator(".comparison-secondary").first.click()
     assert page.locator("#map").bounding_box()["height"] >= 400
     result = page.evaluate("""async () => {
       const {parseSnapshot} = await import('/src/api.js');
