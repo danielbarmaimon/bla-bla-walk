@@ -1224,7 +1224,10 @@
   background: var(--poc-white);
   color: var(--poc-ink);
   padding: var(--space-6);
-  max-width: min(90vw, 32rem);
+  width: var(--tips-width);
+  max-width: calc(100vw - var(--space-6));
+  max-height: calc(100dvh - var(--space-6));
+  overflow-y: auto;
 }
 
 .route-app #preparation-tips::backdrop {
@@ -1234,6 +1237,49 @@
 
 .route-app #close-tips {
   float: right;
+}
+
+.route-app #tip-calculation-status {
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.route-app #trip-tips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--tips-card-min-width)), 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.route-app .tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--poc-line);
+  border-radius: var(--radius-card);
+  background: var(--poc-canvas);
+}
+
+.route-app .tip-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--tips-icon-size);
+  height: var(--tips-icon-size);
+  border-radius: var(--radius-control);
+  background: var(--poc-teal-light);
+}
+
+.route-app .tip-card h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+}
+
+.route-app .tip-card p {
+  margin: 0;
+  font-size: var(--text-label);
+  color: var(--text-muted);
 }
 
 .route-app .planner .steps {

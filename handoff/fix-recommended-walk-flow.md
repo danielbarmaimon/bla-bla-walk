@@ -18,6 +18,8 @@ Implementation and verification are complete; latest main includes the team's ma
 
 - Follow-up: both visible walking paths now carry sensor-temperature gradients using one combined range/palette. Selecting a route preserves both gradients; route badges independently hide their paths. Seven gradient/badge/guide browser checks pass, including shared normalization, click details and palette changes. Browser formatting, changed-test lint and whitespace checks pass.
 
+- Follow-up: preparation tips now open immediately on each valid Calculate click while routing continues. Four responsive cards reuse local icons; closing tips does not cancel calculation or reopen on completion. Background status becomes ready when results arrive. Ten targeted guide/trip-flow/walking browser checks passed, two optional local-fixture checks skipped; desktop/mobile screenshots reviewed. Route calculation and instruction logic remain unchanged. Delay inspection found sequential external route alternatives, construction queries and local building-shade work; the saved pair also evaluates exact-time shade samples.
+
 ## Next
 Refresh http://127.0.0.1:8001/?mode=online to use the guide. Review the verified branch before merging this follow-up work. Privacy and strict documentation checks passed.
 

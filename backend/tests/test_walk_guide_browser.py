@@ -1,4 +1,4 @@
-"""Route completion replaces the form, and rest candidates stay at pauses."""
+"""Tips open while calculation is pending; completion shows the walking guide."""
 
 import pytest
 from conftest import open_example
@@ -8,16 +8,38 @@ pytestmark = pytest.mark.browser
 
 def test_completion_modal_default_and_left_guide(browser_page):
     page = browser_page
+    pending = []
+    page.route("**/api/comparison", lambda route: pending.append(route))
     page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
-    page.locator("#calculate-journey").click()
+    with page.expect_request("**/api/comparison"):
+        page.locator("#calculate-journey").click()
     page.locator("#preparation-tips").wait_for(state="visible")
+    assert page.locator("#planner-form").is_visible()
+    assert "background" in page.locator("#tip-calculation-status").inner_text()
+    assert page.locator("#calculate-journey").is_disabled()
+    assert page.locator("#trip-tips .tip-card").count() == 4
+    assert page.locator("#trip-tips img").count() == 4
+    assert (
+        page.locator("#trip-tips").evaluate("e=>getComputedStyle(e).listStyleType")
+        == "none"
+    )
+    page.screenshot(path=".hack/tips-cards-desktop.png")
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.screenshot(path=".hack/tips-cards-mobile.png")
+    assert page.locator("#preparation-tips").evaluate("e=>e.scrollWidth<=e.clientWidth")
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.locator("#close-tips").click()
+    # Closing tips must not cancel the pending calculation or reopen on completion.
+    assert page.locator("#calculate-journey").is_disabled()
+    pending.pop().fulfill(status=503, json={"detail": "Test comparison unavailable"})
+    page.wait_for_function("!document.querySelector('#calculate-journey').disabled")
     assert page.locator("#planner-form").is_hidden()
     assert page.locator(".planner #step-list").is_visible()
     assert page.locator("#shade-mode").get_attribute("aria-pressed") == "true"
     assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "true"
     assert page.locator("#steps-summary").inner_text()
-    page.locator("#close-tips").click()
+    assert page.locator("#preparation-tips").is_hidden()
     page.locator("#fast-mode").click()
     assert page.locator("#preparation-tips").is_hidden()
     page.locator("#shade-mode").click()
@@ -25,6 +47,16 @@ def test_completion_modal_default_and_left_guide(browser_page):
     assert page.locator("#shade-mode").get_attribute("aria-pressed") == "true"
     page.locator("#back-to-plan").click()
     assert page.locator("#planner-form").is_visible()
+    with page.expect_request("**/api/comparison"):
+        page.locator("#calculate-journey").click()
+    assert page.locator("#preparation-tips").is_visible()
+    pending.pop().fulfill(status=503, json={"detail": "Test comparison unavailable"})
+    page.wait_for_function("!document.querySelector('#calculate-journey').disabled")
+    assert page.locator("#preparation-tips").is_visible()
+    assert "ready" in page.locator("#tip-calculation-status").inner_text()
+    page.keyboard.press("Escape")
+    assert page.locator("#preparation-tips").is_hidden()
+    page.unroute("**/api/comparison")
 
 
 def test_rest_candidates_grouped_and_short_walk_has_none(browser_page):

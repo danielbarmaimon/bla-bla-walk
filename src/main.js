@@ -69,7 +69,7 @@ const state = {
   busy: false,
   calculationKind: null,
   preference: 'shade',
-  tipsVersion: null,
+  guideVersion: null,
   selectedRouteId: 'demo-route-a',
   route: null,
   comparisonJob: null,
@@ -440,11 +440,11 @@ function renderJourney() {
   $('#shade-mode').setAttribute('aria-pressed', String(state.preference === 'shade' && state.selectedRouteId === recommended));
   $('#balanced-mode').setAttribute('aria-pressed', String(state.preference === 'balanced'));
   $('#route-role-status').textContent = recommended ? (fast?.id === recommended || JSON.stringify(fast?.geometry) === JSON.stringify(routes().find(route => route.id === recommended)?.geometry) ? 'Fast and Recommended use the same route.' : 'Fast and Recommended follow distinct routes.') : `${routes().length === 1 ? 'One walking route available. ' : ''}Recommended unavailable; inspect available routes manually.`;
-  if (route && state.submitted && !state.busy && state.tipsVersion !== state.tripVersion) {
-    state.tipsVersion = state.tripVersion;
+  if (route && state.submitted && !state.busy && state.guideVersion !== state.tripVersion) {
+    state.guideVersion = state.tripVersion;
     showMap(route);
-    $('#preparation-tips').showModal();
   }
+  $('#tip-calculation-status').textContent = state.busy ? 'Finding your routes in the background. You can close these tips at any time.' : route ? 'Your routes are ready. Close these tips to explore your walk.' : 'You can close these tips to check the route status.';
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Recommended can take longer to favor modeled building shade and avoid mapped active construction sites. See route evidence in Information sources.';
@@ -569,7 +569,17 @@ fetch('/config/trip-tips.json').then(response => {
 }).then(config => {
   config.tips.forEach(tip => {
     const item = document.createElement('li');
-    item.textContent = tip;
+    item.className = 'tip-card';
+    const symbol = document.createElement('span');
+    symbol.className = 'tip-icon';
+    symbol.append(icon(tip.icon));
+    const content = document.createElement('div');
+    const heading = document.createElement('h3');
+    heading.textContent = tip.title;
+    const description = document.createElement('p');
+    description.textContent = tip.text;
+    content.append(heading, description);
+    item.append(symbol, content);
     $('#trip-tips').append(item);
   });
   const link = document.createElement('a');
@@ -680,6 +690,7 @@ async function findRoutes() {
   state.submitted = true;
   state.preference = 'shade';
   state.busy = true;
+  $('#preparation-tips').showModal();
   if (routePairSelected()) {
     state.calculationKind = 'comparison';
     if (!routes().length) {

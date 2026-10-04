@@ -1,5 +1,8 @@
 :root {
   --control-disabled-opacity: 0.5;
+  --tips-width: 38rem;
+  --tips-card-min-width: 13rem;
+  --tips-icon-size: 2.75rem;
   --badge-width: 7.5rem;
   --badge-height: 2.75rem;
   --badge-font-size: 0.8rem;
