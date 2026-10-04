@@ -429,11 +429,15 @@ export function createMap(
     },
     setPins: (origin, destination) => {
       pinFeatures.clear();
-      [origin, destination].filter(Boolean).forEach((place, index) => {
+      [
+        [origin, 'origin'],
+        [destination, 'destination']
+      ].forEach(([place, kind]) => {
+        if (!place) return;
         const marker = new Feature({
           geometry: new window.ol.geom.Point(fromLonLat([place.lon, place.lat])),
         });
-        marker.set('pinKind', index === 0 ? 'origin' : 'destination');
+        marker.set('pinKind', kind);
         pinFeatures.addFeature(marker);
       });
     },

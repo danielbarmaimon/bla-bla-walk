@@ -1,4 +1,5 @@
 :root {
+  --control-disabled-opacity: 0.5;
   --temperature-summer-cold: #86efac;
   --temperature-summer-middle: #fbbf24;
   --temperature-summer-warm: #e11d48;

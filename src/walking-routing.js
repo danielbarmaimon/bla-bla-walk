@@ -31,6 +31,10 @@ export function walkingRouting(mode, settings, receive) {
         timer = setTimeout(() => request(start, end, token, false), 1100);
         return;
       }
+      if (response.status === 422) {
+        receive(null, 'Choose different endpoints within Basel-Stadt.');
+        return;
+      }
       if (!response.ok) throw new Error('Walking route unavailable');
       const layer = await response.json();
       if (token !== version) return;

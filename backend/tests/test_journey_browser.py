@@ -7,6 +7,7 @@ from bla_bla_walk.adapters.routes import load_demo_routes
 from bla_bla_walk.evaluation import compare_choices, compare_routes
 from bla_bla_walk.interfaces import ComparisonJob, MapSnapshot
 from bla_bla_walk.route_shade import calculate_walking_evidence
+from conftest import open_example
 from test_comparison_api import LocalShade
 
 pytestmark = pytest.mark.browser
@@ -80,8 +81,8 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
     _, requests = wire_calculation(page)
     page.set_viewport_size({"width": 390, "height": 844})
     page.goto(page.base_url)
-    page.wait_for_selector(".comparison-card")
-    assert page.locator(".comparison-primary:disabled").count() == 2
+    open_example(page, calculate=False)
+    page.locator("#departure-later").click()
     page.locator("#departure-time").fill("2026-10-03T14:00")
     page.locator("#calculate-journey").focus()
     page.keyboard.press("Enter")
@@ -103,6 +104,8 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
     page.locator(".comparison-card summary").first.click()
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     page.locator("#shade-mode").click()
+    page.locator("#information-sources").evaluate("e=>e.open=true")
+    page.get_by_text("Advanced comparison settings", exact=True).click()
     page.locator("#shade-detour-limit").select_option("5")
     page.wait_for_function(
         "document.querySelector('#preference-note').textContent"
@@ -126,8 +129,8 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         == 1
     )
     page.locator("#departure-time").fill("2026-10-03T15:00")
-    assert page.locator(".comparison-primary:disabled").count() == 2
-    assert "Calculate this departure" in page.locator("#preference-note").inner_text()
+    assert page.locator("#selected-journey").is_hidden()
+    assert page.locator("#calculate-journey").is_enabled()
     assert not errors
     page.unroute("**/api/comparison**")
 
@@ -151,7 +154,7 @@ def test_offline_journey_uses_only_same_origin_even_with_missing_tiles(browser_p
 
     page.on("request", record)
     page.goto(page.base_url + "/?mode=offline")
-    page.wait_for_selector(".comparison-card")
+    open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
     page.wait_for_function(
         "document.querySelector('#comparison-control-status').textContent"
@@ -197,7 +200,7 @@ def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
         ),
     )
     page.goto(page.base_url)
-    page.wait_for_selector(".comparison-card")
+    open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
     page.wait_for_function(
         "document.querySelector('#comparison-control-status').textContent"
@@ -207,9 +210,11 @@ def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
     page.locator("#destination-input").fill("Museum")
     page.wait_for_selector("#suggestions button")
     page.locator("#suggestions button").first.click()
-    assert page.locator("#calculate-journey").is_disabled()
-    assert (
-        "Calculating a walking route" in page.locator("#journey-summary").inner_text()
+    assert page.locator("#calculate-journey").is_enabled()
+    assert page.locator("#selected-journey").is_hidden()
+    page.locator("#calculate-journey").click()
+    page.wait_for_function(
+        "document.querySelector('#trip-status').textContent.includes('unavailable')"
     )
     page.unroute("**/api/comparison")
 
@@ -228,8 +233,9 @@ def test_departure_change_discards_and_cancels_late_start_response(browser_page)
 
     page.route("**/api/comparison**", hold)
     page.goto(page.base_url)
-    page.wait_for_selector(".comparison-card")
+    open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
+    page.locator("#departure-later").click()
     page.locator("#departure-time").fill("2026-10-04T14:00")
     assert pending
     job = ComparisonJob(
@@ -244,5 +250,6 @@ def test_departure_change_discards_and_cancels_late_start_response(browser_page)
     assert (
         "Choose a departure" in page.locator("#comparison-control-status").inner_text()
     )
-    assert page.locator(".comparison-primary:disabled").count() == 2
+    assert page.locator("#selected-journey").is_hidden()
+    assert page.locator("#calculate-journey").is_enabled()
     page.unroute("**/api/comparison**")

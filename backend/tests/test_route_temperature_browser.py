@@ -1,6 +1,7 @@
 """Temporal/coverage boundaries, sensor estimates and exact user palettes."""
 
 import pytest
+from conftest import open_example
 
 pytestmark = pytest.mark.browser
 
@@ -78,6 +79,7 @@ def test_real_saved_route_gradient_and_switches(browser_page):
 
     page.route("**/vendor/ol.js", capture_map)
     page.goto(page.base_url + "/?mode=offline")
+    open_example(page)
     page.unroute("**/vendor/ol.js", capture_map)
     page.wait_for_function(
         "document.querySelector('#temperature-legend')"
@@ -86,7 +88,7 @@ def test_real_saved_route_gradient_and_switches(browser_page):
     page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "SAVED / STALE" in page.locator("#temperature-legend").inner_text()
     assert "°C" in page.locator("#temperature-legend").inner_text()
-    page.locator("#show-route").click()
+    page.locator(".comparison-secondary[data-route-id=demo-route-b]").click()
     page.locator("#map").scroll_into_view_if_needed()
     page.wait_for_function("!window.temperatureTestMap.getView().getAnimating()")
     drawn = page.evaluate("""() => {

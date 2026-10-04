@@ -27,7 +27,7 @@
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-On narrow screens, keep destination search and the map visible first. Stack route cards below; keep Fastest overall and More shade controls easy to reach. Map labels and controls must not cover route endpoints or the coverage edge. Show a transit card only when its source passes admission.
+The T27 start page supersedes the initial layout above: desktop form left, map right; mobile form first, with the map opened for pin selection or a selected route. Start and destination begin empty. Departure defaults to Now; Choose time reveals the local date/time. One Find routes action starts work, and route cards appear only after submission. Nearby destination shortcuts follow the primary action. Provider explanations and advanced settings live in Information sources. See [the approved start-page proposal](start-page-proposal.md). Map labels and controls must not cover route endpoints or the coverage edge. Show a transit card only when its source passes admission.
 
 ## Three visual directions
 
@@ -75,7 +75,7 @@ mistaken for measured heat or calculated shade.
 
 - **Layer controls:** labelled toggles for temperature, fountains, and calculated shade. Each toggle exposes its state to assistive technology. A control has a visible focus ring.
 - **Legend:** labels every line, fill, and symbol, including `Unknown / not calculated` and the dashed Basel coverage boundary. Route A and Route B differ by both colour and line pattern/label.
-- **Time control:** `Now` is a direct action and the default. A departure date/time control states the selected local time and the effective shade calculation time; stale saved calculations retain their original time.
+- **Time control:** `Now` is a direct action and the default; use the current instant when Find routes is pressed. A departure date/time control states the selected local time and the effective shade calculation time; stale saved calculations retain their original time.
 - **Route choices:** offer `Fastest overall` and `More shade`; retain manual selection. Show the extra-time cap, including the proposed five-minute choice.
 - **Walking card:** show door-to-door time, distance, shaded/exposed/unknown metres, bench and fountain opportunities, construction cautions and evidence status.
 - **Transit card:** when admitted, show access/egress walking, wait, ride and transfer time separately. Mark wait shade unknown without stop evidence. Label scheduled versus live data and disclose stale or unavailable service status.

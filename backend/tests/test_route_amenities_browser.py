@@ -1,6 +1,7 @@
 """Candidates filter to route proximity and use actual source-point markers."""
 
 import pytest
+from conftest import open_example
 
 pytestmark = pytest.mark.browser
 
@@ -34,12 +35,13 @@ def test_proximity_and_marker_labels(browser_page):
 def test_real_saved_candidates_visible_and_toggle(browser_page):
     page = browser_page
     page.goto(page.base_url)
+    open_example(page)
     page.wait_for_function(
         "document.querySelector('#nearby-summary').textContent.includes('Route stops')"
     )
     assert "fountains" in page.locator("#nearby-summary").inner_text()
     assert "benches" in page.locator("#nearby-summary").inner_text()
-    page.locator("#show-route").click()
+    page.locator(".comparison-secondary").first.click()
     page.locator("#nearby-details").evaluate("element => element.open = true")
     assert (
         "Distance is geometric proximity"
