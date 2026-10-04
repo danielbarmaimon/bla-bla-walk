@@ -75,3 +75,7 @@ Landmarks must follow arbitrary routes rather than one demo ID. Display time-spe
 ## Short-session scope revision
 
 With limited next-session time, prioritize route-specific steps, the existing shade diagnosis, concise start/choice/loading UX and a checked local fallback. Construction work first establishes source/routing capability; live rerouting is deferred. Landmarks and supported area shadow display are optional second tasks. Reuse existing APIs; arbitrary-route shade or an evidence-backed recommendation may remain unavailable. M6 in the plan supersedes the longer orchestration/contract sequence. The presentation tells the actual merged behavior, using the presenter’s seven-beat five-minute story plus a separate 42-second reflection.
+
+## Follow-up: inspect a point on the selected route
+
+After M6 acceptance, let a person inspect a calculated route point using hover on desktop or tap/click on touch. Show its corresponding temperature, remaining distance and estimated time to the destination. Include the local route-segment shadow percentage only when supported data is available. Keep the detail card compact, dismissible and keyboard-accessible; missing evidence stays unavailable. T32 in [the plan](plan.md#t32-show-details-for-a-selected-route-point) owns the implementation.

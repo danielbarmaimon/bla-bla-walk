@@ -95,3 +95,5 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: User-requested UI fixes give Weather stations and Fountains all loaded source locations independently of route-stop badges, wire saved Landmarks, retain simultaneous temperature/shade visibility, hide the saved-pair example shortcut, and move walking options into Information sources so nearby taps follow Calculate.
 
 - 2026-10-04: User requests online defaults for the running app and map/weather/fountain/forecast endpoints. Explicit fixture/offline modes remain available; fixture browser tests select their mode explicitly. Run the local server with outbound network access for GeoAdmin and FOSSGIS services.
+
+- 2026-10-04: User requests one-command Windows and Linux launchers that prepare the project environment/assets/missing local data and start the online app. Use a CMD launcher to avoid PowerShell activation/execution-policy changes; preserve existing prepared data and fail clearly on preparation errors. Server and browser require outbound HTTPS.

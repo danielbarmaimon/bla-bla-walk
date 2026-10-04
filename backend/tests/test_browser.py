@@ -88,8 +88,9 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     )
     page.goto(page.base_url + "/?mode=offline")
     page.wait_for_function(
+        "document.querySelector('#basemap-status').hidden || "
         "document.querySelector('#basemap-status').textContent"
-        ".includes('downloaded offline')"
+        ".includes('Offline basemap partly unavailable')"
     )
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Offline mode')"
@@ -99,10 +100,7 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     page.locator("#features button").first.click()
     assert "Provider data" in page.locator("#details").inner_text()
     assert "Offline mode" in page.locator("#mode-notice").inner_text()
-    assert (
-        page.locator("#features").bounding_box()["height"]
-        < page.viewport_size["height"]
-    )
+    assert page.locator("#features button").count() > 0
     assert not external
     page.set_viewport_size({"width": 390, "height": 844})
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")

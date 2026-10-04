@@ -136,7 +136,9 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
     page.unroute("**/api/comparison**")
 
 
-def test_missing_shade_withholds_recommended_and_allows_manual_map(browser_page):
+def test_missing_shade_withholds_recommended_and_allows_manual_map(
+    browser_page, tmp_path
+):
     page = browser_page
     page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
@@ -151,10 +153,10 @@ def test_missing_shade_withholds_recommended_and_allows_manual_map(browser_page)
         == "https://www.bag.admin.ch/en/heat"
     )
     assert "avoidance unavailable" in page.locator("#construction-status").inner_text()
-    page.screenshot(path="/tmp/t30-desktop.png", full_page=True)
+    page.screenshot(path=tmp_path / "t30-desktop.png", full_page=True)
     page.set_viewport_size({"width": 390, "height": 844})
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-    page.screenshot(path="/tmp/t30-mobile.png", full_page=True)
+    page.screenshot(path=tmp_path / "t30-mobile.png", full_page=True)
 
 
 @pytest.mark.parametrize("supported", [False, True])

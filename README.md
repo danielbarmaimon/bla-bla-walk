@@ -24,22 +24,35 @@ The map supports online provider observations/fountain locations, a historical P
 
 ## Run locally
 
-For a complete setup with provider sensors, online maps, walking routes, saved
-rest stops and prepared demo shade, follow [Run locally with external sources](docs/local-online.md).
-Open the app with `?mode=online`; the plain root URL uses example layers.
+Use Python 3.12 or newer and keep internet connected. From the repository root,
+run one command for your operating system:
 
-Use Python 3.12 or newer. From the repository root:
+Windows (PowerShell or Command Prompt):
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r backend/requirements.txt
-python scripts/fetch_browser_assets.py
-python backend/export_contract.py
-python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```powershell
+.\scripts\run-windows.cmd
 ```
 
-Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .venv` and run the Activate.ps1 script inside the environment's Scripts folder in PowerShell instead of the first two commands.
+Linux:
+
+```sh
+bash scripts/run-linux.sh
+```
+
+Open [the local app](http://127.0.0.1:8000/). Online mode is the default. Each
+launcher creates or reuses `.venv`, installs pinned project dependencies, verifies
+browser assets, restores missing committed shade inputs without replacing local
+data, validates the building cache and downloads missing rest-stop data before
+starting the server. Keep the terminal open; Ctrl+C stops the app. Pass another
+port as the only argument if needed, for example `.\scripts\run-windows.cmd 8001`
+or `bash scripts/run-linux.sh 8001`.
+
+Both the server and browser need outbound HTTPS. When a coding tool asks for
+network access, allow it for the launcher/server; a network-restricted preview
+cannot search addresses or calculate provider walking routes. No activation,
+execution-policy change, API key or separate frontend server is needed. See
+[external sources and troubleshooting](docs/local-online.md) for data limits,
+source hosts and manual recovery.
 
 ## Route planner
 
