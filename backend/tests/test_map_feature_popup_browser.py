@@ -7,7 +7,7 @@ pytestmark = pytest.mark.browser
 
 def setup_map(page):
     """Use deterministic contract-shaped points in the real OpenLayers map."""
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function("!!window.ol")
     page.evaluate("""async () => {
       const NativeMap = ol.Map;
