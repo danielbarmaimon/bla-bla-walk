@@ -267,3 +267,15 @@ Needs: T31, T30
 Files: src/route-node-details.js, src/map.js, src/route-planner.css, backend/tests/test_route_node_details_browser.py, handoff/T32.md; extend an existing interface only if the current route response cannot supply required values, with its decision line in docs/decisions.md
 Done when: hovering over a calculated route point on desktop, or tapping/clicking it on touch, opens a compact readable detail card for that point. It shows the corresponding temperature, remaining distance to the destination and estimated time remaining; it includes the local route-segment shadow percentage only when supported data is available and otherwise omits that row. The card stays near the selected point without covering the route or controls, can be dismissed, and works with keyboard focus. Moving to another point updates the values; selecting another route clears or updates the selection. Missing temperature or route-progress data is labelled unavailable rather than guessed.
 Notes: derive remaining distance and ETA from the selected route's geometry and supported timing data. Use the existing temperature and shade results; do not interpolate or imply measurements the sources do not support. Keep hover transient and tap/click selection usable on touch screens.
+
+## M8: inspect stations and fountains without leaving the map
+
+This small map interaction can start independently of M6/M7 work; it reuses the current feature data and grouped-stop popup.
+
+### Chunk H · parallel
+#### T33 Show compact details when a map feature is clicked
+Owner: unassigned (proposed work area: slot D map UI)
+Needs: nothing
+Files: src/map.js, src/main.js, src/route-planner.css, backend/tests/test_map_feature_popup_browser.py, handoff/T33.md
+Done when: clicking a temperature-station marker opens a compact popup beside it with the station name, reading and observation time; missing reading or time is shown as “Unknown.” Clicking a fountain marker opens the same compact popup with only its name. Clicking another map location dismisses the popup, and clicking another supported marker replaces it. The popup does not cover map controls and the existing grouped-stop popup still works.
+Notes: extend the existing OpenLayers map popup; do not create another overlay or change the API contract. Keep other feature types on their current interaction until their compact content is agreed. The full feature inspector may be unreliable; this interaction must work without it.
