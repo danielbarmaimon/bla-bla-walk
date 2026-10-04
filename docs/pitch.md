@@ -20,7 +20,7 @@ For someone planning around heat, a route is more than a line between two pins. 
 
 **Click:** none. **Pause:** 2 seconds before the next beat.
 
-## 3 · Specific Moment — 1:30–3:00 · slow · target 120 words, with 20–25 seconds for the page
+## 3 · Specific Moment — 1:30–3:00 · slow · target ~133 words, with 20–25 seconds for the page
 
 **Clicker:** Open the local saved-summary page. Point to its date and “not live” label; then the two route rows; finish on “Access: Unknown” and the no-eligible-route note.
 
@@ -68,7 +68,7 @@ We learned that putting data on a map is only the start; we had to ask what each
 |---|---:|---:|---|
 | 1. Create Curiosity | 45 s | ~65 | 2 s pause |
 | 2. Create Tension | 45 s | ~76 | 2 s pause |
-| 3. Specific Moment | 90 s | ~120 | 20–25 s page actions and reading pause |
+| 3. Specific Moment | 90 s | ~133 | 20–25 s page actions and reading pause |
 | 4. Change Pace | 30 s | ~58 | 2 s pause |
 | 5. Unexpected Twist | 30 s | ~61 | crisp delivery |
 | 6. Personal Story | 30 s | ~42 | 2 s pause |
