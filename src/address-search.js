@@ -1,4 +1,17 @@
-// Both address fields share bounded, cancellable official lookup.
+import {
+  savedLandmarkEvidence,
+  searchSavedLandmarks
+} from './route-landmarks.js';
+
+// Saved matches reuse local data; the existing official lookup still sends queries.
+const landmarkEvidence = fetch('/api/route-amenities?mode=offline', {
+    cache: 'no-store'
+  })
+  .then(response => response.ok ? response.json() : null)
+  .then(amenities => savedLandmarkEvidence(amenities))
+  .catch(() => savedLandmarkEvidence());
+
+// Both journey fields share bounded, cancellable address and landmark lookup.
 export function addressSearch(input, list, status, mode, select, samples, settings) {
   let timer;
   let controller;
@@ -21,10 +34,20 @@ export function addressSearch(input, list, status, mode, select, samples, settin
       button.type = 'button';
       button.setAttribute('role', 'option');
       button.textContent = place.name;
+      if (place.landmark) {
+        const detail = document.createElement('small');
+        detail.textContent = ' · Saved mapped landmark · OpenStreetMap';
+        if (place.locationHint) detail.textContent += ` · ${place.locationHint}`;
+        button.append(detail);
+      } else if (!place.id.startsWith('address-')) {
+        const detail = document.createElement('small');
+        detail.textContent = ' · Sample place';
+        button.append(detail);
+      }
       button.onclick = () => {
         clear();
         select(place);
-        status.textContent = place.id.startsWith('address-') ? 'Address selected · © swisstopo' : 'Sample place selected';
+        status.textContent = place.landmark ? 'Mapped landmark selected · © OpenStreetMap contributors; entrance and access unverified.' : place.id.startsWith('address-') ? 'Address selected · © swisstopo' : 'Sample place selected';
       };
       list.append(button);
     }
@@ -32,9 +55,20 @@ export function addressSearch(input, list, status, mode, select, samples, settin
     input.setAttribute('aria-expanded', String(places.length > 0));
   }
 
+  async function localMatches(query, token) {
+    const evidence = await landmarkEvidence;
+    if (token !== version) return [];
+    const landmarks = searchSavedLandmarks(query, evidence, settings.result_limit);
+    const local = samples.filter(place => place.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+    return [...landmarks, ...local].slice(0, 10);
+  }
+
   async function search(query, token) {
     controller = new AbortController();
-    status.textContent = 'Searching Basel addresses…';
+    const local = await localMatches(query, token);
+    if (token !== version) return;
+    render(local, token);
+    status.textContent = 'Searching Basel addresses; saved landmark coverage is limited…';
     try {
       const response = await fetch('/api/addresses', {
         method: 'POST',
@@ -51,17 +85,16 @@ export function addressSearch(input, list, status, mode, select, samples, settin
       if (!response.ok) throw new Error('Search unavailable');
       const value = await response.json();
       if (token !== version) return;
-      const local = samples.filter(place => place.name.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
-      render([...value.places, ...local].slice(0, 10), token);
-      status.textContent = value.places.length ? 'Choose an address · © swisstopo' : local.length ? 'Sample matches only; no official address found.' : 'No address found in Basel-Stadt. Add the street number or pin on map.';
+      render([...local, ...value.places].slice(0, 10), token);
+      status.textContent = local.some(place => place.landmark) ? 'Choose a saved mapped landmark or address. Landmark coverage is limited; access unverified.' : value.places.length ? 'Choose an address · © swisstopo' : local.length ? 'Sample matches only; no official address found.' : 'No address or saved landmark found. Try another name, street number or pin on map.';
     } catch (error) {
       if (error.name === 'AbortError' || token !== version) return;
-      render(samples.filter(place => place.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())), token);
-      status.textContent = 'Address search unavailable. Try again or pin on map.';
+      render(local, token);
+      status.textContent = local.some(place => place.landmark) ? 'Address search unavailable. Saved mapped landmarks available; coverage limited.' : 'Address search unavailable. Try again or pin on map.';
     }
   }
 
-  input.addEventListener('input', () => {
+  input.addEventListener('input', async () => {
     clear();
     const query = input.value.trim();
     if (query.length < 3) {
@@ -70,8 +103,10 @@ export function addressSearch(input, list, status, mode, select, samples, settin
     }
     const token = version;
     if (mode === 'offline') {
-      render(samples.filter(place => place.name.toLocaleLowerCase().includes(query.toLocaleLowerCase())), token);
-      status.textContent = 'Offline: address lookup unavailable. Choose a sample place or pin on map.';
+      const local = await localMatches(query, token);
+      if (token !== version) return;
+      render(local, token);
+      status.textContent = 'Offline: choose a saved mapped landmark, sample place or map pin. Landmark coverage is limited.';
       return;
     }
     timer = setTimeout(() => search(query, token), settings.debounce_ms);
@@ -100,5 +135,7 @@ export function addressSearch(input, list, status, mode, select, samples, settin
     }
   });
   input.disabled = false;
+  input.placeholder = 'Search a Basel address or landmark';
+  list.setAttribute('aria-label', input.id === 'origin-input' ? 'Suggested starting addresses and landmarks' : 'Suggested destination addresses and landmarks');
   return clear;
 }

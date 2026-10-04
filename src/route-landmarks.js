@@ -58,6 +58,36 @@ export function savedLandmarkEvidence(amenities = null) {
   };
 }
 
+/** Search the saved named evidence without requiring a selected walking route. */
+export function searchSavedLandmarks(query, evidence = savedLandmarkEvidence(), limit = 8) {
+  const normalize = (text) => text.toLocaleLowerCase().normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '').replace(/ß/g, 'ss');
+  const words = normalize(query.trim()).split(/\s+/).filter(Boolean);
+  if (!words.length || !evidence || ['missing', 'failed', 'unsupported'].includes(evidence.availability)) return [];
+  const seen = new Set();
+  const reference = WAYFINDING_PLACES.find(place => place.id === configuration?.search_reference_id);
+  return (evidence.places ?? []).filter(validPlace).filter((place) => {
+      const name = normalize(place.label);
+      if (seen.has(place.id) || !words.every((word) => name.includes(word))) return false;
+      seen.add(place.id);
+      return true;
+    }).map(place => ({
+      place,
+      distance: reference ? routeGeometry([reference.coordinates, place.coordinates]).length : null
+    }))
+    .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0)).slice(0, limit).map(({
+      place,
+      distance
+    }) => ({
+      id: `landmark-${place.id}`,
+      name: place.label,
+      lon: place.coordinates[0],
+      lat: place.coordinates[1],
+      landmark: place,
+      locationHint: reference ? `~${Math.round(distance)} m from ${reference.label} (straight line)` : null,
+    }));
+}
+
 /** Match a selected MapFeature's geometry, preserving original mapped positions. */
 export function routeLandmarkCandidates(route, evidence = savedLandmarkEvidence(), settings = configuration) {
   if (!settings || !Number.isFinite(settings.route_buffer_metres) ||
