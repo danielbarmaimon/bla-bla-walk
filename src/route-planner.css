@@ -1101,15 +1101,23 @@
 
 .map-stop-menu {
   display: grid;
-  gap: 4px;
-  padding: 8px;
+  gap: var(--space-1);
+  padding: var(--space-2);
   max-height: 240px;
+  max-width: min(15rem, calc(100vw - 2 * var(--space-6)));
+  overflow-wrap: anywhere;
   overflow: auto;
   min-width: 130px;
-  background: white;
+  background: var(--surface-raised);
+  color: var(--text-primary);
   border: 2px solid var(--poc-teal);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   box-shadow: 0 3px 12px #0003;
+}
+
+.map-stop-menu p {
+  margin: 0;
+  font-size: var(--text-label);
 }
 
 .map-stop-menu button {
