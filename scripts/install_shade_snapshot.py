@@ -46,6 +46,16 @@ def install(root=ROOT, *, replace=False):
         if input_digest(root / name) != checksum:
             raise ValueError(f"Snapshot does not match current input: {name}")
     files = metadata["files"]
+    # A complete local dataset can legitimately differ from the committed
+    # snapshot. Keep that directory as a unit (including its manifest) and
+    # restore only a dataset whose manifest is missing. Copying snapshot tiles
+    # beside local tiles while publishing the snapshot manifest would make the
+    # resulting dataset internally inconsistent.
+    existing_datasets = {
+        directory
+        for directory in ("data/geometry", ".cache/buildings")
+        if (root / directory / "manifest.json").is_file()
+    }
     for name in files:
         path = PurePosixPath(name)
         if (
@@ -57,6 +67,8 @@ def install(root=ROOT, *, replace=False):
             or path.suffix not in {".json", ".tif", ".npy"}
         ):
             raise ValueError(f"Invalid snapshot destination: {name}")
+        if str(path.parent) in existing_datasets:
+            continue
         destination = root / name
         if not destination.resolve().is_relative_to(root):
             raise ValueError(f"Snapshot destination escapes checkout: {name}")
@@ -74,6 +86,8 @@ def install(root=ROOT, *, replace=False):
             if sorted(bundle.namelist()) != sorted(files):
                 raise ValueError("Snapshot archive file list mismatch")
             for name, record in files.items():
+                if PurePosixPath(name).parent.as_posix() in existing_datasets:
+                    continue
                 info = bundle.getinfo(name)
                 if info.file_size != record["bytes"]:
                     raise ValueError(f"Snapshot size mismatch: {name}")
@@ -84,15 +98,25 @@ def install(root=ROOT, *, replace=False):
                 if digest(target) != record["sha256"]:
                     raise ValueError(f"Snapshot file checksum mismatch: {name}")
         # Publish manifests last so incomplete copies cannot appear complete.
-        for name in sorted(files, key=lambda value: value.endswith("/manifest.json")):
+        selected_files = {
+            name: record
+            for name, record in files.items()
+            if PurePosixPath(name).parent.as_posix() not in existing_datasets
+        }
+        for name in sorted(
+            selected_files, key=lambda value: value.endswith("/manifest.json")
+        ):
             destination = root / name
-            if destination.exists() and digest(destination) == files[name]["sha256"]:
+            if (
+                destination.exists()
+                and digest(destination) == selected_files[name]["sha256"]
+            ):
                 continue
             destination.parent.mkdir(parents=True, exist_ok=True)
             partial = destination.with_name(destination.name + ".snapshot-part")
             shutil.copyfile(staging / name, partial)
             partial.replace(destination)
-    return len(files)
+    return len(selected_files)
 
 
 def main():
