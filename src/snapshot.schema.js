@@ -42,7 +42,7 @@ export const snapshotSchema = {
     },
     "MapFeature": {
       "additionalProperties": false,
-      "description": "One display feature, with explicit evidence and unknown values.",
+      "description": "One display feature, with explicit evidence and unknown values.\n\nroute_role labels walking choices, not verified access or complete shade.",
       "properties": {
         "id": {
           "title": "Id",
@@ -58,7 +58,9 @@ export const snapshotSchema = {
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction",
+            "landmark"
           ],
           "title": "Kind",
           "type": "string"
@@ -216,6 +218,22 @@ export const snapshotSchema = {
             }
           ],
           "default": null
+        },
+        "route_role": {
+          "anyOf": [
+            {
+              "enum": [
+                "fast",
+                "recommended"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route Role"
         }
       },
       "required": [
@@ -248,7 +266,9 @@ export const snapshotSchema = {
             "fountain",
             "shade",
             "route",
-            "rest"
+            "rest",
+            "construction",
+            "landmark"
           ],
           "title": "Kind",
           "type": "string"

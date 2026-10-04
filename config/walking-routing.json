@@ -7,5 +7,11 @@
   "max_snap_metres": 100,
   "minimum_request_interval_seconds": 1,
   "debounce_ms": 700,
+  "detour_offset_metres": 180,
+  "detour_max_ratio": 1.8,
+  "shade_sample_metres": 40,
+  "shade_max_samples": 80,
+  "shade_max_tiles": 6,
+  "shade_min_known_fraction": 0.8,
   "user_agent": "BlaBlaWalk-HackAmRhein/0.1 (https://github.com/danielbarmaimon/bla-bla-walk)"
 }

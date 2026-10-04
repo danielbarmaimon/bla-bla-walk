@@ -2,7 +2,9 @@ import {
   routeGeometry,
   coordinateAtFraction
 } from './route-planner-data.js';
-import { MAX_VISIBLE_ROUTE_POINTS } from './route-node-details.js';
+import {
+  MAX_VISIBLE_ROUTE_POINTS
+} from './route-node-details.js';
 const {
   Feature,
   Map,
@@ -137,9 +139,9 @@ export function createMap(
     source: contextFeatures,
     zIndex: 8,
     style: (marker) => new Style({
-      image: marker.get('kind') === 'landmark' ? new Icon({
-        src: '/src/icons/landmark.svg',
-        color: theme.getPropertyValue('--poc-landmark').trim(),
+      image: ['landmark', 'construction'].includes(marker.get('kind')) ? new Icon({
+        src: `/src/icons/${marker.get('kind') === 'construction' ? 'construction' : 'landmark'}.svg`,
+        color: theme.getPropertyValue(marker.get('kind') === 'construction' ? '--exposed' : '--poc-landmark').trim(),
         width: 24,
         height: 24,
       }) : new CircleStyle({
@@ -282,7 +284,7 @@ export function createMap(
 
   /** Inspect admitted point types without opening the full feature inspector. */
   function inspectFeature(feature, coordinate) {
-    if (!['observation', 'fountain'].includes(feature.kind) || feature.geometry?.type !== 'Point') return false;
+    if (!['observation', 'fountain', 'construction'].includes(feature.kind) || (feature.kind !== 'construction' && feature.geometry?.type !== 'Point')) return false;
     preparePopup(feature.label);
     if (feature.kind === 'observation') {
       const reading = document.createElement('p');
@@ -292,6 +294,16 @@ export function createMap(
       const timestamp = document.createElement('p');
       timestamp.textContent = `Observed: ${time && Number.isFinite(time.getTime()) ? time.toLocaleString(undefined, { timeZoneName: 'short' }) : 'Unknown'}`;
       stopMenu.append(reading, timestamp);
+    }
+    if (feature.kind === 'construction') {
+      const detail = document.createElement('p');
+      detail.textContent = feature.explanation;
+      const link = document.createElement('a');
+      link.href = feature.provenance.source_url;
+      link.textContent = feature.provenance.attribution;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      stopMenu.append(detail, link);
     }
     openPopup(coordinate);
     return true;
@@ -522,27 +534,32 @@ export function createMap(
         (stopSources.get(stopKind) ?? contextFeatures).addFeature(marker);
       });
     },
-    setTemperatureProfile: (route, profile, colours, visible) => {
+    setTemperatureProfiles: (profiles, visible) => {
       temperatureFeatures.clear();
       temperatureLayer.setVisible(visible);
-      if (!route || !visible) return;
-      profile.segments.forEach((sample, index) => {
+      if (!visible) return;
+      profiles.forEach(({
+        id,
+        route,
+        profile,
+        colours
+      }) => profile.segments.forEach((sample, index) => {
         const middle = route.coordinates.filter((_, vertex) => route.cumulative[vertex] / route.length > sample.start && route.cumulative[vertex] / route.length < sample.end);
         const coordinates = [coordinateAtFraction(route, sample.start), ...middle, coordinateAtFraction(route, sample.end)];
         const feature = new Feature({
           geometry: new window.ol.geom.LineString(coordinates.map(point => fromLonLat(point)))
         });
         feature.set('temperatureColour', colours[index]);
+        feature.set('temperatureRouteId', id);
         feature.set('temperatureSample', sample.estimate);
         temperatureFeatures.addFeature(feature);
-      });
+      }));
     },
     setRoutePointDetails: (route, profile) => {
       if (!route || !profile?.segments?.length) return [];
       const step = Math.max(1, Math.ceil(profile.segments.length / MAX_VISIBLE_ROUTE_POINTS));
       return profile.segments.flatMap((sample, index) =>
-        index % step === Math.floor(step / 2) % step || index === profile.segments.length - 1 ?
-          [(sample.start + sample.end) / 2] : []
+        index % step === Math.floor(step / 2) % step || index === profile.segments.length - 1 ? [(sample.start + sample.end) / 2] : []
       );
     },
     getRoutePointPixel: (route, fraction) => {

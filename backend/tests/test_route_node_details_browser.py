@@ -91,7 +91,7 @@ def test_route_point_hover_click_keyboard_and_route_change(browser_page):
             }
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     show_route_with_points(page)
 
     page.locator("#map").scroll_into_view_if_needed()

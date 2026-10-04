@@ -5,10 +5,11 @@ from unittest.mock import patch
 
 import httpx
 import pytest
+from test_walking_routing import COORDINATES, END, START, payload
+
 from bla_bla_walk.adapters.walking import fetch_routes, walking_routes
 from bla_bla_walk.instructions import instruction_text, provider_directions
 from bla_bla_walk.interfaces import WalkingRouteRequest
-from test_walking_routing import COORDINATES, END, START, payload
 
 
 def maneuver_route():
@@ -60,6 +61,22 @@ def test_order_distance_and_route_identity():
             "Turn left. After First street; towards the selected destination"
         )
         assert "selected destination" in steps[-1].text
+
+
+def test_waypoint_legs_do_not_announce_arrival_before_destination():
+    route = maneuver_route()
+    first, turn, arrive = route["legs"][0]["steps"]
+    waypoint_arrive = deepcopy(arrive)
+    waypoint_arrive["maneuver"]["location"] = COORDINATES[1]
+    waypoint_depart = deepcopy(turn)
+    waypoint_depart["maneuver"]["type"] = "depart"
+    route["legs"] = [
+        {"steps": [first, waypoint_arrive]},
+        {"steps": [waypoint_depart, arrive]},
+    ]
+    directions = provider_directions(route, "waypoint", 1)
+    assert [s.kind for s in directions.steps] == ["start", "continue", "arrive"]
+    assert directions.steps[-1].at_metres == 2100
 
 
 @pytest.mark.parametrize(

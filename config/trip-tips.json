@@ -5,9 +5,9 @@
     "checked_on": "2026-10-04"
   },
   "tips": [
-    "Check MeteoSwiss or Alertswiss heat warnings before leaving.",
-    "Drink water regularly during hot weather.",
-    "Plan to spend time in shade or cool places.",
-    "Avoid strenuous walking during the hottest hours."
+    {"title": "Check the weather", "icon": "info", "text": "Check MeteoSwiss or Alertswiss heat warnings before leaving."},
+    {"title": "Bring water", "icon": "droplets", "text": "Drink water regularly during hot weather."},
+    {"title": "Find some shade", "icon": "trees", "text": "Plan to spend time in shade or cool places."},
+    {"title": "Choose a cooler time", "icon": "clock", "text": "Avoid strenuous walking during the hottest hours."}
   ]
 }

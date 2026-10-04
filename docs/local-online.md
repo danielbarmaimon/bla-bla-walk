@@ -87,9 +87,10 @@ and limitations are recorded in [the source register](SOURCES.md).
    20 minutes; the screen shows background progress.
 
 The saved SBB → Marktplatz pair has shade comparison support. Newly selected
-address pairs have online walking geometry and sensor estimates, but their
-shade and access remain unknown. Unknown access can also withhold a recommended
-journey for the saved pair. Enabling sources does not remove these limits.
+address pairs have online walking geometry, sensor estimates and conservative
+building-shade samples at departure. Physical access remains unverified; input
+gaps make Recommended provisional. Full traversal-time shade calculations for
+the saved pair remain separate.
 
 For a direct API check, open [the online snapshot](http://127.0.0.1:8000/api/map?mode=online).
 It should report `"mode": "online"`. Inspect layer `availability`, `features` and
@@ -117,3 +118,22 @@ returned data. Additional checks:
 Full basemap downloads and city-wide geometry preparation are not prerequisites
 for this local online setup. For disconnected use, follow
 [the README's offline preparation](../README.md#download-data-before-offline-use).
+
+## Walking choices and guide
+
+The online walking response contains Fast and Recommended roles. Fast has the
+lowest estimated walking time among the provider candidates. Recommended first
+prefers candidates avoiding loaded polygons for active dated construction projects,
+then maximizes positive building-shade samples at departure. The router requests
+bounded waypoint alternatives on either side of the direct trip; every line and
+maneuver still comes from the foot network. When no distinct choice is supported,
+both roles show the same path with an explicit note. Unknown input cells never earn
+shade credit; the percentage is a sampled lower bound, not full-walk shade coverage
+or measured cooling. Failed/incomplete construction downloads withhold avoidance
+claims. Permits are caution areas, not confirmed pedestrian closures.
+
+Recommended and Landmarks are initially active. After calculation, the left panel
+shows the walking guide and a preparation dialog opens once; Close or Escape
+dismisses it. Plan trip returns to the form. Water/bench candidates in the guide
+are within 150 m along the route of a 15-minute pause and within 50 m off the route.
+Groups above two candidates are collapsed. Map-layer controls remain independent.

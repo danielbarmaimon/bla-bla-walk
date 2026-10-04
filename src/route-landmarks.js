@@ -8,6 +8,13 @@ import {
 
 const configuration = await fetch('/config/landmarks.json').then((response) =>
   response.ok ? response.json() : null).catch(() => null);
+export {
+  configuration as landmarkSettings
+};
+let cachedLandmarks = null;
+export function setCachedLandmarks(layer) {
+  cachedLandmarks = layer;
+}
 
 function validPlace(place) {
   if (!place || typeof place !== 'object') return false;
@@ -25,7 +32,7 @@ export function savedLandmarkEvidence(amenities = null) {
     places: [],
     explanation: 'Landmark configuration unavailable.'
   };
-  const places = WAYFINDING_PLACES.map((place) => ({
+  const places = WAYFINDING_PLACES.filter(place => !cachedLandmarks?.features?.some(feature => feature.label === place.label)).map((place) => ({
     ...place,
     checkedAt: configuration.known_places_checked_at,
     retrievedAt: null,
@@ -33,7 +40,7 @@ export function savedLandmarkEvidence(amenities = null) {
     visibility: 'unknown',
     familiar: 'unknown',
   }));
-  const features = amenities?.rest_stops?.features ?? [];
+  const features = [...amenities?.rest_stops?.features ?? [], ...cachedLandmarks?.features ?? []];
   for (const feature of features) {
     if (feature.provenance?.fixture !== false || feature.geometry?.type !== 'Point') continue;
     const place = {
@@ -52,7 +59,7 @@ export function savedLandmarkEvidence(amenities = null) {
     if (validPlace(place)) places.push(place);
   }
   return {
-    availability: 'limited',
+    availability: cachedLandmarks?.availability === 'current' ? 'current' : 'limited',
     places,
     explanation: configuration.coverage_note
   };

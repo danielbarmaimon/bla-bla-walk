@@ -10,6 +10,7 @@ from bla_bla_walk.interfaces import (
     ComparisonJob,
     ComparisonPreferences,
     ComparisonRequest,
+    ConstructionSnapshot,
     MapSnapshot,
     PaletteForecast,
     RouteAmenities,
@@ -29,6 +30,12 @@ def write_json(path: Path, value: object) -> None:
 
 
 if __name__ == "__main__":
+    write_json(
+        ROOT / "src/construction.schema.json", ConstructionSnapshot.model_json_schema()
+    )
+    (ROOT / "src/construction-interfaces.ts").write_text(
+        typescript_contract(ConstructionSnapshot.model_json_schema()), encoding="utf-8"
+    )
     (ROOT / "src/forecast-interfaces.ts").write_text(
         typescript_contract(PaletteForecast.model_json_schema()), encoding="utf-8"
     )

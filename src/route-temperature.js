@@ -70,6 +70,30 @@ export function temperatureProfile(route, layer, settings, now = Date.now()) {
   };
 }
 
+export function combinedTemperatureProfile(profiles, settings) {
+  const segments = profiles.flatMap(profile => profile.segments);
+  const covered = profiles.filter(profile => profile.coverage);
+  if (!covered.length) return {
+    segments,
+    sensors: [],
+    coverage: 0
+  };
+  const minimum = Math.min(...covered.map(profile => profile.minimum));
+  const maximum = Math.max(...covered.map(profile => profile.maximum));
+  const span = Math.max(settings.minimum_span_c, maximum - minimum);
+  const centre = (minimum + maximum) / 2;
+  return {
+    segments,
+    sensors: [...new Map(covered.flatMap(profile => profile.sensors).map(sensor => [sensor.id, sensor])).values()],
+    minimum,
+    maximum,
+    low: centre - span / 2,
+    high: centre + span / 2,
+    coverage: segments.filter(segment => segment.estimate).length / segments.length,
+    stale: covered.some(profile => profile.stale)
+  };
+}
+
 export function temperatureColour(value, low, high, palette) {
   const fraction = Math.max(0, Math.min(1, (value - low) / (high - low)));
   const position = fraction * (palette.length - 1);

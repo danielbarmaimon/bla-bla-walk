@@ -50,6 +50,7 @@ def test_badge_defaults_and_layout(browser_page):
     page.locator("#calculate-journey").click()
     page.locator(".comparison-secondary").first.dispatch_event("click")
     page.locator("#more-layers").evaluate("e=>e.open=true")
+    page.locator("#preparation-tips").evaluate("e=>e.close()")
     page.locator("#cool-place-toggle").click()
     assert page.locator("#interior-list-section").evaluate("e=>!e.hidden")
     page.set_viewport_size({"width": 390, "height": 844})
@@ -159,7 +160,11 @@ def test_more_badges_control_all_source_points_independently(browser_page):
     assert not fountain_ids.intersection(visible_ids())
     page.locator("#fountains-layer-toggle").click()
     assert station_ids | fountain_ids <= set(visible_ids())
+    assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "false"
     page.locator("#landmark-toggle").click()
+    assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "true"
+    assert "stadtcasino" not in visible_ids()
+    open_example(page)
     assert "stadtcasino" in visible_ids()
     page.locator("#weather-stations-toggle").click()
     assert not station_ids.intersection(visible_ids())

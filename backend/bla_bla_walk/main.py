@@ -12,6 +12,8 @@ from fastapi.staticfiles import StaticFiles
 from rasterio.warp import transform_geom
 
 from .adapters.addresses import search_addresses
+from .adapters.construction import construction_snapshot
+from .adapters.landmarks import landmarks
 from .adapters.palette_forecast import palette_forecast
 from .adapters.rest_stops import rest_stops
 from .adapters.routes import load_demo_routes
@@ -25,6 +27,7 @@ from .interfaces import (
     ComparisonJob,
     ComparisonPreferences,
     ComparisonRequest,
+    ConstructionSnapshot,
     MapLayer,
     MapSnapshot,
     PaletteForecast,
@@ -108,6 +111,18 @@ def address_search(request: AddressSearchRequest, response: Response):
         raise HTTPException(
             503, "Address search unavailable; try again or pin on map"
         ) from error
+
+
+@app.get("/api/construction-sites", response_model=ConstructionSnapshot)
+def construction_data(mode: Literal["fixture", "online", "offline"] = "online"):
+    """Serve the shared daily snapshot; offline never contacts the providers."""
+    return construction_snapshot(mode)
+
+
+@app.get("/api/landmarks", response_model=MapLayer)
+def landmark_data(mode: Literal["fixture", "online", "offline"] = "online"):
+    """Daily citywide named landmarks; offline reads only the saved snapshot."""
+    return landmarks(mode)
 
 
 @app.post("/api/shade", response_model=ShadeResponse)

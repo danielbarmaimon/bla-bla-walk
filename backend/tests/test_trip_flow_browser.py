@@ -3,10 +3,11 @@
 from datetime import UTC, datetime
 
 import pytest
-from bla_bla_walk.adapters.routes import load_demo_routes
-from bla_bla_walk.interfaces import MapSnapshot
 from conftest import open_example
 from test_journey_browser import wire_calculation
+
+from bla_bla_walk.adapters.routes import load_demo_routes
+from bla_bla_walk.interfaces import MapSnapshot
 
 pytestmark = pytest.mark.browser
 
@@ -44,11 +45,17 @@ def test_supported_roles_open_map_and_keep_steps_below(browser_page):
     page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function("!document.querySelector('#shade-mode').disabled")
-    assert page.locator("#fast-mode").inner_text() == "Fast"
+    assert page.locator("#fast-mode").inner_text().startswith("Fast")
     assert (
         page.locator("#fast-mode img").get_attribute("src").endswith("fast-forward.svg")
     )
     assert "distinct routes" in page.locator("#route-role-status").inner_text()
+    assert (
+        page.locator(".comparison-card.is-selected h3").inner_text()
+        == layer.features[1].label
+    )
+    assert page.locator("#shade-mode").get_attribute("aria-pressed") == "true"
+    page.locator("#fast-mode").click()
     assert (
         page.locator(".comparison-card.is-selected h3").inner_text()
         == layer.features[0].label
@@ -78,12 +85,8 @@ def test_supported_roles_open_map_and_keep_steps_below(browser_page):
     assert set(drawn["ids"]) == {"demo-route-a", "demo-route-b"}
     assert drawn["inside"]
     assert "unavailable" in page.locator("#step-list").inner_text()
-    assert page.locator(".steps").bounding_box()["y"] >= (
-        page.locator(".map-wrap").bounding_box()["y"]
-        + page.locator(".map-wrap").bounding_box()["height"]
-    )
+    assert page.locator(".planner .steps").is_visible()
     assert page.locator("#basemap-status").is_visible()  # actual tile failure retained
-    page.locator("#back-to-plan").click()
     page.locator("#fast-mode").click()
     assert page.locator("#fast-mode").get_attribute("aria-pressed") == "true"
     assert (
@@ -124,7 +127,7 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
         "document.querySelector('#trip-status').textContent.includes('0 of')"
     )
     assert "0 of" in page.locator("#trip-status").inner_text()
-    assert page.locator("#preparation-tips").is_visible()
+    assert page.locator("#preparation-tips").is_hidden()
     assert page.locator("#trip-tips li").count() == 4
     page.locator("#cancel-journey").click()
     assert page.locator("#preparation-tips").is_hidden()
@@ -136,14 +139,14 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
     page.unroute("**/api/comparison**")
 
 
-def test_missing_shade_withholds_recommended_and_allows_manual_map(
+def test_missing_shade_keeps_provisional_recommended_and_manual_map(
     browser_page, tmp_path
 ):
     page = browser_page
     page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
-    assert page.locator("#shade-mode").is_disabled()
-    assert "Recommended unavailable" in page.locator("#route-role-status").inner_text()
+    assert page.locator("#shade-mode").is_enabled()
+    assert page.locator("#shade-mode").get_attribute("aria-pressed") == "true"
     page.locator(".comparison-secondary").last.click()
     assert page.locator(".map-screen").is_visible()
     assert "unavailable" in page.locator("#step-list").inner_text()
@@ -189,11 +192,8 @@ def test_one_route_and_same_route_roles_are_explicit(browser_page, supported):
             == "Fast and Recommended use the same route."
         )
     else:
-        assert (
-            "One walking route available"
-            in page.locator("#route-role-status").inner_text()
-        )
-        assert page.locator("#shade-mode").is_disabled()
+        assert "same route" in page.locator("#route-role-status").inner_text()
+        assert page.locator("#shade-mode").is_enabled()
     assert page.locator(".comparison-card").count() == 1
     page.unroute("**/api/map?mode=fixture")
     page.unroute("**/api/comparison**")
@@ -258,7 +258,7 @@ def test_dated_real_provider_payload_in_joined_screen(browser_page, pair_index):
     page.locator(".comparison-secondary").first.wait_for()
     assert requests[0]["start"] == endpoints[0]
     assert requests[0]["end"] == endpoints[1]
-    assert page.locator("#shade-mode").is_disabled()
+    assert page.locator("#shade-mode").is_enabled()
     for feature in layer["features"]:
         page.locator(f'.comparison-secondary[data-route-id="{feature["id"]}"]').click()
         instructions = page.locator("#step-list").inner_text()

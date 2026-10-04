@@ -88,7 +88,22 @@ def test_real_saved_route_gradient_and_switches(browser_page):
     page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "SAVED / STALE" in page.locator("#temperature-legend").inner_text()
     assert "°C" in page.locator("#temperature-legend").inner_text()
+    gradient_state = """() => {
+      const layer=window.temperatureTestMap.getLayers().getArray()
+        .find(l=>l.getZIndex()===6);
+      return layer.getSource().getFeatures().map(f=>({
+        id:f.get('temperatureRouteId'), colour:f.get('temperatureColour'),
+        value:f.get('temperatureSample')?.value ?? null
+      }));
+    }"""
+    initial = page.evaluate(gradient_state)
+    assert {item["id"] for item in initial} == {"demo-route-a", "demo-route-b"}
+    assert (
+        "shared scale for all visible routes"
+        in page.locator("#temperature-legend").inner_text()
+    )
     page.locator(".comparison-secondary[data-route-id=demo-route-b]").click()
+    assert page.evaluate(gradient_state) == initial
     page.locator("#map").scroll_into_view_if_needed()
     page.wait_for_function("!window.temperatureTestMap.getView().getAnimating()")
     drawn = page.evaluate("""() => {
@@ -123,6 +138,30 @@ def test_real_saved_route_gradient_and_switches(browser_page):
     page.locator("#temperature-palette").select_option("summer")
     ramp = page.locator(".temperature-ramp").evaluate("e=>e.style.background")
     assert "134, 239, 172" in ramp and "225, 29, 72" in ramp
+    shared_scale = page.evaluate("""async () => {
+      const {temperatureColour}=await import('/src/route-temperature.js');
+      const features=window.temperatureTestMap.getLayers().getArray()
+        .find(l=>l.getZIndex()===6).getSource().getFeatures();
+      const values=features.map(f=>f.get('temperatureSample')?.value)
+        .filter(v=>v!=null);
+      const min=Math.min(...values), max=Math.max(...values);
+      const span=Math.max(2,max-min), centre=(min+max)/2;
+      return features.filter(f=>f.get('temperatureSample')).every(f=>
+        f.get('temperatureColour')===temperatureColour(f.get('temperatureSample').value,
+          centre-span/2,centre+span/2,['#86efac','#fbbf24','#e11d48']));
+    }""")
+    assert shared_scale
+    page.locator("#fast-route-toggle").evaluate("e=>e.click()")
+    assert {item["id"] for item in page.evaluate(gradient_state)} == {"demo-route-a"}
+    page.locator("#recommended-route-toggle").evaluate("e=>e.click()")
+    assert page.evaluate(gradient_state) == []
+    page.locator("#fast-route-toggle").evaluate("e=>e.click()")
+    assert {item["id"] for item in page.evaluate(gradient_state)} == {"demo-route-b"}
+    page.locator("#recommended-route-toggle").evaluate("e=>e.click()")
+    assert {item["id"] for item in page.evaluate(gradient_state)} == {
+        "demo-route-a",
+        "demo-route-b",
+    }
     page.locator("#temperature-palette").select_option("winter")
     ramp = page.locator(".temperature-ramp").evaluate("e=>e.style.background")
     assert "165, 243, 252" in ramp and "67, 56, 202" in ramp

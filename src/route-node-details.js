@@ -3,8 +3,8 @@ const ROUTE_POINT_HIT_RADIUS = 56;
 
 function supportedShadePercentage(evidence, startMetres, endMetres) {
   if (!evidence || evidence.shade_state !== 'current' ||
-      !evidence.shade_time_matches_request || !evidence.shade_geometry_matches_request ||
-      !Number.isFinite(startMetres) || !Number.isFinite(endMetres) || endMetres <= startMetres) return null;
+    !evidence.shade_time_matches_request || !evidence.shade_geometry_matches_request ||
+    !Number.isFinite(startMetres) || !Number.isFinite(endMetres) || endMetres <= startMetres) return null;
 
   const samples = evidence.samples
     .filter(sample => sample.end_metres > startMetres && sample.start_metres < endMetres)
@@ -88,7 +88,9 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
   let latest = null;
   let cardHovered = false;
   let pointHovered = false;
-  card.addEventListener('pointerenter', () => { cardHovered = true; });
+  card.addEventListener('pointerenter', () => {
+    cardHovered = true;
+  });
   card.addEventListener('pointerleave', () => {
     setTimeout(() => {
       cardHovered = false;
@@ -162,7 +164,11 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
 
   function select(fraction, pixel, source = 'selection') {
     if (!latest || !Number.isFinite(fraction)) return;
-    selected = { fraction, pixel, source };
+    selected = {
+      fraction,
+      pixel,
+      source
+    };
     const closest = latest.pointFractions.reduce((best, item, index) =>
       Math.abs(item - fraction) < Math.abs(latest.pointFractions[best] - fraction) ? index : best, 0);
     slider.value = String(closest);
@@ -262,7 +268,6 @@ export function mountRouteNodeDetails(mapWrap, sliderHost) {
       if (selected?.source === 'selection') dismiss();
       return;
     }
-    event.stopPropagation();
     const fraction = Number(target.dataset.fraction);
     select(fraction, latest?.pixelForFraction?.(fraction), 'selection');
   }, true);

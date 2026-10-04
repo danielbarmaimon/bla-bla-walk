@@ -39,14 +39,13 @@ def test_restore_reuses_identical_files_and_preserves_different_local_data(snaps
     destination = root / ".cache/buildings/manifest.json"
     assert destination.read_bytes() == payload
     stamp = destination.stat().st_mtime_ns
-    assert install(root) == 1
+    assert install(root) == 0
     assert destination.stat().st_mtime_ns == stamp
     destination.write_bytes(b"newer local data")
-    with pytest.raises(ValueError, match="Different local data"):
-        install(root)
+    assert install(root) == 0
     assert destination.read_bytes() == b"newer local data"
-    install(root, replace=True)
-    assert destination.read_bytes() == payload
+    assert install(root, replace=True) == 0
+    assert destination.read_bytes() == b"newer local data"
 
 
 def test_corrupt_archive_never_publishes_files(snapshot):

@@ -9,7 +9,7 @@ export interface LineGeometry {
 export interface MapFeature {
   id: string;
   label: string;
-  kind: "observation" | "fountain" | "shade" | "route" | "rest";
+  kind: "observation" | "fountain" | "shade" | "route" | "rest" | "construction" | "landmark";
   geometry: PointGeometry | LineGeometry | PolygonGeometry;
   availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
   explanation: string;
@@ -23,12 +23,13 @@ export interface MapFeature {
   rest_type?: "bench" | "park" | "indoor" | null;
   opening_hours?: string | null;
   directions?: WalkingDirections | null;
+  route_role?: "fast" | "recommended" | null;
 }
 
 export interface MapLayer {
   id: string;
   label: string;
-  kind: "observation" | "fountain" | "shade" | "route" | "rest";
+  kind: "observation" | "fountain" | "shade" | "route" | "rest" | "construction" | "landmark";
   availability: "current" | "stale" | "missing" | "unknown" | "unsupported";
   explanation: string;
   features: (MapFeature)[];

@@ -1,0 +1,11 @@
+{
+  "projects_endpoint": "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100335/records",
+  "permits_endpoint": "https://data.bs.ch/api/explore/v2.1/catalog/datasets/100018/records",
+  "timeout_seconds": 10,
+  "max_projects": 500,
+  "max_records": 10000,
+  "max_response_bytes": 4194304,
+  "near_route_metres": 100,
+  "route_sample_metres": 20,
+  "browser_refresh_ms": 3600000
+}

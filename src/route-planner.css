@@ -780,6 +780,7 @@
   z-index: 3;
   inset: 0;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .route-app .route-node-target {
@@ -792,7 +793,7 @@
   background: transparent;
   appearance: none;
   outline: none;
-  pointer-events: auto;
+  pointer-events: none;
   transform: translate(-50%, -50%);
   cursor: pointer;
 }
@@ -1102,11 +1103,12 @@
   grid-template-columns: minmax(0, 1fr);
 }
 
-.route-app[data-view="map"] .route-layout {
+.route-app[data-view="map"][data-trip="start"] .route-layout {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.route-app[data-view="map"] .planner {
+.route-app[data-view="map"][data-trip="start"] .planner,
+.route-app[data-view="map"] #planner-form {
   display: none;
 }
 
@@ -1347,4 +1349,73 @@
 
 .route-app .route-mode {
   margin-top: var(--space-3);
+}
+
+.route-app #preparation-tips {
+  border: 1px solid var(--poc-line);
+  border-radius: var(--space-3);
+  background: var(--poc-white);
+  color: var(--poc-ink);
+  padding: var(--space-6);
+  width: var(--tips-width);
+  max-width: calc(100vw - var(--space-6));
+  max-height: calc(100dvh - var(--space-6));
+  overflow-y: auto;
+}
+
+.route-app #preparation-tips::backdrop {
+  background: var(--text-muted);
+  opacity: var(--control-disabled-opacity);
+}
+
+.route-app #close-tips {
+  float: right;
+}
+
+.route-app #tip-calculation-status {
+  color: var(--text-muted);
+  margin-bottom: var(--space-5);
+}
+
+.route-app #trip-tips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--tips-card-min-width)), 1fr));
+  gap: var(--space-3);
+  padding: 0;
+  list-style: none;
+}
+
+.route-app .tip-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--poc-line);
+  border-radius: var(--radius-card);
+  background: var(--poc-canvas);
+}
+
+.route-app .tip-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--tips-icon-size);
+  height: var(--tips-icon-size);
+  border-radius: var(--radius-control);
+  background: var(--poc-teal-light);
+}
+
+.route-app .tip-card h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+}
+
+.route-app .tip-card p {
+  margin: 0;
+  font-size: var(--text-label);
+  color: var(--text-muted);
+}
+
+.route-app .planner .steps {
+  border: 0;
+  padding: 0;
 }

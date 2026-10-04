@@ -22,7 +22,9 @@ Longitude = Annotated[float, Field(ge=-180, le=180)]
 Latitude = Annotated[float, Field(ge=-90, le=90)]
 Position = tuple[Longitude, Latitude]
 Availability = Literal["current", "stale", "missing", "unknown", "unsupported"]
-LayerKind = Literal["observation", "fountain", "shade", "route", "rest"]
+LayerKind = Literal[
+    "observation", "fountain", "shade", "route", "rest", "construction", "landmark"
+]
 
 
 class ContractModel(BaseModel):
@@ -244,7 +246,10 @@ class WalkingDirections(ContractModel):
 
 
 class MapFeature(ContractModel):
-    """One display feature, with explicit evidence and unknown values."""
+    """One display feature, with explicit evidence and unknown values.
+
+    route_role labels walking choices, not verified access or complete shade.
+    """
 
     id: str
     label: str
@@ -264,6 +269,7 @@ class MapFeature(ContractModel):
     rest_type: Literal["bench", "park", "indoor"] | None = None
     opening_hours: str | None = None
     directions: WalkingDirections | None = None
+    route_role: Literal["fast", "recommended"] | None = None
 
 
 class MapLayer(ContractModel):
@@ -282,6 +288,25 @@ class RouteAmenities(ContractModel):
 
     fountains: MapLayer
     rest_stops: MapLayer
+
+
+class ConstructionSite(ContractModel):
+    """Dated official permit polygon, clipped to its associated project interval."""
+
+    id: str
+    project_id: str
+    starts_on: date
+    ends_on: date
+    geometry: PolygonGeometry
+
+
+class ConstructionSnapshot(ContractModel):
+    """Daily city snapshot; older data cannot establish current avoidance."""
+
+    sites: list[ConstructionSite] = Field(default_factory=list)
+    availability: Availability = "missing"
+    covers_from: date | None = None
+    provenance: Provenance | None = None
 
 
 class MapSnapshot(ContractModel):
@@ -380,11 +405,12 @@ class TripComparison(ContractModel):
 
 
 class WalkingRouteRequest(ContractModel):
-    """Ephemeral Basel coordinates for provider pedestrian-network geometry."""
+    """Ephemeral endpoints and optional shade sampling time (defaults to now)."""
 
     start: Position
     end: Position
     mode: Literal["fixture", "online", "offline"] = "online"
+    departure_time: AwareDatetime | None = None
 
 
 class AddressSearchRequest(ContractModel):

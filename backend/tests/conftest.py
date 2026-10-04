@@ -15,6 +15,32 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[2]
 
 
+@pytest.fixture(autouse=True)
+def walking_choices_without_live_services(monkeypatch):
+    """Route fixtures never add new external calls or cold city shade work."""
+    monkeypatch.setattr("bla_bla_walk.adapters.walking.detour_routes", lambda *args: [])
+    monkeypatch.setattr(
+        "bla_bla_walk.walking_preferences.construction_sites", lambda *args: None
+    )
+    monkeypatch.setattr(
+        "bla_bla_walk.walking_preferences.shade_fraction", lambda *args: None
+    )
+
+
+@pytest.fixture(autouse=True)
+def dismiss_tips_in_unrelated_browser_scenarios(request):
+    """The focused guide test covers the modal; other scenarios dismiss it."""
+    if not request.node.get_closest_marker("browser"):
+        return
+    if request.node.name == "test_completion_modal_default_and_left_guide":
+        return
+    page = request.getfixturevalue("browser_page")
+    page.add_init_script("""document.addEventListener('toggle', event => {
+      if (event.target.id === 'preparation-tips' && event.newState === 'open')
+        event.target.close();
+    }, true);""")
+
+
 @pytest.fixture(scope="module")
 def browser_page():
     """Start the documented server and an installed Chromium for interactions."""
@@ -71,6 +97,19 @@ def browser_page():
                     json={"detail": "Shade unavailable in basic browser fixture"},
                 ),
             )
+            page.route(
+                "**/api/landmarks?**",
+                lambda route: route.fulfill(
+                    json={
+                        "id": "city-landmarks",
+                        "label": "City landmarks",
+                        "kind": "landmark",
+                        "availability": "missing",
+                        "features": [],
+                        "explanation": "No city landmarks in this browser fixture.",
+                    }
+                ),
+            )
             yield page
             browser.close()
     finally:
@@ -89,4 +128,5 @@ def open_example(page, calculate=True):
     if calculate:
         page.locator("#calculate-journey").click()
         page.locator(".comparison-card").first.wait_for(state="attached")
+        page.locator("#preparation-tips").evaluate("e=>e.close()")
         page.locator("#information-sources").evaluate("e=>e.open=true")

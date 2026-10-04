@@ -1,5 +1,6 @@
 import {
   temperatureProfile,
+  combinedTemperatureProfile,
   temperatureColour,
   validateSensorInterpolation
 } from './route-temperature.js';
@@ -43,7 +44,7 @@ export function chooseTemperaturePalette(profile, forecast, settings, day, choic
 
 export function nearestForecastHour(forecast, arrivalTime) {
   if (forecast?.availability !== 'current' || !(arrivalTime instanceof Date) ||
-      !Number.isFinite(arrivalTime.getTime())) return null;
+    !Number.isFinite(arrivalTime.getTime())) return null;
   let nearest = null;
   let nearestDifference = 30 * 60 * 1000;
   for (const hour of forecast.hours ?? []) {
@@ -51,7 +52,10 @@ export function nearestForecastHour(forecast, arrivalTime) {
     if (!Number.isFinite(timestamp) || !Number.isFinite(hour.temperature_c)) continue;
     const difference = Math.abs(timestamp - arrivalTime.getTime());
     if (difference <= nearestDifference) {
-      nearest = { value: hour.temperature_c, validTime: new Date(timestamp) };
+      nearest = {
+        value: hour.temperature_c,
+        validTime: new Date(timestamp)
+      };
       nearestDifference = difference;
     }
   }
@@ -65,6 +69,7 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
     loading = true,
     forecastRequested = false;
   let validation = null;
+
   function requestForecast() {
     if (forecastRequested) return;
     forecastRequested = true;
@@ -99,20 +104,31 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
   $('#temperature-palette').addEventListener('change', onUpdate);
 
   return {
-    render(route, routeVisible = true) {
-      const profile = temperatureProfile(route, layer, settings);
+    render(routes, selectedRouteId) {
+      const profiles = routes.map(({
+        id,
+        route
+      }) => ({
+        id,
+        route,
+        profile: temperatureProfile(route, layer, settings)
+      }));
+      const profile = combinedTemperatureProfile(profiles.map(item => item.profile), settings);
       const day = $('#departure-time').value.slice(0, 10) || baselDay();
       const choice = $('#temperature-palette').value;
-      if (route) requestForecast();
+      if (routes.length) requestForecast();
       const selected = chooseTemperaturePalette(profile, forecast, settings, day, choice);
       const palette = palettes[selected.name];
-      const visible = badgeActive('#temperature-route-toggle') && routeVisible;
-      map.setTemperatureProfile(route, profile, profile.segments.map(item => item.estimate ? temperatureColour(item.estimate.value, profile.low, profile.high, palette) : theme.getPropertyValue('--unknown').trim()), visible);
+      const visible = badgeActive('#temperature-route-toggle');
+      map.setTemperatureProfiles(profiles.map(item => ({
+        ...item,
+        colours: item.profile.segments.map(segment => segment.estimate ? temperatureColour(segment.estimate.value, profile.low, profile.high, palette) : theme.getPropertyValue('--unknown').trim())
+      })), visible);
       const legend = $('#temperature-legend');
       legend.replaceChildren();
       const status = document.createElement('p');
-      status.textContent = loading ? 'Loading real sensor readings…' : !route ? 'Select a route to see sensor temperature estimates.' : profile.coverage ?
-        `${profile.stale?'SAVED / STALE':'Current'} sensor-based estimate: ${profile.minimum.toFixed(1)}–${profile.maximum.toFixed(1)} °C · ${Math.round(profile.coverage*100)}% of selected route covered · ${profile.sensors.length} contributing sensors · ${selected.name} palette. ${selected.reason}.` :
+      status.textContent = loading ? 'Loading real sensor readings…' : !routes.length ? 'Show a route to see sensor temperature estimates.' : profile.coverage ?
+        `${profile.stale?'SAVED / STALE':'Current'} sensor-based estimate: ${profile.minimum.toFixed(1)}–${profile.maximum.toFixed(1)} °C · ${Math.round(profile.coverage*100)}% of visible paths covered · ${profile.sensors.length} contributing sensors · ${selected.name} palette. ${selected.reason}.` :
         `Route temperature unavailable: fewer than ${settings.minimum_sensors} time-aligned sensors within ${settings.radius_metres} m. ${selected.reason}.`;
       legend.append(status);
       if (profile.coverage) {
@@ -120,7 +136,7 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
         ramp.className = 'temperature-ramp';
         ramp.style.background = `linear-gradient(to right,${palette.join(',')})`;
         const range = document.createElement('p');
-        range.textContent = `Colder ${profile.low.toFixed(1)} °C → warmer ${profile.high.toFixed(1)} °C · relative scale, minimum ${settings.minimum_span_c} °C span`;
+        range.textContent = `Colder ${profile.low.toFixed(1)} °C → warmer ${profile.high.toFixed(1)} °C · shared scale for all visible routes, minimum ${settings.minimum_span_c} °C span`;
         const detail = document.createElement('details');
         const summary = document.createElement('summary');
         summary.textContent = 'Temperature method, sensor times and sources';
@@ -147,7 +163,7 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
         link.textContent = `${forecast.availability === 'stale' ? 'Saved ' : ''}Weather data by Open-Meteo · CC BY 4.0 · fixed Basel point · retrieved ${forecast.provenance.retrieved_at}`;
         legend.append(link);
       }
-      return profile;
+      return profiles.find(item => item.id === selectedRouteId)?.profile ?? null;
     },
     forecastForArrival(date) {
       if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return null;

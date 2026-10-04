@@ -10,7 +10,7 @@ export function walkingRouting(mode, settings, receive) {
     version += 1;
   }
 
-  async function request(start, end, token, retry = true) {
+  async function request(start, end, token, departureTime, retry = true) {
     controller = new AbortController();
     try {
       const response = await fetch('/api/walking-routes', {
@@ -21,14 +21,15 @@ export function walkingRouting(mode, settings, receive) {
         body: JSON.stringify({
           start,
           end,
-          mode
+          mode,
+          departure_time: departureTime
         }),
         signal: controller.signal,
         cache: 'no-store'
       });
       if (token !== version) return;
       if (response.status === 429 && retry) {
-        timer = setTimeout(() => request(start, end, token, false), 1100);
+        timer = setTimeout(() => request(start, end, token, departureTime, false), 1100);
         return;
       }
       if (response.status === 422) {
@@ -38,13 +39,13 @@ export function walkingRouting(mode, settings, receive) {
       if (!response.ok) throw new Error('Walking route unavailable');
       const layer = await response.json();
       if (token !== version) return;
-      receive(layer, `${layer.features.length} street-following walking route(s) calculated. Access and shade remain unknown.`);
+      receive(layer, `${layer.features.length} street-following walking route(s) calculated. Fast and Recommended are ready.`);
     } catch (error) {
       if (error.name !== 'AbortError' && token === version) receive(null, 'Walking route unavailable. Retry, refine the endpoints or use the saved example.');
     }
   }
 
-  function start(origin, destination) {
+  function start(origin, destination, departureTime) {
     clear();
     if (mode === 'offline') {
       receive(null, 'Offline: no routing graph for new endpoints. The saved SBB → Marktplatz routes remain available.');
@@ -52,7 +53,7 @@ export function walkingRouting(mode, settings, receive) {
     }
     receive(null, 'Calculating a walking route for the selected endpoints…');
     const token = version;
-    timer = setTimeout(() => request(origin, destination, token), settings.debounce_ms);
+    timer = setTimeout(() => request(origin, destination, token, departureTime), settings.debounce_ms);
   }
   return {
     start,

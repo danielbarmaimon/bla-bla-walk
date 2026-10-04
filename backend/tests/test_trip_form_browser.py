@@ -43,6 +43,8 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
     assert page.locator("#departure-picker").is_hidden()
     page.locator("#calculate-journey").click()
     page.locator(".comparison-card").first.wait_for(state="attached")
+    if page.locator("#destination-input").is_hidden():
+        page.locator("#back-to-plan").click()
     page.locator("#destination-input").fill("New address")
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_disabled()
@@ -59,6 +61,7 @@ def test_departure_mode_change_clears_results_without_calculating(browser_page):
         requests.append(request)
 
     page.on("request", record)
+    page.locator("#back-to-plan").click()
     page.locator("#departure-later").focus()
     page.keyboard.press("Enter")
     assert page.locator("#departure-picker").is_visible()
