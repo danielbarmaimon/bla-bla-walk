@@ -713,7 +713,7 @@
 
 .route-app .map-and-steps {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--poc-steps-width);
+  grid-template-columns: minmax(0, 1fr);
   min-height: var(--poc-map-height);
   flex: 1;
 }
@@ -872,7 +872,7 @@
   font-size: 0.8rem;
 }
 
-.route-app #step-list {
+.route-app #step-list ol {
   margin: var(--space-5) 0;
   padding-left: var(--space-5);
 }
@@ -892,7 +892,8 @@
   font-size: 1rem;
 }
 
-.route-app #step-list li.care-step {
+.route-app #step-list li[data-kind="prompt"],
+.route-app #step-list li[data-kind="amenity"] {
   border-left: 3px solid var(--poc-teal);
   padding-left: var(--space-3);
 }

@@ -91,7 +91,10 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         ".includes('Synthetic browser validation')"
     )
     assert page.locator(".comparison-primary:disabled").count() == 1
-    assert "needs verification" in page.locator(".comparison-card").first.inner_text()
+    assert (
+        "needs verification"
+        in page.locator(".comparison-card").first.inner_text().lower()
+    )
     assert "Recommended" in page.locator(".comparison-card").last.inner_text()
     page.locator(".comparison-primary:not(:disabled)").click()
     assert (
@@ -101,9 +104,11 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         == "true"
     )
     assert page.evaluate("document.activeElement.textContent") == "Chosen route"
-    page.locator(".comparison-card summary").first.click()
+    page.locator("#information-sources").evaluate("e=>e.open=true")
+    page.locator("#comparison-evidence summary").first.click()
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     page.locator("#shade-mode").click()
+    page.locator("#back-to-plan").click()
     page.locator("#information-sources").evaluate("e=>e.open=true")
     page.get_by_text("Advanced comparison settings", exact=True).click()
     page.locator("#shade-detour-limit").select_option("5")

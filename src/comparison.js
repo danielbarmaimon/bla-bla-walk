@@ -36,6 +36,7 @@ function routeMetrics(route, metrics) {
 /** Render T5 comparison evidence without promoting missing evidence to a claim. */
 export function renderTripComparison(container, {
   routes,
+  detailsContainer = null,
   comparison = null,
   preference = 'fastest_overall',
   selectedRouteId,
@@ -44,6 +45,7 @@ export function renderTripComparison(container, {
   onShow = () => {}
 }) {
   container.replaceChildren();
+  detailsContainer?.replaceChildren();
   const view = comparison?.[preference];
   const status = textElement(
     'p',
@@ -64,17 +66,23 @@ export function renderTripComparison(container, {
     const routeStatus = view?.route_statuses?.[route.id] ?? 'comparison pending';
     heading.append(textElement('span', 'route-eligibility', routeStatus.replaceAll('_', ' ')));
     card.append(heading);
-    card.append(routeMetrics(route, view?.metrics?.[route.id]));
+    const sourceCard = detailsContainer ? textElement('section', '', '') : card;
+    if (detailsContainer) {
+      sourceCard.append(textElement('h3', '', route.label));
+      detailsContainer.append(sourceCard);
+      card.append(textElement('p', '', `${metres(route.route.distance_m)} · ${NUMBER.format(route.route.duration_s / 60)} min walking`));
+    }
+    sourceCard.append(routeMetrics(route, view?.metrics?.[route.id]));
 
     if (route.pet) {
-      card.append(textElement(
+      sourceCard.append(textElement(
         'p',
         'comparison-historical',
         `Historical PET · ${metres(route.pet.known_distance_m)} classified · ${metres(route.pet.unknown_distance_m)} unknown · ${route.pet.availability}`
       ));
     }
     const reasons = view?.reasons?.[route.id] ?? [];
-    if (reasons.length) card.append(textElement('p', 'comparison-reasons', `Cannot recommend: ${reasons.join(', ').replaceAll('_', ' ')}.`));
+    if (reasons.length) sourceCard.append(textElement('p', 'comparison-reasons', `Cannot recommend: ${reasons.join(', ').replaceAll('_', ' ')}.`));
 
     const metrics = view?.metrics?.[route.id];
     const samples = metrics?.samples ?? [];
@@ -85,9 +93,9 @@ export function renderTripComparison(container, {
       const list = document.createElement('ul');
       samples.forEach((sample) => list.append(textElement('li', '', `${metres(sample.start_metres)}–${metres(sample.end_metres)}: ${['unknown', 'sunlit', 'shaded', 'night'][sample.state]}. Requested ${sample.requested_time}; effective ${sample.metadata?.effective_time ?? 'unavailable'}; geometry ${sample.metadata?.geometry_version ?? 'unavailable'}; ${sample.model}. ${sample.explanation}`)));
       details.append(list);
-      card.append(details);
+      sourceCard.append(details);
     }
-    if (view?.contributions?.[route.id]) card.append(textElement('p', '', `Weighted contributions: ${Object.entries(view.contributions[route.id]).map(([name, value]) => `${name} ${value.toFixed(3)}`).join(' · ')}`));
+    if (view?.contributions?.[route.id]) sourceCard.append(textElement('p', '', `Weighted contributions: ${Object.entries(view.contributions[route.id]).map(([name, value]) => `${name} ${value.toFixed(3)}`).join(' · ')}`));
     const actions = document.createElement('div');
     actions.className = 'comparison-actions';
     const show = document.createElement('button');

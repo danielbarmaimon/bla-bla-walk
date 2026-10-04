@@ -1,8 +1,8 @@
 # T10 shared prepared-data snapshot
 
 State: done; versioned, offline-installable snapshot prepared on
-`data/t10-shared-shade-snapshot`. Its replacement PR includes the regional fix
-from PR #56, so the combined PR supersedes that preparation-only PR.
+`data/t10-shared-shade-snapshot` in PR #59. It includes the regional fix from
+PR #56, so the combined PR supersedes that preparation-only PR.
 
 Done: committed archive is 41,938,457 bytes (41.9MB), expanding to 71,265,138
 bytes across 254 files: the 17,432 building footprints, building manifest and tile
@@ -38,3 +38,11 @@ its update range included a pre-existing upstream web merge carrying a real-name
 attribution. Publishing this new branch passed the unchanged guard: its range
 excludes commits already on remote branches and checks the new local commits.
 No upstream history was rewritten and no guard was bypassed.
+
+PR synchronization: locally merged the latest main (T30 integration,
+`e018435`) into #59; the merge drivers preserved all decision-log additions and
+there were no unresolved paths. PR #56's exact remote head `087ab52` is an ancestor
+of #59, so #56 has no separate changes to merge and needs no separate conflict
+repair. Formal GitHub approval requires another account: the connected account
+is also the author of both PRs. Conflict repair/review is authorized; no merge
+has been requested in this synchronization step.
