@@ -16,6 +16,8 @@ Implementation and verification are complete; latest main includes the team's ma
 - Live preview returned Fast 1124 m and Recommended 1199 m in 16 seconds, with positive modeled shade and mapped construction-site avoidance. Physical closures, full-walk shade and input gaps remain explicitly unverified.
 - Final backend run: 315 passed. Browser coverage: 64 passed across the full run, final targeted correction and two incoming popup checks; three optional local-fixture/platform checks skipped. Guide/modal and rest-group scenarios passed; screenshot review found no page errors. Formatting, changed-file lint and whitespace checks pass.
 
+- Follow-up: both visible walking paths now carry sensor-temperature gradients using one combined range/palette. Selecting a route preserves both gradients; route badges independently hide their paths. Seven gradient/badge/guide browser checks pass, including shared normalization, click details and palette changes. Browser formatting, changed-test lint and whitespace checks pass.
+
 ## Next
 Refresh http://127.0.0.1:8001/?mode=online to use the guide. Review the verified branch before merging this follow-up work. Privacy and strict documentation checks passed.
 

@@ -521,20 +521,26 @@ export function createMap(
         (stopSources.get(stopKind) ?? contextFeatures).addFeature(marker);
       });
     },
-    setTemperatureProfile: (route, profile, colours, visible) => {
+    setTemperatureProfiles: (profiles, visible) => {
       temperatureFeatures.clear();
       temperatureLayer.setVisible(visible);
-      if (!route || !visible) return;
-      profile.segments.forEach((sample, index) => {
+      if (!visible) return;
+      profiles.forEach(({
+        id,
+        route,
+        profile,
+        colours
+      }) => profile.segments.forEach((sample, index) => {
         const middle = route.coordinates.filter((_, vertex) => route.cumulative[vertex] / route.length > sample.start && route.cumulative[vertex] / route.length < sample.end);
         const coordinates = [coordinateAtFraction(route, sample.start), ...middle, coordinateAtFraction(route, sample.end)];
         const feature = new Feature({
           geometry: new window.ol.geom.LineString(coordinates.map(point => fromLonLat(point)))
         });
         feature.set('temperatureColour', colours[index]);
+        feature.set('temperatureRouteId', id);
         feature.set('temperatureSample', sample.estimate);
         temperatureFeatures.addFeature(feature);
-      });
+      }));
     },
     setPicking: (kind, callback) => {
       picking = kind ? {

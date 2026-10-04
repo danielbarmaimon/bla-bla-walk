@@ -523,7 +523,10 @@ function renderJourney() {
   const visible = visibleRouteIds(routes(), recommendedRouteId(), badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
   if (route && ![fastestRoute()?.id, recommendedRouteId()].includes(route.id)) visible.push(route.id);
   map.setRouteVisibility(visible);
-  temperatureView?.render(state.route, visible.includes(route?.id));
+  temperatureView?.render(routes().filter(item => visible.includes(item.id)).map(item => ({
+    id: item.id,
+    route: routeGeometry(item.geometry.coordinates)
+  })));
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
