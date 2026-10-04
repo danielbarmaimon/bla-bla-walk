@@ -65,6 +65,7 @@
           <button id="calculate-journey" class="primary-button" type="button" disabled>Calculate</button>
           <button id="cancel-journey" class="text-button" type="button" hidden>Cancel</button>
           <p id="trip-status" role="status" aria-live="polite">Choose your start and destination.</p>
+          <section id="preparation-tips" hidden aria-label="While your route is calculated"><h2>Prepare for your walk</h2><ul id="trip-tips"></ul></section>
           <section class="selected-journey" id="selected-journey" aria-live="polite" hidden>
             <div class="journey-card-heading"><span class="journey-tag">WALKING OPTIONS</span><span id="journey-mode"></span></div>
             <h2 id="journey-title"></h2><p id="journey-summary"></p>
@@ -72,12 +73,13 @@
           <fieldset class="route-mode">
             <legend>Compare routes</legend>
             <div class="segmented">
-              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="clock" aria-hidden="true"></span>Fastest overall</button>
-              <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>More shade</button>
-            <button id="balanced-mode" type="button" aria-pressed="false">Balanced</button></div>
+              <button id="fast-mode" type="button" aria-pressed="true"><span data-icon="fast-forward" aria-hidden="true"></span>Fast</button>
+              <button id="shade-mode" type="button" aria-pressed="false"><span data-icon="trees" aria-hidden="true"></span>Recommended</button>
+            </div>
             <p class="helper" id="preference-note">Fastest uses the checked walking duration. Current shade is not yet calculated; compare the available routes manually.</p>
           </fieldset>
             <p class="comparison-control-status" id="comparison-control-status" role="status">Choose a departure and calculate.</p>
+            <p id="route-role-status" role="status"></p>
             <div id="route-options" class="route-options"></div>
           </section>
 
@@ -118,7 +120,7 @@
             </div>
             <aside class="steps" aria-labelledby="steps-title">
               <div class="steps-head"><p class="kicker">STEP BY STEP</p><h2 id="steps-title">Your journey</h2><p id="steps-summary">Choose a destination to compare routes.</p></div>
-              <ol id="step-list"></ol>
+              <div id="step-list"></div>
               <details class="nearby-details" id="nearby-details" hidden><summary id="nearby-summary">Nearby source points</summary><ul id="nearby-list"></ul></details>
               <details class="nearby-details" id="interior-list-section" hidden><summary>Supermarkets</summary><ul id="interior-list"></ul></details>
             </aside>
@@ -132,7 +134,10 @@
           <p class="helper">Online address search: © swisstopo. Queries are sent to geo.admin.ch; this app does not save them. Offline: use map pins or sample places.</p>
             <p class="helper">Online walking routes send endpoint coordinates to FOSSGIS, whose service logs requests. © OpenStreetMap contributors · Routing by OSRM (FOSSGIS). <a href="https://www.openstreetmap.org/fixthemap" target="_blank" rel="noopener noreferrer">Fix the map</a></p>
             <p class="helper">Times use your device’s local timezone. No planned stops are included; rest cues are optional and unverified.</p>
-<details><summary>Advanced comparison settings</summary>              <div class="detour-control">
+<section id="comparison-evidence" aria-label="Route calculation evidence"></section>
+        <section><h3>Preparation advice</h3><div id="tip-sources"></div></section>
+        <p id="construction-status">Construction avoidance unavailable: current project records do not confirm pedestrian closures. Closed edges are not automatically avoided; access remains unknown.</p>
+        <details><summary>Advanced comparison settings</summary><button id="balanced-mode" type="button" aria-pressed="false">Balanced</button>              <div class="detour-control">
                 <label for="shade-detour-limit">More shade extra-time limit</label>
                 <select id="shade-detour-limit" aria-describedby="comparison-control-status">
                   <option value="none">No extra limit</option>
@@ -151,7 +156,7 @@
         <label>Temperature palette <select id="temperature-palette"><option value="auto">Automatic</option><option value="summer">Summer</option><option value="winter">Winter</option></select></label>
         <div id="temperature-legend" aria-live="polite">Loading real sensor readings…</div>
         <p>Temperature colours cover shade strokes on the selected route. Turn Temperature off to inspect Shading. Dotted grey indicates insufficient sensor coverage. Air temperature, shade and historical PET are separate evidence.</p>
-        <p>Shading remains experimental and is off by default; its repair is deferred. Landmarks use only the saved demonstration route. Rest markers are planned prompts every 15 minutes of walking, not verified seating. Stop icons are projected onto the route; source locations and off-route distances remain in the details.</p>
+        <p>Shading uses a building-only flat-ground approximation when prepared inputs are available; it is off by default. Incomplete building inputs withhold shade and recommendations. Tree/terrain shadows and physical accuracy remain unvalidated. Landmarks and shadow-area overlays are omitted pending checked handoffs. Rest markers are planned prompts every 15 minutes of walking, not verified seating. Stop icons are projected onto the route; source locations and off-route distances remain in the details.</p>
         <p id="interior-status">Interior space uses only supermarkets with interpretable mapped opening hours at the selected departure. Opening, access and cooling are not live-verified; unknown schedules are withheld.</p>
         <p id="layer-note">Source layers retain their own provenance and freshness.</p>
         <div id="layers"></div><div id="route-step-notes"></div>
