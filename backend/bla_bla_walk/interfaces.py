@@ -31,10 +31,18 @@ class ContractModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ForecastHour(ContractModel):
+    """Instant forecast temperature at one time; UTC avoids DST wall-time ambiguity."""
+
+    valid_time: AwareDatetime
+    temperature_c: Annotated[float, Field(allow_inf_nan=False)] | None
+
+
 class PaletteForecast(ContractModel):
-    """Basel daily mean forecast for palette selection, never route observations."""
+    """Fixed Basel daily palette means and hourly arrival-time context."""
 
     days: dict[date, Annotated[float, Field(allow_inf_nan=False)]]
+    hours: list[ForecastHour] = Field(default_factory=list)
     availability: Availability
     provenance: Provenance | None = None
 

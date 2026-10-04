@@ -723,6 +723,104 @@
   min-width: 0;
 }
 
+.route-app .route-node-card {
+  position: absolute;
+  z-index: 4;
+  width: min(15rem, calc(100% - 1rem));
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  box-shadow: 0 2px 12px var(--poc-shadow);
+  font-size: 0.875rem;
+}
+
+.route-app .route-node-card[hidden] {
+  display: none;
+}
+
+.route-app .route-node-targets {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.route-app .route-node-target {
+  position: absolute;
+  width: 4rem;
+  height: 4rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  appearance: none;
+  outline: none;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.route-app .route-node-target[hidden] {
+  display: none;
+}
+
+.route-app .route-node-card h3 {
+  margin: 0 0 var(--space-2);
+  font-size: 1rem;
+}
+
+.route-app .route-node-card dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.route-app .route-node-card dt {
+  color: var(--text-muted);
+}
+
+.route-app .route-node-card dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.route-app .route-node-temperature-value {
+  white-space: nowrap;
+}
+
+.route-app #route-node-control {
+  margin: var(--space-3) 0;
+}
+
+.route-app #route-node-control[hidden] {
+  display: none;
+}
+
+.route-app .route-node-slider-label {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.route-app .route-node-slider-label input {
+  width: 100%;
+  min-height: 2rem;
+  accent-color: var(--accent);
+}
+
+.route-app .route-node-help {
+  margin: var(--space-1) 0 0;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
 .route-app #map {
   height: 100%;
   min-height: var(--poc-map-height);

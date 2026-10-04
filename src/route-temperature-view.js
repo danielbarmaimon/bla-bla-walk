@@ -9,12 +9,13 @@ import {
 } from './layer-badges.js';
 
 const $ = selector => document.querySelector(selector);
-const baselDay = () => new Intl.DateTimeFormat('en-CA', {
+const baselDate = date => new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Zurich',
   year: 'numeric',
   month: '2-digit',
   day: '2-digit'
-}).format(new Date());
+}).format(date);
+const baselDay = () => baselDate(new Date());
 
 export function chooseTemperaturePalette(profile, forecast, settings, day, choice = 'auto', today = baselDay()) {
   if (choice !== 'auto') return {
@@ -41,6 +42,26 @@ export function chooseTemperaturePalette(profile, forecast, settings, day, choic
   };
 }
 
+export function nearestForecastHour(forecast, arrivalTime) {
+  if (forecast?.availability !== 'current' || !(arrivalTime instanceof Date) ||
+    !Number.isFinite(arrivalTime.getTime())) return null;
+  let nearest = null;
+  let nearestDifference = 30 * 60 * 1000;
+  for (const hour of forecast.hours ?? []) {
+    const timestamp = Date.parse(hour.valid_time);
+    if (!Number.isFinite(timestamp) || !Number.isFinite(hour.temperature_c)) continue;
+    const difference = Math.abs(timestamp - arrivalTime.getTime());
+    if (difference <= nearestDifference) {
+      nearest = {
+        value: hour.temperature_c,
+        validTime: new Date(timestamp)
+      };
+      nearestDifference = difference;
+    }
+  }
+  return nearest;
+}
+
 export async function routeTemperatureView(map, mode, onUpdate, onSensors = () => {}) {
   const settings = await fetch('/config/route-temperature.json').then(reply => reply.json());
   let layer = null,
@@ -48,6 +69,19 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
     loading = true,
     forecastRequested = false;
   let validation = null;
+
+  function requestForecast() {
+    if (forecastRequested) return;
+    forecastRequested = true;
+    fetch(`/api/palette-forecast?mode=${encodeURIComponent(mode)}`).then(reply => {
+      if (!reply.ok) throw new Error('Forecast unavailable');
+      return reply.json();
+    }).then(data => {
+      forecast = data;
+    }).catch(() => {
+      forecast = null;
+    }).finally(onUpdate);
+  }
   const theme = getComputedStyle(document.documentElement);
   const colour = name => theme.getPropertyValue(`--temperature-${name}`).trim();
   const palettes = {
@@ -70,7 +104,7 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
   $('#temperature-palette').addEventListener('change', onUpdate);
 
   return {
-    render(routes) {
+    render(routes, selectedRouteId) {
       const profiles = routes.map(({
         id,
         route
@@ -82,14 +116,7 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
       const profile = combinedTemperatureProfile(profiles.map(item => item.profile), settings);
       const day = $('#departure-time').value.slice(0, 10) || baselDay();
       const choice = $('#temperature-palette').value;
-      if (choice === 'auto' && (!profile.coverage || profile.stale || day !== baselDay()) && !loading && !forecastRequested) {
-        forecastRequested = true;
-        fetch(`/api/palette-forecast?mode=${encodeURIComponent(mode)}`).then(reply => reply.json()).then(data => {
-          forecast = data;
-        }).catch(() => {
-          forecast = null;
-        }).finally(onUpdate);
-      }
+      if (routes.length) requestForecast();
       const selected = chooseTemperaturePalette(profile, forecast, settings, day, choice);
       const palette = palettes[selected.name];
       const visible = badgeActive('#temperature-route-toggle');
@@ -133,9 +160,19 @@ export async function routeTemperatureView(map, mode, onUpdate, onSensors = () =
       if (forecast?.provenance) {
         const link = document.createElement('a');
         link.href = forecast.provenance.source_url;
-        link.textContent = `Weather data by Open-Meteo · CC BY 4.0 · palette only · retrieved ${forecast.provenance.retrieved_at}`;
+        link.textContent = `${forecast.availability === 'stale' ? 'Saved ' : ''}Weather data by Open-Meteo · CC BY 4.0 · fixed Basel point · retrieved ${forecast.provenance.retrieved_at}`;
         legend.append(link);
       }
+      return profiles.find(item => item.id === selectedRouteId)?.profile ?? null;
+    },
+    forecastForArrival(date) {
+      if (!(date instanceof Date) || !Number.isFinite(date.getTime())) return null;
+      const nearest = nearestForecastHour(forecast, date);
+      return {
+        value: nearest?.value ?? null,
+        validTime: nearest?.validTime ?? null,
+        availability: forecast?.availability ?? 'missing'
+      };
     }
   };
 }
