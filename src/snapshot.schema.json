@@ -204,6 +204,17 @@
           ],
           "default": null,
           "title": "Opening Hours"
+        },
+        "directions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WalkingDirections"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -531,6 +542,135 @@
         "resolution_m"
       ],
       "title": "ShadeMetadata",
+      "type": "object"
+    },
+    "WalkingDirections": {
+      "additionalProperties": false,
+      "description": "Complete ordered provider steps bound to the containing geometry ID.",
+      "properties": {
+        "route_id": {
+          "title": "Route Id",
+          "type": "string"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/WalkingInstruction"
+          },
+          "minItems": 2,
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "route_id",
+        "steps"
+      ],
+      "title": "WalkingDirections",
+      "type": "object"
+    },
+    "WalkingInstruction": {
+      "additionalProperties": false,
+      "description": "Provider maneuver at cumulative route metres; no inferred turns.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "start",
+            "turn",
+            "continue",
+            "arrive"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "location": {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "maximum": 180,
+              "minimum": -180,
+              "type": "number"
+            },
+            {
+              "maximum": 90,
+              "minimum": -90,
+              "type": "number"
+            }
+          ],
+          "title": "Location",
+          "type": "array"
+        },
+        "at_metres": {
+          "minimum": 0,
+          "title": "At Metres",
+          "type": "number"
+        },
+        "distance_m": {
+          "minimum": 0,
+          "title": "Distance M",
+          "type": "number"
+        },
+        "duration_s": {
+          "minimum": 0,
+          "title": "Duration S",
+          "type": "number"
+        },
+        "maneuver_type": {
+          "title": "Maneuver Type",
+          "type": "string"
+        },
+        "modifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modifier"
+        },
+        "street_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Street Name"
+        },
+        "exit": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exit"
+        }
+      },
+      "required": [
+        "kind",
+        "text",
+        "location",
+        "at_metres",
+        "distance_m",
+        "duration_s",
+        "maneuver_type"
+      ],
+      "title": "WalkingInstruction",
       "type": "object"
     }
   },

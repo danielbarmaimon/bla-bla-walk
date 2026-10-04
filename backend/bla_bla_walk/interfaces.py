@@ -213,6 +213,28 @@ class PetRouteMetrics(ContractModel):
     provenance: Provenance
 
 
+class WalkingInstruction(ContractModel):
+    """Provider maneuver at cumulative route metres; no inferred turns."""
+
+    kind: Literal["start", "turn", "continue", "arrive"]
+    text: str
+    location: Position
+    at_metres: Annotated[float, Field(ge=0, allow_inf_nan=False)]
+    distance_m: Annotated[float, Field(ge=0, allow_inf_nan=False)]
+    duration_s: Annotated[float, Field(ge=0, allow_inf_nan=False)]
+    maneuver_type: str
+    modifier: str | None = None
+    street_name: str | None = None
+    exit: Annotated[int, Field(gt=0)] | None = None
+
+
+class WalkingDirections(ContractModel):
+    """Complete ordered provider steps bound to the containing geometry ID."""
+
+    route_id: str
+    steps: list[WalkingInstruction] = Field(min_length=2)
+
+
 class MapFeature(ContractModel):
     """One display feature, with explicit evidence and unknown values."""
 
@@ -233,6 +255,7 @@ class MapFeature(ContractModel):
     pet: PetRouteMetrics | None = None
     rest_type: Literal["bench", "park", "indoor"] | None = None
     opening_hours: str | None = None
+    directions: WalkingDirections | None = None
 
 
 class MapLayer(ContractModel):
