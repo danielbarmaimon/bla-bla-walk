@@ -1,6 +1,7 @@
 {
   "route_buffer_metres": 150,
   "max_markers": 20,
+  "search_reference_id": "barfuesserplatz",
   "layer_z_index": 8,
   "icon_scale": 1,
   "known_places_checked_at": "2026-10-03",

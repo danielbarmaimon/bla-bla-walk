@@ -5,7 +5,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from bla_bla_walk.building_shade import model_grids
 from bla_bla_walk.shade import NIGHT, SHADED, SUNLIT, UNKNOWN, shadow_mask
 
