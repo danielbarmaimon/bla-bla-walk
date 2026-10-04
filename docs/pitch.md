@@ -1,131 +1,107 @@
-# Bla Bla Walk — English presenter script
+# Bla Bla Walk — English five-minute solution pitch
 
-Target: exactly **5:00 solution + 0:42 HackAmRhein reflection**. Use the timer in
-the local distribution described in [the runbook](demo.md). The timetable is a
-delivery target, not proof of spoken duration. Presenter rehearsals remain pending.
-Speaker and clicker: team to assign by GitHub username; one person may do both.
+**Run time:** 5:00 solution, then a separate 0:42 HackAmRhein reflection (5:00–5:42). The seven solution beats below stay in the requested order and total 300 seconds. Timings are targets, not rehearsal evidence.
 
-## 0:00–0:55 — The moment it hurts
+**Speaker / clicker:** pending. Use GitHub usernames in shared material. One person may do both. The guaranteed presentation path is the tested local saved-summary page at `.hack/t31-fallback/index.html`; it needs no server or internet.
 
-Let me start with Bjarki. He is 80 years old, and every year he drives from his
-home to Iceland. The journey takes two weeks. Not because he is slow, but because
-he chooses the alternative route: small villages, new places, and time to enjoy
-the journey.
+## 1 · Create Curiosity — 0:00–0:45 · moderate · target 60 words
 
-That is a useful way to think about walking in summer. An older person going out
-to shop may not need the fastest route. They may prefer a path with shade, a bench
-and a fountain; a route that avoids a construction site and long stretches of
-direct sun. A standard navigator optimises arrival time. It does not explain those
-tradeoffs or tell us what remains unknown.
+**Cue:** Start timer. Keep the saved page on its title. Hold one beat before the last question.
 
-Bla Bla Walk helps people choose the kind of journey they actually want. Bjarki's
-story is our framing story; the Basel SBB to Marktplatz walk is our checked demo
-scenario, not a claim that we interviewed him.
+Imagine leaving Basel SBB for Marktplatz on a warm afternoon. It is an ordinary city walk, the kind of trip a map can make look settled in one line. But what does that line actually know about the ground ahead? We will stay with this one walk and see what its route evidence can really support. And what should the map say when the answer is missing?
 
-## 0:55–1:35 — What we built
+**Click:** none. **Pause:** 2 seconds after “missing?”
 
-We built a browser map served by a Python backend. It brings together timestamped
-temperature observations, fountain locations, two saved walking alternatives,
-and a time-dependent building-shadow approximation.
+## 2 · Create Tension — 0:45–1:30 · slow · target 64 words
 
-The comparison has Fastest overall, More shade and manual inspection. A five-minute
-extra-time limit expresses a preference. It does not establish a health threshold.
-We keep distance, time, shaded metres and unknown metres visible. The most useful
-result can be an honest refusal to recommend a route when the evidence is incomplete.
+**Cue:** Stay with the route; do not reveal the result yet. Slow down on “choice.”
 
-## 1:35–3:15 — Demonstration
+For someone planning around heat, a route is more than a line between two pins. A neat colour can sound certain even when its evidence is old, incomplete or only an estimate. A colour alone cannot show whether it comes from an observation, an estimate or a gap. If the map hides that uncertainty, the person loses the chance to make their own choice. This is an illustrative situation, not a user interview or a safety claim.
 
-Clicker: open the local offline map, already at 125% zoom. Show SBB to Marktplatz,
-inspect one source timestamp and one fountain's unknown operational status. Do not
-start a cold calculation on stage. At 2:10 switch to the saved-result page.
+**Click:** none. **Pause:** 2 seconds before the next beat.
 
-This map is running on this computer. Offline provider observations are saved;
-they are not live measurements. Here is the source time, and here is what we do
-not know about the fountain. A point on the map does not prove drinking water is
-available when someone arrives.
+## 3 · Specific Moment — 1:30–3:00 · slow · target 120 words, with 20–25 seconds for the page
 
-Now we are showing **saved output**, calculated for 3 October 2026 at 14:00 Basel
-time. This page is not recalculating shade. Both alternatives contain substantial
-unknown distance. Route A has about 158 metres of modelled building shade and
-1,152 metres unknown; route B has about 108 metres modelled shade and 1,197 metres
-unknown. Unknown is not sunlight, shade or safe access.
+**Clicker:** Open the local saved-summary page. Point to its date and “not live” label; then the two route rows; finish on “Access: Unknown” and the no-eligible-route note.
 
-Both routes have unknown access, so the system withholds a recommendation. We can
-inspect their evidence, but cannot present either as an eligible verified journey.
-Changing departure time in the app requests a new calculation; it does not update
-this saved page. A cold calculation took about fourteen minutes in our recorded
-local run, so this dated fallback protects the presentation from that delay.
+Here is the recorded Basel SBB to Marktplatz result. It is a saved summary of a local calculation for 3 October 2026 at 14:00 Basel time, not a live reading or a new calculation. Route A has 158.475 metres of modelled building shade and 1,151.620 metres unknown. Route B has 107.680 metres of modelled building shade and 1,196.889 metres unknown. The route samples took 827.833 seconds in the recorded run. Both routes have unknown access, so the planner withholds a recommendation. Unknown distance is not silently called sun, shade or safe. The app combines route geometry with timed local solar calculations and prepared building footprints; missing coverage remains unknown. This is interesting because the honest result is not a winner. It is a clear view of what the evidence can and cannot support.
 
-If the app fails: use the same saved page immediately and say, “The local app is
-unavailable. This is dated saved output, not a live calculation.”
+**Clicker:** Do not start calculation or open another route. Let the audience read the table for 3 seconds.
 
-## 3:15–4:10 — How it works and what is interesting
+## 4 · Change Pace — 3:00–3:30 · variable · target 43 words
 
-The backend samples the saved route at the time a walker is expected to reach each
-point. Local solar calculations and prepared building geometry estimate shadows.
-This is a flat-ground building approximation: trees and terrain relief do not
-cast shadows in this model. Missing inputs stay unknown.
+**Speaker:** Slow for the first sentence; speed up the setup at the end.
 
-Completed evidence can be rescored without repeating the shadow calculations.
-Restrictions remain outside preference weights. You cannot make an unknown-access
-route eligible simply by giving shade a higher weight.
+Look at the large unknown column. **[Pause 2 seconds.]** That is not a blank to paint over. In the broader app, station readings stay distinct from estimates along the route; mapped water and rest candidates keep their access and operation unknown. Each layer answers a different question.
 
-Our interesting design choice is preserving different kinds of evidence:
-an observed temperature, a historical summer heat scenario, an approximate shadow,
-and an unknown access condition are different things. Combining them on a map
-must not make them look equally certain.
+**Clicker:** Keep the saved table visible.
 
-## 4:10–5:00 — Sources, limits and next step
+## 5 · Unexpected Twist — 3:30–4:00 · quick · target 46 words
 
-Basel-Stadt data uses CC BY attribution; observations credit meteoblue, and
-fountain locations credit IWB under noncommercial terms. Walking geometry and
-building footprints credit OpenStreetMap contributors under ODbL and OSRM routing.
-Survey heights credit swisstopo under its open-data terms. Our source register
-contains the detailed versions and obligations.
+The surprise is that Bla Bla Walk does not pick the route with more modelled shade. It refuses to call either one eligible because access is unknown. Turning up a preference for shade cannot repair missing access evidence. Here, a useful answer is a boundary, not a winner. The choice stays with the walker; the tool marks where its evidence ends.
 
-OpenLayers, FastAPI and Rasterio support the implementation. Codex assisted with
-code, tests, documentation and this script. Numerical and browser checks establish
-software behaviour, not measured cooling, physical shade accuracy or route safety.
+**Cue:** Deliver “not a winner” crisply; no click.
 
-Transit and the proposed phone service are not available here. Online address
-search and street-route geometry now work for selected Basel endpoints; shade
-comparison remains limited to the saved example. The PET layer is a historical
-scenario, not current temperature.
-Our next step is field validation of shade and access, followed by user testing
-and performance work. Today we demonstrate transparent evidence and uncertainty,
-not a finished navigation or health service.
+## 6 · Personal Story — 4:00–4:30 · slow · target 42 words
 
-At 5:00 stop the solution, even if a sentence was skipped; move to reflection.
+**Presenter fill-in — keep private; do not add personal details to committed material.** If you have a true, non-identifying experience, replace this beat with one sentence in your own words. Otherwise say:
 
-## 5:00–5:42 — Team reflection draft: confirm before presenting
+This is an illustrative situation, not my personal testimony: a person should be able to decide what matters on their walk, while seeing what the map does not know. **[Pause 2 seconds.]** That is the human reason to keep uncertainty visible.
 
-The following reflects documented technical work. The team must confirm it matches
-their experience or replace it with their own lesson; do not invent personal feelings.
+## 7 · Land the Takeaway — 4:30–5:00 · punchy · target 44 words
 
-“One lesson from building Bla Bla Walk was that getting data onto a map is only
-the beginning. We had to ask what each source actually proves. A fountain location
-does not prove usable water, and a shadow calculation does not prove a safe walk.
-The calculation time also changed our demo plan: we needed an honest saved fallback.
-What we want to remember is that making uncertainty visible is itself useful.
-That is a principle we want to carry into the next version.”
+**Speaker:** Look up from the screen. Leave the final sentence alone, then stop the solution at exactly 5:00.
 
-Aim for approximately 124 words per minute during reflection; use pauses and stop
-at 5:42. Only timed spoken rehearsal can establish the final delivery duration.
+Bla Bla Walk is a prototype for making route evidence and its gaps visible. The route remains the person’s choice. A line can guide; evidence should set its limits. **[Pause.]** Show the unknown; leave the choice with the walker.
 
-## Jury answers — outside the 5:42
+**Clicker:** At 5:00, switch to the reflection cue. Do not extend the solution to finish a missed line.
 
-| Question | Short evidence-based answer |
+## 5:00–5:42 · HackAmRhein reflection · separate from the seven beats
+
+**Target:** about 70 words; the team should confirm it reflects its experience. Do not present this as a personal feeling unless the speaker agrees.
+
+We learned that putting data on a map is only the start; we had to ask what each source actually proves. What surprised us was how much distance stayed unknown, even after a detailed calculation. The slow calculation also changed our demo: a dated saved summary became essential. We want to remember that uncertainty can be useful information. It helps people see where evidence ends and where their own choice begins.
+
+## Word budget and rehearsal status
+
+| Beat | Target time | Draft word budget | Delivery allowance |
+|---|---:|---:|---|
+| 1. Create Curiosity | 45 s | ~65 | 2 s pause |
+| 2. Create Tension | 45 s | ~76 | 2 s pause |
+| 3. Specific Moment | 90 s | ~120 | 20–25 s page actions and reading pause |
+| 4. Change Pace | 30 s | ~58 | 2 s pause |
+| 5. Unexpected Twist | 30 s | ~61 | crisp delivery |
+| 6. Personal Story | 30 s | ~42 | 2 s pause |
+| 7. Land Takeaway | 30 s | ~40 | final pause and slide change |
+| **Solution total** | **300 s** | **~474** | pacing/click budget is provisional |
+| Reflection | 42 s | ~70 | outside the 300 s |
+
+These are planning estimates at roughly 105–115 spoken words per minute plus about 30–40 seconds for pauses and demo actions. The presenter’s rate and click delays have not been measured. Spoken rehearsals are pending; after run one, trim to the measured timings without changing beat order or the 300-second solution budget.
+
+## Minimal slide outline
+
+1. **One Basel walk, one unanswered question** — curiosity and tension; no claims about a real participant.
+2. **SBB → Marktplatz, saved result** — the tested local summary table and its “not live” date label.
+3. **What the evidence says / leaves unknown** — modelled building shade, unknown distance/access, withheld recommendation.
+4. **Takeaway + sources and limits** — “Show the unknown; leave the choice with the walker.” Persistent concise credits/limits; full detail in `docs/SOURCES.md`.
+5. **HackAmRhein reflection** — separate 42-second ending.
+
+## Visible credits and limits
+
+Basel-Stadt and meteoblue: CC BY 4.0; © OpenStreetMap contributors: ODbL 1.0; IWB fountain data: noncommercial terms; swisstopo: open-data terms. Full attribution and versions are in `docs/SOURCES.md`. OpenLayers, FastAPI, Rasterio and AJV are used under their listed open-source licences. Codex assisted with code, checks, documentation and this script.
+
+Station readings are measurements at stations; route colours are interpolated estimates, not street-level measurements. This fallback contains dated saved model output, not live data. Fixture mode is synthetic. The shadow is a building-only, flat-ground approximation: trees and terrain relief are omitted. Water availability, physical shade accuracy, overall safety and pedestrian access are not verified. Transit is unavailable; new online route geometry does not have the saved-pair shade comparison. Historical PET is a fixed summer scenario, not current temperature.
+
+## Likely jury questions
+
+| Question | Short answer |
 |---|---|
-| Who is it for; what do they do now? | People affected by heat and caregivers; separate navigation and water/shade checks are our scenario assumption, awaiting interviews. |
-| What is real, saved or synthetic? | Admitted provider data and saved OSM routes are real inputs; this fallback is a dated real calculation. Fixture mode is synthetic and must be labelled. |
-| What did you fake? | We did not verify access or physical shade. Phone service and transit are proposals, not working services. |
-| Can you use the data? | See the source register: CC BY, ODbL, swisstopo terms and IWB noncommercial restrictions; commercial fountain reuse needs permission. |
-| Why no winning route? | Unknown access makes both routes ineligible; preferences cannot override missing access evidence. |
-| Does more shade mean cooler or safe? | We have no measured cooling or personalised safety validation; it is a bounded building-shadow approximation. |
-| Does it work offline? | A recorded local run completed 248 samples with zero external HTTP attempts; missing downloads remain explicit. External hosting is untested. |
-| What would production take or cost? | Field and user validation, access evidence, service operations and performance budgets; production cost has not been established. |
-| What was technically difficult? | Preserving unknowns and source/model times across geometry, scoring and the screen; cold route calculation remains slow. |
-| What did each person contribute? | Each contributor answers for themselves using their GitHub username and actual work; do not assign contributions from slot suggestions. |
-
-See [SOURCES.md](SOURCES.md) for licences and provenance; see [demo.md](demo.md)
-for rehearsal records, local files, fallback checks and event logistics.
+| Who would use it, and what do they do today? | People planning walks around heat, and caregivers, are our intended users. Separate navigation and shade/water checks are a scenario assumption; user interviews are still needed. |
+| What is real, saved, measured, estimated or synthetic? | The shown route output is a dated saved calculation. Sensor values begin as station observations; route colours are interpolated. Fixture mode is synthetic. |
+| What did you fake? | This fallback is a saved summary, not live output. We have not verified physical shade, pedestrian access, water operation or safety. |
+| Where does the data come from, and can you use it? | The source register lists Basel-Stadt, meteoblue, OSM, IWB and swisstopo terms. IWB's current terms are noncommercial; other attribution details remain visible there. |
+| Why is there no recommended route? | Both saved routes have unknown access; preferences cannot make missing access evidence known. |
+| Does more shade mean cooler or safer? | No. Shadow is a building-only flat-ground approximation; cooling, physical accuracy and personal safety are unvalidated. |
+| What would production take? | Field checks for shade/access, user testing, reliable source operations and performance work. Production cost and regulatory requirements have not been assessed. |
+| What was hardest? | Keeping source time, model output and unknown coverage distinct from one another. |
+| What did each person contribute? | Each contributor should answer for themselves using their GitHub username and actual work; do not infer contributions from task lanes. |

@@ -1,32 +1,47 @@
-# T7 — Slot F local demo preparation
+# T7 — English five-minute pitch checkpoint
 
-Status: presentation checkpoint prepared; presenter acceptance pending.
-Branch: feat/t7-demo-fallback. Language: English.
+Status: script and local fallback prepared; human delivery acceptance pending.
+Branch: `docs/seven-beat-pitch`. No external deployment.
 
 ## State
 
-User authorized a local presentation instead of an external URL. T6 local code
-and real offline evidence are merged through main 4e28b71; external-server
-acceptance remains unverified. No active T7 handoff existed at start.
+The seven-beat solution pitch is exactly 300 seconds on paper, followed by the
+separate 42-second HackAmRhein reflection. Speaker/clicker, personal story and
+two spoken rehearsals remain pending. No submission receipt is available.
 
 ## Done
 
-- English 5:00 solution + 0:42 reflection draft, jury answers, sources and limits.
-- Local distribution builder creates dist/t7 and dist/t7-backup from the real
-  dated T6 output; both copies remain ignored and retain original saved JSON.
-- Standalone offline HTML provides presentation outline, saved-result table,
-  exact section-boundary timer, limits and credits. It is not an app installation.
-- Runbook includes failure procedure and the supplied Sunday submission/venue times.
-- No live recalculation, spoken rehearsal or submission completion is claimed.
-- Chrome opened both distribution files directly from disk: real-result rows,
-  all local links, timer start/reset, 5:00 reflection and 5:42 stop passed;
-  zero external requests and no browser errors. Boundary checks used simulated
-  elapsed time, not spoken rehearsals. Python lint and formatting passed.
+- Replaced the older three/five-minute-shaped script with the requested seven
+  beats in order, plus a clearly illustrative scenario and private presenter
+  fill-in; no invented testimony, users or statistics.
+- Recorded the actual local smoke-check: app root 200; fixture API 200 with
+  synthetic observations/fountain; offline map API 503 because the saved
+  provider snapshot is absent in this checkout.
+- Restored a local-only fallback summary at `.hack/t31-fallback/index.html`
+  from exact route values in merged `handoff/t6-integration.md`. It says saved,
+  dated and not live; it states that the original raw JSON is absent. It makes
+  no provider requests and is ignored by Git.
+- Browser fallback acceptance passed: two rows, saved/not-live label, no
+  external requests. This is technical fallback verification, not a spoken
+  rehearsal.
+- Updated `docs/pitch.md` and `docs/demo.md` with the 5:42 cues, word budgets,
+  source/limit notes, likely jury answers, verified setup, failure route and
+  rehearsal log. Existing event details and pending submission status retained.
+
+## Checks
+
+- Local app: `/` HTTP 200; `/api/map?mode=fixture` HTTP 200; `/api/map?mode=offline`
+  HTTP 503 with `Saved provider snapshot unavailable; run offline preparation`.
+- `PYTHONPATH=backend CHROMIUM_PATH=/usr/bin/chromium .venv/bin/python -m pytest
+  -c backend/pyproject.toml backend/tests/test_trip_acceptance_browser.py -k
+  saved_fallback` — 1 passed after matching the existing expected label.
+- No human timed rehearsal was performed. The required run 1/run 2 remain open.
 
 ## Next
 
-Confirm speaker/clicker GitHub usernames and the team's reflection. Rehearse with
-the presenters twice using the timer; record actual 5:00 + 0:42 timings and trim
-after run 1. Regenerate after edits. Copy the backup folder to removable storage.
-Verify the submission form receipt before 14:59 Sunday 4 October 2026.
-Only then mark full T7 acceptance complete. Keep docs/plan.md unchanged.
+Confirm the speaker and clicker, and supply one true non-identifying story if
+available. Have the human presenters rehearse the entire 5:42 twice, record real
+times, and trim only after run 1 without changing the beat order or 300-second
+solution budget. Confirm the team reflection and submission receipt. The
+documented fallback is ready locally; do not mark full T7 acceptance complete
+until spoken rehearsals and event submission confirmation are evidenced.
