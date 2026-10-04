@@ -258,11 +258,18 @@ export function createMap(
   function preparePopup(label) {
     stopMenu.replaceChildren();
     stopMenu.setAttribute('aria-label', label);
+    const header = document.createElement('div');
+    header.className = 'map-popup-header';
+    const title = document.createElement('strong');
+    title.textContent = label;
     const close = document.createElement('button');
     close.type = 'button';
-    close.textContent = 'Close';
+    close.className = 'map-popup-close';
+    close.setAttribute('aria-label', 'Close popup');
+    close.textContent = '×';
     close.onclick = closePopup;
-    stopMenu.append(close);
+    header.append(title, close);
+    stopMenu.append(header);
   }
 
   function openPopup(coordinate) {
@@ -276,9 +283,6 @@ export function createMap(
   function inspectFeature(feature, coordinate) {
     if (!['observation', 'fountain'].includes(feature.kind) || feature.geometry?.type !== 'Point') return false;
     preparePopup(feature.label);
-    const name = document.createElement('strong');
-    name.textContent = feature.label;
-    stopMenu.append(name);
     if (feature.kind === 'observation') {
       const reading = document.createElement('p');
       reading.textContent = `Temperature: ${Number.isFinite(feature.value) ? `${feature.value} ${feature.unit ?? '°C'}` : 'Unknown'}`;

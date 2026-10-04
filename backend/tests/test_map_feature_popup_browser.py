@@ -73,6 +73,11 @@ def test_popup_content_replacement_and_dismissal(browser_page):
     assert "Temperature: 0 °C" in popup.inner_text()
     assert "12:30" in popup.inner_text()
     assert "Unknown" not in popup.inner_text()
+    title_box = popup.locator(".map-popup-header strong").bounding_box()
+    close_box = popup.get_by_role("button", name="Close popup").bounding_box()
+    title_center = title_box["y"] + title_box["height"] / 2
+    close_center = close_box["y"] + close_box["height"] / 2
+    assert abs(title_center - close_center) <= 5
     assert popup.locator("button").evaluate("e=>e===document.activeElement")
     click_point(page, [7.5826, 47.5596])
     page.wait_for_function(
@@ -97,7 +102,9 @@ def test_popup_content_replacement_and_dismissal(browser_page):
     assert page.evaluate("document.activeElement===popupTest.target")
     click_point(page, [7.5886, 47.5596])
     popup.wait_for(state="visible")
-    popup.get_by_role("button", name="Close", exact=True).click()
+    close = popup.get_by_role("button", name="Close popup")
+    assert close.inner_text() == "×"
+    close.click()
     popup.wait_for(state="hidden")
     click_point(page, [7.5886, 47.5636])
     page.wait_for_function("popupTest.selected.includes('other')")
