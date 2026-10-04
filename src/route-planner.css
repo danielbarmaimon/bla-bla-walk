@@ -1101,15 +1101,36 @@
 
 .map-stop-menu {
   display: grid;
-  gap: 4px;
-  padding: 8px;
+  gap: var(--space-1);
+  padding: var(--space-2);
   max-height: 240px;
+  max-width: min(15rem, calc(100vw - 2 * var(--space-6)));
+  overflow-wrap: anywhere;
   overflow: auto;
   min-width: 130px;
-  background: white;
+  background: var(--surface-raised);
+  color: var(--text-primary);
   border: 2px solid var(--poc-teal);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   box-shadow: 0 3px 12px #0003;
+}
+
+.map-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.map-popup-header strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.map-stop-menu p {
+  margin: 0;
+  font-size: var(--text-label);
 }
 
 .map-stop-menu button {
@@ -1120,6 +1141,24 @@
   border: 1px solid #ddd;
   border-radius: 6px;
   cursor: pointer;
+}
+
+.map-stop-menu .map-popup-close {
+  flex: 0 0 2rem;
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.map-stop-menu .map-popup-close:hover {
+  background: var(--poc-teal-light);
 }
 
 .route-app .start-departure {
