@@ -31,7 +31,7 @@ def open_map(page):
             }
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
@@ -125,7 +125,7 @@ def test_api_failure_and_recovery(browser_page):
     page.route(
         "**/api/map**", lambda route: route.fulfill(status=503, body="Unavailable")
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent"
         ".includes('Map data unavailable')"
@@ -151,7 +151,7 @@ def test_narrow_screen_and_browser_contract(browser_page):
     assert page.locator("#map").bounding_box()["height"] >= 400
     result = page.evaluate("""async () => {
       const {parseSnapshot} = await import('/src/api.js');
-      const fixture = await (await fetch('/api/map')).json();
+      const fixture = await (await fetch('/api/map?mode=fixture')).json();
       parseSnapshot(fixture);
       const older = structuredClone(fixture);
       delete older.mode;

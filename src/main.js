@@ -57,7 +57,7 @@ const FALLBACK_START = {
   lat: 47.548055
 };
 const MARKTPLATZ = PLACES.find((place) => place.id === 'marktplatz');
-const mode = new URLSearchParams(location.search).get('mode') || 'fixture';
+const mode = new URLSearchParams(location.search).get('mode') || 'online';
 const state = {
   snapshot: null,
   stationLayer: null,

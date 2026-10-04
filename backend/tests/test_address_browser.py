@@ -21,7 +21,7 @@ def test_both_fields_choose_addresses(browser_page):
         "status": "available",
     }
     page.route("**/api/addresses", lambda route: route.fulfill(json=payload))
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     origin = page.locator("#origin-input")
     origin.fill("Public venue")
     page.locator("#origin-suggestions button").wait_for()
@@ -40,7 +40,7 @@ def test_failure_and_offline_no_address_requests(browser_page):
         "**/api/addresses",
         lambda route: route.fulfill(status=503, json={"detail": "down"}),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.locator("#destination-input").fill("No provider")
     page.wait_for_function(
         "document.querySelector('#destination-status').textContent.includes('unavailable')"
@@ -57,3 +57,30 @@ def test_failure_and_offline_no_address_requests(browser_page):
     page.wait_for_timeout(700)
     assert "Offline" in page.locator("#destination-status").inner_text()
     assert not requests
+
+
+def test_root_page_defaults_to_online_address_search(browser_page):
+    page = browser_page
+    payload = page.request.get(f"{page.base_url}/api/map?mode=fixture").json()
+    payload["mode"] = "online"
+    page.route("**/api/map?mode=online", lambda route: route.fulfill(json=payload))
+    requests = []
+
+    def addresses(route):
+        requests.append(route.request.post_data_json)
+        route.fulfill(json={"places": [], "status": "available"})
+
+    page.route("**/api/addresses", addresses)
+    page.goto(f"{page.base_url}/")
+    page.locator("#origin-input:not([disabled])").wait_for()
+    page.locator("#origin-input").fill("Centralbahnplatz 1")
+    page.wait_for_function(
+        "document.querySelector('#origin-status').textContent"
+        ".includes('No address or saved landmark found')"
+    )
+    assert requests[-1]["mode"] == "online"
+    page.wait_for_function(
+        "document.querySelector('#mode-notice').textContent.includes('Online mode')"
+    )
+    page.unroute("**/api/map?mode=online")
+    page.unroute("**/api/addresses", addresses)

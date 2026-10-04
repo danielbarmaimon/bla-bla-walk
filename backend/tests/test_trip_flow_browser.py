@@ -41,7 +41,7 @@ def test_supported_roles_open_map_and_keep_steps_below(browser_page):
         lambda route: route.fulfill(json=snapshot.model_dump(mode="json")),
     )
     page.set_viewport_size({"width": 1280, "height": 900})
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function("!document.querySelector('#shade-mode').disabled")
     assert page.locator("#fast-mode").inner_text() == "Fast"
@@ -118,7 +118,7 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
             else pending.append(route)
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function(
         "document.querySelector('#trip-status').textContent.includes('0 of')"
@@ -138,7 +138,7 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
 
 def test_missing_shade_withholds_recommended_and_allows_manual_map(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     assert page.locator("#shade-mode").is_disabled()
     assert "Recommended unavailable" in page.locator("#route-role-status").inner_text()
@@ -178,7 +178,7 @@ def test_one_route_and_same_route_roles_are_explicit(browser_page, supported):
         "**/api/map?mode=fixture",
         lambda route: route.fulfill(json=snapshot.model_dump(mode="json")),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     if supported:
         page.wait_for_function("!document.querySelector('#shade-mode').disabled")
@@ -245,7 +245,7 @@ def test_dated_real_provider_payload_in_joined_screen(browser_page, pair_index):
 
     page.route("**/api/addresses", addresses)
     page.route("**/api/walking-routes", walking)
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.locator("#origin-input:not([disabled])").wait_for()
     page.locator("#origin-input").fill("Checked public start")
     page.locator("#origin-suggestions button").click()

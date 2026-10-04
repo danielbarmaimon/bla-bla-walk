@@ -93,3 +93,5 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: User-requested T21 follow-up searches the admitted saved named places from both journey fields, reusing AddressPlace endpoint coordinates with local source metadata; distinguish repeated store names by approximate straight-line distance from sourced Barfüsserplatz, keep coverage/access limits and sample labels explicit, and preserve official address lookup without adding a provider or canonical contract field.
 
 - 2026-10-04: User-requested UI fixes give Weather stations and Fountains all loaded source locations independently of route-stop badges, wire saved Landmarks, retain simultaneous temperature/shade visibility, hide the saved-pair example shortcut, and move walking options into Information sources so nearby taps follow Calculate.
+
+- 2026-10-04: User requests online defaults for the running app and map/weather/fountain/forecast endpoints. Explicit fixture/offline modes remain available; fixture browser tests select their mode explicitly. Run the local server with outbound network access for GeoAdmin and FOSSGIS services.

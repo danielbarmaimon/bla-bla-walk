@@ -53,6 +53,7 @@ def test_modes_and_missing_offline_snapshot(monkeypatch):
     client = TestClient(app)
     expected = snapshots.MapSnapshot.model_validate(provider_example())
     monkeypatch.setattr(main, "online_snapshot", lambda: expected)
+    assert client.get("/api/map").json()["mode"] == "online"
     assert client.get("/api/map?mode=online").json()["mode"] == "online"
     assert client.get("/api/map?mode=fixture").json()["mode"] == "fixture"
     assert client.get("/api/map?mode=invalid").status_code == 422

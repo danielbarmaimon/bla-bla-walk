@@ -10,7 +10,7 @@ def test_badge_defaults_and_layout(browser_page):
     page = browser_page
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.locator("#information-sources").evaluate("e=>e.open=false")
     page.wait_for_function(
@@ -59,7 +59,7 @@ def test_badge_defaults_and_layout(browser_page):
 
 def test_route_roles_rest_cadence_and_schedules(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async()=>{
       const {visibleRouteIds}=await import('/src/layer-badges.js');
       const {plannedRestStops}=await import('/src/route-amenities.js');
@@ -131,7 +131,7 @@ def test_more_badges_control_all_source_points_independently(browser_page):
         )
 
     page.route("**/src/map.js", capture_map)
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function(
         "window.badgeTestMap && "
         "document.querySelector('#try-example').disabled === false"

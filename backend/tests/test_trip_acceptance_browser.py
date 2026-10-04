@@ -45,7 +45,7 @@ def test_saved_pair_switching_time_and_source_status(browser_page):
     page = browser_page
     wire_calculation(page)
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     assert page.locator("#route-options .comparison-secondary").count() == 2
     for card in page.locator("#route-options .comparison-secondary").all():
@@ -118,7 +118,7 @@ def test_two_arbitrary_pairs_keep_route_steps_and_retry(
 
     page.route("**/api/addresses", addresses)
     page.route("**/api/walking-routes", walking)
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.locator("#origin-input").fill("Checked arbitrary start")
     page.locator("#origin-suggestions button").click()
     page.locator("#destination-input").fill("Checked arbitrary destination")

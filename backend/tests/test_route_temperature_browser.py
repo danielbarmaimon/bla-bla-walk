@@ -8,7 +8,7 @@ pytestmark = pytest.mark.browser
 
 def test_estimates_palettes_and_unknowns(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async () => {
       const {sensorCohort,estimateTemperature,temperatureProfile,temperatureColour,
         validateSensorInterpolation}=await import('/src/route-temperature.js');
