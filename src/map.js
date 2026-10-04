@@ -137,7 +137,12 @@ export function createMap(
     source: contextFeatures,
     zIndex: 8,
     style: (marker) => new Style({
-      image: new CircleStyle({
+      image: marker.get('kind') === 'landmark' ? new Icon({
+        src: '/src/icons/landmark.svg',
+        color: theme.getPropertyValue('--poc-landmark').trim(),
+        width: 24,
+        height: 24,
+      }) : new CircleStyle({
         radius: marker.get('kind') === 'rest' || marker.get('kind') === 'pause' ? 8 : 6,
         fill: new Fill({
           color: theme.getPropertyValue('--poc-teal').trim()
@@ -236,27 +241,83 @@ export function createMap(
     element: stopMenu,
     positioning: 'bottom-center',
     offset: [0, -20],
+    autoPan: {
+      margin: 70,
+      animation: {
+        duration: 0
+      }
+    },
     stopEvent: true
   });
   map.addOverlay(stopPopup);
 
-  function inspectStops(grouped, coordinate) {
+  function closePopup() {
+    stopPopup.setPosition(undefined);
+    target.focus();
+  }
+
+  function preparePopup(label) {
     stopMenu.replaceChildren();
+    stopMenu.setAttribute('aria-label', label);
+    const header = document.createElement('div');
+    header.className = 'map-popup-header';
+    const title = document.createElement('strong');
+    title.textContent = label;
     const close = document.createElement('button');
-    close.textContent = 'Close';
-    close.onclick = () => stopPopup.setPosition(undefined);
-    stopMenu.append(close);
+    close.type = 'button';
+    close.className = 'map-popup-close';
+    close.setAttribute('aria-label', 'Close popup');
+    close.textContent = '×';
+    close.onclick = closePopup;
+    header.append(title, close);
+    stopMenu.append(header);
+  }
+
+  function openPopup(coordinate) {
+    stopPopup.setPosition(coordinate);
+    stopMenu.querySelector('button').focus({
+      preventScroll: true
+    });
+  }
+
+  /** Inspect admitted point types without opening the full feature inspector. */
+  function inspectFeature(feature, coordinate) {
+    if (!['observation', 'fountain'].includes(feature.kind) || feature.geometry?.type !== 'Point') return false;
+    preparePopup(feature.label);
+    if (feature.kind === 'observation') {
+      const reading = document.createElement('p');
+      reading.textContent = `Temperature: ${Number.isFinite(feature.value) ? `${feature.value} ${feature.unit ?? '°C'}` : 'Unknown'}`;
+      const observed = feature.provenance?.observed_at;
+      const time = observed ? new Date(observed) : null;
+      const timestamp = document.createElement('p');
+      timestamp.textContent = `Observed: ${time && Number.isFinite(time.getTime()) ? time.toLocaleString(undefined, { timeZoneName: 'short' }) : 'Unknown'}`;
+      stopMenu.append(reading, timestamp);
+    }
+    openPopup(coordinate);
+    return true;
+  }
+
+  target.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && stopPopup.getPosition()) {
+      event.preventDefault();
+      closePopup();
+    }
+  });
+
+  function inspectStops(grouped, coordinate) {
+    preparePopup('Stops at this location');
     for (const member of grouped) {
       const button = document.createElement('button');
       button.textContent = member.get('label');
       const original = member.get('sourceFeature');
       button.onclick = () => {
+        if (original && inspectFeature(original, coordinate)) return;
         if (original) onSelect(original);
         stopPopup.setPosition(undefined);
       };
       stopMenu.append(button);
     }
-    stopPopup.setPosition(coordinate);
+    openPopup(coordinate);
   }
   const shadeFeatures = new VectorSource();
   const shadeLayer = new VectorLayer({
@@ -267,7 +328,7 @@ export function createMap(
       return new Style({
         stroke: new Stroke({
           color: theme.getPropertyValue(state === 2 ? '--shade' : state === 1 ? '--exposed' : '--unknown').trim(),
-          width: 7,
+          width: 12,
           lineDash: state === 2 ? undefined : state === 1 ? [12, 6] : [2, 6],
         })
       });
@@ -301,6 +362,7 @@ export function createMap(
   }));
   let picking = null;
   map.on('singleclick', (event) => {
+    stopPopup.setPosition(undefined);
     if (picking) {
       const [longitude, latitude] = window.ol.proj.toLonLat(event.coordinate);
       const kind = picking.kind;
@@ -316,21 +378,24 @@ export function createMap(
       const grouped = feature.get('features');
       if (grouped) {
         if (grouped.length > 1 || !grouped[0].get('sourceFeature')) inspectStops(grouped, feature.getGeometry().getCoordinates());
-        else onSelect(grouped[0].get('sourceFeature'));
+        else {
+          const original = grouped[0].get('sourceFeature');
+          if (!inspectFeature(original, feature.getGeometry().getCoordinates())) onSelect(original);
+        }
         return true;
       }
-      stopPopup.setPosition(undefined);
       if (feature.get('temperatureSample')) {
         onTemperatureSelect?.(feature.get('temperatureSample'));
         return true;
       }
       const selected = feature.get('sourceFeature') ?? features.get(String(feature.getId()));
-      if (selected) onSelect(selected);
+      if (selected && !inspectFeature(selected, feature.getGeometry().getCoordinates())) onSelect(selected);
       return true;
     });
   });
 
   function replaceLayers(snapshotLayers) {
+    stopPopup.setPosition(undefined);
     layers.forEach((layer) => map.removeLayer(layer));
     layers.clear();
     features.clear();

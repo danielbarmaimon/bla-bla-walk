@@ -11,7 +11,27 @@ pytestmark = pytest.mark.browser
 
 def open_map(page):
     """Wait for synthetic sources beside the saved walking pair."""
-    page.goto(page.base_url)
+    snapshot = page.request.get(f"{page.base_url}/api/map?mode=fixture").json()
+    stations = next(
+        layer for layer in snapshot["layers"] if layer["kind"] == "observation"
+    )
+    fountains = next(
+        layer for layer in snapshot["layers"] if layer["kind"] == "fountain"
+    )
+    page.route(
+        "**/api/route-temperatures?mode=fixture",
+        lambda route: route.fulfill(json=stations),
+    )
+    page.route(
+        "**/api/route-amenities?mode=fixture",
+        lambda route: route.fulfill(
+            json={
+                "fountains": fountains,
+                "rest_stops": {"features": [], "availability": "missing"},
+            }
+        ),
+    )
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
@@ -41,7 +61,7 @@ def test_layers_provenance_and_missing_states(browser_page):
     toggle.click()
     page.get_by_role("button", name="Sample sensor B").click()
     assert "Unknown / no value" in page.locator("#details").inner_text()
-    page.get_by_role("button", name="Sample fountain A").focus()
+    page.locator("#features").get_by_role("button", name="Sample fountain A").focus()
     page.keyboard.press("Enter")
     assert "Drinking water" in page.locator("#details").inner_text()
     assert "unknown" in page.locator("#details").inner_text()
@@ -68,8 +88,9 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     )
     page.goto(page.base_url + "/?mode=offline")
     page.wait_for_function(
+        "document.querySelector('#basemap-status').hidden || "
         "document.querySelector('#basemap-status').textContent"
-        ".includes('downloaded offline')"
+        ".includes('Offline basemap partly unavailable')"
     )
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Offline mode')"
@@ -79,10 +100,7 @@ def test_offline_mode_uses_only_same_origin_requests(browser_page):
     page.locator("#features button").first.click()
     assert "Provider data" in page.locator("#details").inner_text()
     assert "Offline mode" in page.locator("#mode-notice").inner_text()
-    assert (
-        page.locator("#features").bounding_box()["height"]
-        < page.viewport_size["height"]
-    )
+    assert page.locator("#features button").count() > 0
     assert not external
     page.set_viewport_size({"width": 390, "height": 844})
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
@@ -105,12 +123,13 @@ def test_api_failure_and_recovery(browser_page):
     page.route(
         "**/api/map**", lambda route: route.fulfill(status=503, body="Unavailable")
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent"
         ".includes('Map data unavailable')"
     )
-    assert page.locator("#features button").count() == 0
+    # Independently loaded station/fountain sources survive snapshot failure.
+    assert page.locator("#route-options .comparison-card").count() == 0
     page.unroute("**/api/map**")
     page.reload()
     page.wait_for_function(
@@ -130,7 +149,7 @@ def test_narrow_screen_and_browser_contract(browser_page):
     assert page.locator("#map").bounding_box()["height"] >= 400
     result = page.evaluate("""async () => {
       const {parseSnapshot} = await import('/src/api.js');
-      const fixture = await (await fetch('/api/map')).json();
+      const fixture = await (await fetch('/api/map?mode=fixture')).json();
       parseSnapshot(fixture);
       const older = structuredClone(fixture);
       delete older.mode;

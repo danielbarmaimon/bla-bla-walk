@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_api_round_trip_preserves_fixture_and_missing_values():
-    response = TestClient(app).get("/api/map")
+    response = TestClient(app).get("/api/map?mode=fixture")
     assert response.status_code == 200
     snapshot = MapSnapshot.model_validate(response.json())
     assert len(snapshot.layers) == 2

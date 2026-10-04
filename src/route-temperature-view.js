@@ -58,7 +58,7 @@ export function nearestForecastHour(forecast, arrivalTime) {
   return nearest;
 }
 
-export async function routeTemperatureView(map, mode, onUpdate) {
+export async function routeTemperatureView(map, mode, onUpdate, onSensors = () => {}) {
   const settings = await fetch('/config/route-temperature.json').then(reply => reply.json());
   let layer = null,
     forecast = null,
@@ -88,6 +88,7 @@ export async function routeTemperatureView(map, mode, onUpdate) {
     return reply.json();
   }).then(data => {
     layer = data;
+    onSensors(data);
     validation = validateSensorInterpolation(data, settings);
   }).catch(() => {
     layer = null;

@@ -7,7 +7,7 @@ pytestmark = pytest.mark.browser
 
 
 def initialize_harness(page):
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function("Boolean(window.ol)")
     page.evaluate("""async () => {
       window.landmarksModule = await import('/src/route-landmarks.js');
@@ -188,7 +188,7 @@ def test_saved_landmark_search_survives_address_failure_and_clear(browser_page):
     page = browser_page
     page.route("**/api/addresses", lambda route: route.fulfill(status=503))
     try:
-        page.goto(page.base_url)
+        page.goto(page.base_url + "/?mode=fixture")
         field = page.locator("#destination-input")
         field.fill("Stadtcasino")
         page.wait_for_function(
@@ -234,7 +234,7 @@ def test_landmark_selection_sends_source_coordinates_to_walking_router(browser_p
     )
     page.route("**/api/walking-routes", lambda route: route.fulfill(status=422))
     try:
-        page.goto(page.base_url)
+        page.goto(page.base_url + "/?mode=fixture")
         page.locator("#origin-input").fill("Barfusserkirche")
         page.locator("#origin-suggestions button").first.click()
         page.locator("#destination-input").fill("Stadtcasino")

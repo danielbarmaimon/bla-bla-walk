@@ -1,4 +1,7 @@
 import {
+  savedLandmarkEvidence
+} from './route-landmarks.js';
+import {
   mountJourneySteps
 } from './journey-steps.js';
 import {
@@ -55,9 +58,10 @@ const FALLBACK_START = {
   lat: 47.548055
 };
 const MARKTPLATZ = PLACES.find((place) => place.id === 'marktplatz');
-const mode = new URLSearchParams(location.search).get('mode') || 'fixture';
+const mode = new URLSearchParams(location.search).get('mode') || 'online';
 const state = {
   snapshot: null,
+  stationLayer: null,
   origin: null,
   destination: null,
   submitted: false,
@@ -182,7 +186,11 @@ function renderLayers() {
     const paragraph = document.createElement('p');
     paragraph.textContent = `${layer.label} · ${layer.availability} · ${layer.explanation}`;
     container.append(paragraph);
-    if (layer.kind !== 'route') map.setVisible(layer.id, badgeActive(layer.kind === 'observation' ? '#weather-stations-toggle' : '#fountains-layer-toggle'));
+    const selector = {
+      observation: '#weather-stations-toggle',
+      fountain: '#fountains-layer-toggle'
+    } [layer.kind];
+    if (selector) map.setVisible(layer.id, badgeActive(selector));
   });
 }
 
@@ -471,6 +479,31 @@ function renderJourney() {
     coordinates: feature.geometry.coordinates,
     sourceFeature: feature
   }));
+  if (badgeActive('#landmark-toggle')) savedLandmarkEvidence().places.forEach(place => markers.push({
+    kind: 'landmark',
+    label: place.label,
+    coordinates: place.coordinates,
+    sourceFeature: {
+      id: place.id,
+      kind: 'landmark',
+      label: place.label,
+      geometry: {
+        type: 'Point',
+        coordinates: place.coordinates
+      },
+      availability: 'unknown',
+      explanation: place.note,
+      provenance: {
+        fixture: false,
+        provider: 'OpenStreetMap',
+        source_url: place.sourceUrl,
+        attribution: '\u00a9 OpenStreetMap contributors',
+        licence: 'ODbL',
+        observed_at: place.checkedAt,
+        retrieved_at: place.retrievedAt,
+      },
+    },
+  }));
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
@@ -550,7 +583,10 @@ fetch('/config/trip-tips.json').then(response => {
   $('#trip-tips').textContent = 'Preparation advice unavailable.';
 });
 const stopSettings = await fetch('/config/route-stops.json').then(response => response.json());
-temperatureView = await routeTemperatureView(map, mode, renderJourney);
+temperatureView = await routeTemperatureView(map, mode, renderJourney, layer => {
+  state.stationLayer = layer;
+  syncWalkingLayers();
+});
 
 function currentAmenities() {
   const data = state.amenities;
@@ -576,6 +612,7 @@ fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => 
   state.amenities = data;
   state.amenitiesStatus = `Route candidates: IWB ${data.fountains.availability} · OSM ${data.rest_stops.availability}; source dates in details`;
   renderQuickPlaces();
+  syncWalkingLayers();
   renderJourney();
 }).catch(() => {
   state.amenitiesStatus = 'Real route-stop data unavailable; no candidates inferred.';
@@ -614,7 +651,11 @@ const walking = walkingRouting(mode, routingSettings, (layer, message) => {
 function displayLayers() {
   const layers = state.snapshot?.layers ?? [];
   const routeLayer = !state.submitted ? null : routePairSelected() ? layers.find(layer => layer.kind === 'route') : state.walkingLayer;
-  return [...layers.filter(layer => layer.kind !== 'route'), ...routeLayer ? [routeLayer] : []];
+  return [
+    ...state.stationLayer ? [state.stationLayer] : layers.filter(layer => layer.kind === 'observation'),
+    ...state.amenities ? [state.amenities.fountains] : layers.filter(layer => layer.kind === 'fountain'),
+    ...routeLayer ? [routeLayer] : [],
+  ];
 }
 
 function syncWalkingLayers() {
@@ -722,7 +763,7 @@ async function refresh() {
       });
     }
     const messages = {
-      fixture: 'Example mode: synthetic sensor and fountain layers beside sourced walking geometry. Route stop candidates use saved IWB/OSM data with their own dates. Calculated shade uses local prepared inputs.',
+      fixture: 'Example mode: sourced walking geometry with saved real stations and fountains. Route stop candidates use saved IWB/OSM data with their own dates. Calculated shade uses local prepared inputs.',
       online: 'Online mode: provider data with source timestamps; missing and stale values remain explicit.',
       offline: 'Offline mode: saved provider data only. Observation timestamps retain their original dates.'
     };

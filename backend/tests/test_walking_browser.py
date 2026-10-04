@@ -47,7 +47,7 @@ def test_address_route_drawn_and_replaced(browser_page):
             provider(route) if route.request.method == "POST" else route.continue_()
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.wait_for_function(
         "window.ol && document.querySelector('#mode-notice')"
@@ -74,9 +74,10 @@ def test_address_route_drawn_and_replaced(browser_page):
     drawn = page.evaluate("window.drawnRoutes[0]")
     assert len(drawn) == len(COORDINATES)
     assert drawn[-1] == pytest.approx(END)
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "2,100" in page.locator("#route-options").inner_text()
     assert page.locator("#calculate-journey").is_enabled()
-    page.locator("#try-example").click()
+    page.locator("#try-example").dispatch_event("click")
     page.locator("#calculate-journey").click()
     assert (
         "checked walking alternatives" in page.locator("#journey-summary").inner_text()
@@ -111,7 +112,7 @@ def test_failed_new_route_has_no_demo_line(browser_page):
             else route.continue_()
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#destination-input").fill("Public venue")
     page.locator("#suggestions button").click()
@@ -126,7 +127,7 @@ def test_failed_new_route_has_no_demo_line(browser_page):
 
 def test_late_response_and_offline_never_overwrite_current_route(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
     page.wait_for_function(

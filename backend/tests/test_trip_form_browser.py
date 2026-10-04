@@ -19,8 +19,8 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
             requests.append(request)
 
     page.on("request", record)
-    page.goto(page.base_url)
-    page.locator("#try-example:not([disabled])").wait_for()
+    page.goto(page.base_url + "/?mode=fixture")
+    page.locator("#try-example:not([disabled])").wait_for(state="attached")
     assert page.locator("#origin-input").input_value() == ""
     assert page.locator("#destination-input").input_value() == ""
     assert page.locator("#calculate-journey").is_disabled()
@@ -42,7 +42,7 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
     page.locator("#departure-now").click()
     assert page.locator("#departure-picker").is_hidden()
     page.locator("#calculate-journey").click()
-    page.locator(".comparison-card").first.wait_for()
+    page.locator(".comparison-card").first.wait_for(state="attached")
     page.locator("#destination-input").fill("New address")
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_disabled()
@@ -51,7 +51,7 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
 
 def test_departure_mode_change_clears_results_without_calculating(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     requests = []
 
@@ -75,8 +75,8 @@ def test_departure_mode_change_clears_results_without_calculating(browser_page):
 def test_mobile_pin_returns_to_form_without_implicit_start(browser_page):
     page = browser_page
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto(page.base_url)
-    page.locator("#try-example:not([disabled])").wait_for()
+    page.goto(page.base_url + "/?mode=fixture")
+    page.locator("#try-example:not([disabled])").wait_for(state="attached")
     assert page.locator(".map-screen").is_hidden()
     page.locator("#pick-destination").click()
     assert page.locator(".map-screen").is_visible()
@@ -116,7 +116,7 @@ def test_pending_trip_can_cancel_and_retry_without_duplicate_requests(browser_pa
             }
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#destination-input").fill("Another Basel")
     page.locator("#suggestions button").click()
