@@ -9,7 +9,7 @@ pytestmark = pytest.mark.browser
 
 def test_route_switch_missing_and_route_ordered_prompts(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     route = maneuver_route()
     feature = {
         "id": "first",
@@ -63,7 +63,7 @@ def test_route_switch_missing_and_route_ordered_prompts(browser_page):
 
 def test_named_references_are_near_the_maneuver_and_clear_on_route_change(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     route = maneuver_route()
     feature = {
         "id": "landmark-route",
@@ -101,7 +101,7 @@ def test_named_references_are_near_the_maneuver_and_clear_on_route_change(browse
 
 def test_short_segments_show_seconds(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async () => {
       const {journeyItems} = await import('/src/journey-steps.js');
       return journeyItems({id:'short',geometry:{type:'LineString',
@@ -115,7 +115,7 @@ def test_short_segments_show_seconds(browser_page):
 
 def test_named_saved_shops_can_be_references_but_illustrations_cannot(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async () => {
       const {journeyItems} = await import('/src/journey-steps.js');
       const route = {id:'shop-route',geometry:{type:'LineString',

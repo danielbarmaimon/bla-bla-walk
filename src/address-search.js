@@ -4,7 +4,8 @@ import {
 } from './route-landmarks.js';
 
 // Saved matches reuse local data; the existing official lookup still sends queries.
-const landmarkEvidence = fetch('/api/route-amenities?mode=offline', {
+const dataMode = new URLSearchParams(location.search).get('mode') || 'online';
+const landmarkEvidence = fetch(`/api/route-amenities?mode=${encodeURIComponent(dataMode)}`, {
     cache: 'no-store'
   })
   .then(response => response.ok ? response.json() : null)

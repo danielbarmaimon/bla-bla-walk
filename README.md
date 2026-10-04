@@ -24,28 +24,41 @@ The map supports online provider observations/fountain locations, a historical P
 
 ## Run locally
 
-For a complete setup with provider sensors, online maps, walking routes, saved
-rest stops and prepared demo shade, follow [Run locally with external sources](docs/local-online.md).
-Open the app with `?mode=online`; the plain root URL uses example layers.
+Use Python 3.12 or newer and keep internet connected. From the repository root,
+run one command for your operating system:
 
-Use Python 3.12 or newer. From the repository root:
+Windows (PowerShell or Command Prompt):
 
-```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r backend/requirements.txt
-python scripts/fetch_browser_assets.py
-python backend/export_contract.py
-python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```powershell
+.\scripts\run-windows.cmd
 ```
 
-Open [the local map](http://127.0.0.1:8000). On Windows, use `python -m venv .venv` and run the Activate.ps1 script inside the environment's Scripts folder in PowerShell instead of the first two commands.
+Linux:
+
+```sh
+bash scripts/run-linux.sh
+```
+
+Open [the local app](http://127.0.0.1:8000/). Online mode is the default. Each
+launcher creates or reuses `.venv`, installs pinned project dependencies, verifies
+browser assets, restores missing committed shade inputs without replacing local
+data, validates the building cache and downloads missing rest-stop data before
+starting the server. Keep the terminal open; Ctrl+C stops the app. Pass another
+port as the only argument if needed, for example `.\scripts\run-windows.cmd 8001`
+or `bash scripts/run-linux.sh 8001`.
+
+Both the server and browser need outbound HTTPS. When a coding tool asks for
+network access, allow it for the launcher/server; a network-restricted preview
+cannot search addresses or calculate provider walking routes. No activation,
+execution-policy change, API key or separate frontend server is needed. See
+[external sources and troubleshooting](docs/local-online.md) for data limits,
+source hosts and manual recovery.
 
 ## Route planner
 
-The root page now combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, official Basel-Stadt address search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Both start and destination can search real street addresses through GeoAdmin (© swisstopo), filtered to Basel-Stadt including Riehen and Bettingen. Type at least three characters and choose a result; online queries are sent to geo.admin.ch and are not saved by this app. Offline lookup is unavailable: use map pins or sample places. Calculate requests street-following walking routes for selected online endpoints from the FOSSGIS foot service and replaces the map lines. Walking time uses the configured walking-speed assumption. Endpoint coordinates are sent to FOSSGIS, whose service logs requests; this app does not persist the queries. Offline has no routing graph for new pairs. Only SBB → Marktplatz retains the checked saved geometry and current-departure shade comparison; new routes have unknown shade and access. Provider failure or changed endpoints clears old lines. Calculate retries a failed request. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Sensor summaries follow the selected snapshot. Route stops use real saved IWB fountains and OpenStreetMap benches/park centres, independently of the synthetic example overlays; Water, Bench and Rest stop markers are projected onto the selected route from candidates within 50m; their actual source coordinates and off-route distance remain in the details. The nearby list shows source dates and unknowns. Proximity does not establish an accessible detour, potable water, usable seating or cooling. Up to 80 mapped stop markers are drawn; the list follows the active stop badges. Source locations remain available in Information sources. Interior space uses supermarkets whose mapped weekly opening hours can be interpreted at the selected departure; unknown/complex schedules, unsupported holiday years and public holidays are withheld. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. The start form begins with empty endpoints: select two addresses, use GPS explicitly or pin them. Desktop places the map beside the form; mobile opens it for a pin or route. Choose Now or a departure time (device local timezone), then Calculate. Selecting addresses does not calculate automatically. Typing or changing departure clears previous results; pending work can be cancelled and retried with Calculate. Nearby mapped destinations fill the destination only; illustrative fallback cards are labelled Sample. Try SBB → Marktplatz example explicitly fills the saved pair. The server samples exact traversal times in the background and displays progress; a cold calculation can take around 20 minutes. Fastest overall, More shade and Balanced use T5 eligibility and evidence rules. Unknown access prevents choosing the saved routes as eligible journeys; Show on map still permits inspection. The optional five-minute limit tightens More shade only. Balanced weights and mode changes rescore cached evidence without shade calls. Departure changes clear old credit and cancel superseded work. No planned stops are included by the screen; the API accepts an explicit stop plan. Solid/dashed/dotted route overlays distinguish approximate shaded/sunlit/unknown or night samples. Calculation detail retains requested/effective sample times, model limits, geometry identity and source attribution; historical PET and sensor times remain separate. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
+The root page defaults to online mode and combines the route-planning flow with the main map data. It supports GPS or map-pinned starts, official Basel-Stadt address search and category shortcuts, the checked SBB → Marktplatz alternatives, map layers, route steps, and source details. Both start and destination can search real street addresses through GeoAdmin (© swisstopo), filtered to Basel-Stadt including Riehen and Bettingen. Type at least three characters and choose a result; online queries are sent to geo.admin.ch and are not saved by this app. Offline lookup is unavailable: use map pins or sample places. Calculate requests street-following walking routes for selected online endpoints from the FOSSGIS foot service and replaces the map lines. Walking time uses the configured walking-speed assumption. Endpoint coordinates are sent to FOSSGIS, whose service logs requests; this app does not persist the queries. Offline has no routing graph for new pairs. Only SBB → Marktplatz retains the checked saved geometry and current-departure shade comparison; new routes have unknown shade and access. Provider failure or changed endpoints clears old lines. Calculate retries a failed request. Rest, pause, nearby landmark and indoor-place cues retain their unverified status. Sensor summaries follow the selected snapshot. Route stops use real saved IWB fountains and OpenStreetMap benches/park centres, independently of the synthetic example overlays; Water, Bench and Rest stop markers are projected onto the selected route from candidates within 50m; their actual source coordinates and off-route distance remain in the details. The nearby list shows source dates and unknowns. Proximity does not establish an accessible detour, potable water, usable seating or cooling. Up to 80 mapped stop markers are drawn; the list follows the active stop badges. Source locations remain available in Information sources. Interior space uses supermarkets whose mapped weekly opening hours can be interpreted at the selected departure; unknown/complex schedules, unsupported holiday years and public holidays are withheld. The historical PET overlay is online-only; its saved route-class summaries remain labelled with their original availability. The start form begins with empty endpoints: select two addresses, use GPS explicitly or pin them. Desktop places the map beside the form; mobile opens it for a pin or route. Choose Now or a departure time (device local timezone), then Calculate. Selecting addresses does not calculate automatically. Typing or changing departure clears previous results; pending work can be cancelled and retried with Calculate. Nearby mapped destinations fill the destination only; illustrative fallback cards are labelled Sample. The saved-pair example shortcut is hidden. Walking options are available under Information sources; the area below Calculate shows nearby destination taps. The server samples exact traversal times in the background and displays progress; a cold calculation can take around 20 minutes. Fastest overall, More shade and Balanced use T5 eligibility and evidence rules. Unknown access prevents choosing the saved routes as eligible journeys; Show on map still permits inspection. The optional five-minute limit tightens More shade only. Balanced weights and mode changes rescore cached evidence without shade calls. Departure changes clear old credit and cancel superseded work. No planned stops are included by the screen; the API accepts an explicit stop plan. Solid/dashed/dotted route overlays distinguish approximate shaded/sunlit/unknown or night samples. Calculation detail retains requested/effective sample times, model limits, geometry identity and source attribution; historical PET and sensor times remain separate. The former isolated concept remains at `/poc` for reference; its synthetic temperatures and shadow patches are not part of the main map.
 
-The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL selects synthetic fixtures; use the links in the app to choose a mode.
+The browser assets are pinned by URL and SHA-256 in [config/browser-assets.json](config/browser-assets.json). The setup script downloads them into an ignored local cache, verifies their bytes and retains licence notices. Subsequent setup runs reuse matching files. Initial installation and downloads need internet. The root URL defaults to online mode for address search, walking routes, weather stations, fountains and forecasts; use the links in the app to choose a mode.
 
 ### Route calculation API
 
@@ -265,7 +278,7 @@ Format Python with `python -m ruff format backend scripts/fetch_browser_assets.p
 
 Tap a title-only badge to toggle its layer (keyboard Enter/Space also works). Equal-size **Temperature**, **Fast route**, **Recommended**, **Water**, **Bench** and **Rest** badges start active. **More** starts collapsed with inactive **Heatmap**, **Shading**, **Weather stations**, **Fountains**, **Landmarks** and **Interior space** badges. All source descriptions, dates, licences, legends and method details are under collapsed **Information sources** at the end of the page.
 
-Fast route displays the shortest walking-time estimate. Recommended displays only a supported comparison winner; it can remain empty while its badge is active. The controls are independent even when both refer to the same path. Temperature follows the selected visible route. Shading remains unavailable when prepared inputs are missing and unknown cells stay explicit. Route steps may include source-backed mapped references with visibility unverified; the optional landmark overlay is omitted until its separate task is merged.
+Fast route displays the shortest walking-time estimate. Recommended displays only a supported comparison winner; it can remain empty while its badge is active. The controls are independent even when both refer to the same path. Temperature follows the selected visible route. Shading remains unavailable when prepared inputs are missing and unknown cells stay explicit. Route steps may include source-backed mapped references with visibility unverified; the Landmarks badge shows saved mapped places at their original coordinates, with route visibility unverified. Weather stations and Fountains toggle all loaded source points independently of route-stop badges.
 
 Rest prompts are planned every **15 minutes of walking** before arrival, using the route's estimated walking time. They are displayed on the route, separate from mapped benches and park candidates; a prompt does not establish seating at that point. No stop duration or unverified detour is added to the trip calculation. The source point behind a projected Water/Bench/Rest marker retains its original coordinates.
 

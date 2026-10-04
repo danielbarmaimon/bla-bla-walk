@@ -41,7 +41,7 @@ def test_supported_roles_open_map_and_keep_steps_below(browser_page):
         lambda route: route.fulfill(json=snapshot.model_dump(mode="json")),
     )
     page.set_viewport_size({"width": 1280, "height": 900})
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function("!document.querySelector('#shade-mode').disabled")
     assert page.locator("#fast-mode").inner_text() == "Fast"
@@ -118,7 +118,7 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
             else pending.append(route)
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function(
         "document.querySelector('#trip-status').textContent.includes('0 of')"
@@ -136,9 +136,11 @@ def test_real_counts_tips_and_cancel_clear_evidence(browser_page):
     page.unroute("**/api/comparison**")
 
 
-def test_missing_shade_withholds_recommended_and_allows_manual_map(browser_page):
+def test_missing_shade_withholds_recommended_and_allows_manual_map(
+    browser_page, tmp_path
+):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     assert page.locator("#shade-mode").is_disabled()
     assert "Recommended unavailable" in page.locator("#route-role-status").inner_text()
@@ -151,10 +153,10 @@ def test_missing_shade_withholds_recommended_and_allows_manual_map(browser_page)
         == "https://www.bag.admin.ch/en/heat"
     )
     assert "avoidance unavailable" in page.locator("#construction-status").inner_text()
-    page.screenshot(path="/tmp/t30-desktop.png", full_page=True)
+    page.screenshot(path=tmp_path / "t30-desktop.png", full_page=True)
     page.set_viewport_size({"width": 390, "height": 844})
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
-    page.screenshot(path="/tmp/t30-mobile.png", full_page=True)
+    page.screenshot(path=tmp_path / "t30-mobile.png", full_page=True)
 
 
 @pytest.mark.parametrize("supported", [False, True])
@@ -178,7 +180,7 @@ def test_one_route_and_same_route_roles_are_explicit(browser_page, supported):
         "**/api/map?mode=fixture",
         lambda route: route.fulfill(json=snapshot.model_dump(mode="json")),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     if supported:
         page.wait_for_function("!document.querySelector('#shade-mode').disabled")
@@ -245,13 +247,14 @@ def test_dated_real_provider_payload_in_joined_screen(browser_page, pair_index):
 
     page.route("**/api/addresses", addresses)
     page.route("**/api/walking-routes", walking)
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.locator("#origin-input:not([disabled])").wait_for()
     page.locator("#origin-input").fill("Checked public start")
     page.locator("#origin-suggestions button").click()
     page.locator("#destination-input").fill("Checked public destination")
     page.locator("#suggestions button").click()
     page.locator("#calculate-journey").click()
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     page.locator(".comparison-secondary").first.wait_for()
     assert requests[0]["start"] == endpoints[0]
     assert requests[0]["end"] == endpoints[1]
