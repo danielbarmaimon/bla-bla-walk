@@ -123,6 +123,7 @@ export async function routeTemperatureView(map, mode, onUpdate) {
         link.textContent = `Weather data by Open-Meteo · CC BY 4.0 · palette only · retrieved ${forecast.provenance.retrieved_at}`;
         legend.append(link);
       }
+      return profile;
     }
   };
 }
