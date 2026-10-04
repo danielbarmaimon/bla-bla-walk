@@ -24,6 +24,10 @@ The map supports online provider observations/fountain locations, a historical P
 
 ## Run locally
 
+For a complete setup with provider sensors, online maps, walking routes, saved
+rest stops and prepared demo shade, follow [Run locally with external sources](docs/local-online.md).
+Open the app with `?mode=online`; the plain root URL uses example layers.
+
 Use Python 3.12 or newer. From the repository root:
 
 ```sh
