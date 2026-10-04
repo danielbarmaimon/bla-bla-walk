@@ -24,6 +24,7 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
     assert page.locator("#origin-input").input_value() == ""
     assert page.locator("#destination-input").input_value() == ""
     assert page.locator("#calculate-journey").is_disabled()
+    assert page.locator("#calculate-journey").inner_text() == "Calculate"
     assert page.locator("#departure-picker").is_hidden()
     assert page.evaluate("window.gpsCalls") == 0
     assert (
@@ -45,6 +46,29 @@ def test_empty_start_gps_denial_and_explicit_submission(browser_page):
     page.locator("#destination-input").fill("New address")
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_disabled()
+    page.remove_listener("request", record)
+
+
+def test_departure_mode_change_clears_results_without_calculating(browser_page):
+    page = browser_page
+    page.goto(page.base_url)
+    open_example(page)
+    requests = []
+
+    def record(request):
+        requests.append(request)
+
+    page.on("request", record)
+    page.locator("#departure-later").focus()
+    page.keyboard.press("Enter")
+    assert page.locator("#departure-picker").is_visible()
+    assert page.locator("#selected-journey").is_hidden()
+    assert page.locator("#route-options").inner_text() == ""
+    assert page.locator("#calculate-journey").is_enabled()
+    assert page.locator("#departure-time").evaluate(
+        "el => el === document.activeElement"
+    )
+    assert not any(request.method == "POST" for request in requests)
     page.remove_listener("request", record)
 
 

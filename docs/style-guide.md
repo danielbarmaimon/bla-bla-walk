@@ -27,7 +27,7 @@
 └───────────────────────────────────────────────────────────────────┘
 ```
 
-The T27 start page supersedes the initial layout above: desktop form left, map right; mobile form first, with the map opened for pin selection or a selected route. Start and destination begin empty. Departure defaults to Now; Choose time reveals the local date/time. One Find routes action starts work, and route cards appear only after submission. Nearby destination shortcuts follow the primary action. Provider explanations and advanced settings live in Information sources. See [the approved start-page proposal](start-page-proposal.md). Map labels and controls must not cover route endpoints or the coverage edge. Show a transit card only when its source passes admission.
+The T27 start page supersedes the initial layout above: desktop form left, map right; mobile form first, with the map opened for pin selection or a selected route. Start and destination begin empty. Departure defaults to Now; Choose time reveals the local date/time. One Calculate action starts work, and route cards appear only after submission. Nearby destination shortcuts follow the primary action. Provider explanations and advanced settings live in Information sources. See [the approved start-page proposal](start-page-proposal.md). Map labels and controls must not cover route endpoints or the coverage edge. Show a transit card only when its source passes admission.
 
 ## Three visual directions
 
@@ -75,7 +75,7 @@ mistaken for measured heat or calculated shade.
 
 - **Layer controls:** labelled toggles for temperature, fountains, and calculated shade. Each toggle exposes its state to assistive technology. A control has a visible focus ring.
 - **Legend:** labels every line, fill, and symbol, including `Unknown / not calculated` and the dashed Basel coverage boundary. Route A and Route B differ by both colour and line pattern/label.
-- **Time control:** `Now` is a direct action and the default; use the current instant when Find routes is pressed. A departure date/time control states the selected local time and the effective shade calculation time; stale saved calculations retain their original time.
+- **Time control:** `Now` is a direct action and the default; use the current instant when Calculate is pressed. A departure date/time control states the selected local time and the effective shade calculation time; stale saved calculations retain their original time.
 - **Route choices:** offer `Fastest overall` and `More shade`; retain manual selection. Show the extra-time cap, including the proposed five-minute choice.
 - **Walking card:** show door-to-door time, distance, shaded/exposed/unknown metres, bench and fountain opportunities, construction cautions and evidence status.
 - **Transit card:** when admitted, show access/egress walking, wait, ride and transfer time separately. Mark wait shade unknown without stop evidence. Label scheduled versus live data and disclose stale or unavailable service status.
@@ -87,7 +87,7 @@ mistaken for measured heat or calculated shade.
 
 - Meet WCAG AA contrast: at least 4.5:1 for normal text and 3:1 for large text and meaningful graphical controls. Check the actual token pairs in `src/theme.css` as created by T1.
 - Never use colour alone: pair shade/exposure with text or patterns; pair freshness colours with labels and icons; distinguish routes with names and line styles.
-- All actions work with Tab, Shift+Tab, Enter/Space, and arrow keys where the control pattern calls for them. Keep focus visible and in a predictable order: time, layers, map controls, then route cards. The map must have equivalent keyboard-accessible layer and route controls outside the map canvas.
+- All actions work with Tab, Shift+Tab, Enter/Space, and arrow keys where the control pattern calls for them. Keep focus visible and in a predictable order: start, destination, departure, Calculate, nearby shortcuts, then map/results controls. The map must have equivalent keyboard-accessible layer and route controls outside the map canvas.
 - Use short, factual labels: “Shade calculated 14:32”, “Stale · 13:50”, “Unknown · no coverage”, “Outside Basel coverage”. Avoid “safe”, “cool”, or “best” unless the data and agreed rules support that claim.
 
 ## Reference images
