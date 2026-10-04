@@ -28,13 +28,13 @@ Core implementation tasks T0–T4 and T9 are merged; T8 ingestion and online/off
 
 ## Next-session four-account lanes
 
-The team will assign usernames tomorrow. These temporary A–D lane labels are separate from the existing six A–F work-area slots above. Each account uses its own clone; no four chats share a working directory. Task acceptance and exact files live only in [M6 in docs/plan.md](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience).
+Assign usernames tomorrow. Temporary A–D labels are distinct from the older six work-area slots. Each account has one primary task and at most one second task, using its own clone. [M6](docs/plan.md#m6-next-session-priority--complete-the-address-to-journey-experience) owns exact acceptance/file lists; TASK_START.md provides model settings and ready prompts.
 
-| Temporary lane | GitHub username | Queue | Ownership |
+| Lane | Username | Primary → second | Exclusive shared ownership |
 |---|---|---|---|
-| A | TBD | T21, T22 | Route landmarks and maneuver directions |
-| B | TBD | T23, T24 | Shade diagnosis, corridor evidence and shadow overlay module |
-| C | TBD | T25, T26, T29 | Construction admission, avoidance policy and backend integration |
-| D | TBD | T20, T27, T28, T30, T31 | Common contract checkpoint, concise UX and browser integration/acceptance |
+| A | TBD | T22 steps → optional T21 landmarks | Walking adapter/maneuvers and necessary additive canonical contract |
+| B | TBD | T23 shade repair → optional T24 area overlay | Shade implementation; isolated overlay module |
+| C | TBD | T25 construction audit → T31 verification/fallback | Construction evidence and final source/runbook docs |
+| D | TBD | T27 concise form → T30 integrated choice/map/steps | Shared browser entry points and CSS |
 
-D coordinates T20 before the parallel wave; C and D own shared backend/browser entry points respectively. Other lanes export modules with frozen contract fixtures and do not edit those shared files. Assign usernames and claim handoffs at the start; assistants must not infer that temporary lane letters are people.
+Start all four primary tasks together from merged main at or after 1554167; no T20 prerequisite. Protect integration/fallback before optional features. A/B provide modules and evidence to D; C verifies the merged result. Required contract additions go through A. No shared working directory and no external deployment.
