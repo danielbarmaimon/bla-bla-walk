@@ -5,6 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+
 from bla_bla_walk.building_shade import model_grids
 from bla_bla_walk.shade import NIGHT, SHADED, SUNLIT, UNKNOWN, shadow_mask
 
@@ -210,3 +211,16 @@ def test_overlapping_explicit_parts_keep_highest_roof_regardless_of_order():
         [{"geometry": geometry, "height_m": 25}, {"geometry": geometry, "height_m": 10}]
     )
     assert roof[10, 10] == 25
+
+
+def test_regional_constraint_cannot_invent_clear_cross_boundary_rays():
+    roof, ground, receivers = grids(
+        [{"geometry": polygon(10, 9, 11, 10), "height_m": 25}],
+        coverage_constraint=polygon(0, 0, 18, 20),
+    )
+    assert np.all(np.isnan(roof[:, 18:]))
+    assert not np.any(receivers[:, 18:])
+    result = finite(roof, receivers=receivers)
+    assert result[10, 8] == SHADED  # known in-area blocker still proves shade
+    assert result[12, 12] == UNKNOWN  # clear ray crosses unadmitted source extent
+    assert result[12, 18] == UNKNOWN

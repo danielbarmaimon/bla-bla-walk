@@ -5,7 +5,17 @@ from rasterio.features import geometry_mask, rasterize
 from rasterio.transform import from_origin
 
 
-def model_grids(surface, terrain, flags, buildings, coverage, bounds, settings):
+def model_grids(
+    surface,
+    terrain,
+    flags,
+    buildings,
+    coverage,
+    bounds,
+    settings,
+    *,
+    coverage_constraint=None,
+):
     """Build roof prisms only within mapped footprints; missing roofs stay unknown.
 
     Roof height above local terrain is approximated from surveyed raster cells,
@@ -25,6 +35,13 @@ def model_grids(surface, terrain, flags, buildings, coverage, bounds, settings):
     area = geometry_mask(
         [coverage], out_shape=surface.shape, transform=transform, invert=True
     )
+    if coverage_constraint is not None:
+        area &= geometry_mask(
+            [coverage_constraint],
+            out_shape=surface.shape,
+            transform=transform,
+            invert=True,
+        )
     valid = np.isfinite(surface) & np.isfinite(terrain) & (flags == 1)
     difference = surface - terrain
     roofs = valid & (difference > 0)

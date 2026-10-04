@@ -17,6 +17,11 @@ def cached_buildings(directory, polygon):
         return None
     try:
         metadata = json.loads(path.read_text(encoding="utf-8"))
+        if (
+            urlsplit(metadata.get("endpoint", "")).hostname == "overpass.osm.ch"
+            and metadata.get("coverage_constraint") is None
+        ):
+            return None
         filename = metadata["file"]
         if Path(filename).name != filename or metadata["coverage"] != polygon:
             return None
@@ -32,14 +37,25 @@ def cached_buildings(directory, polygon):
             return None
         if datetime.fromisoformat(metadata["retrieved_at"]).utcoffset() is None:
             return None
+        if metadata.get("provider_timestamp") is not None:
+            if (
+                datetime.fromisoformat(metadata["provider_timestamp"]).utcoffset()
+                is None
+            ):
+                return None
         return metadata
     except (OSError, ValueError, KeyError, TypeError):
         return None
 
 
-def building_batch(client, endpoint, query, directory, refresh, sanitize):
+def building_batch(
+    client, endpoint, query, directory, refresh, sanitize, method="POST"
+):
     """Checkpoint sanitized query output so a timeout can resume acquisition."""
-    key = hashlib.sha256((endpoint + "\n" + query).encode()).hexdigest()
+    identity = endpoint + "\n" + query
+    if method != "POST":
+        identity = method + "\n" + identity
+    key = hashlib.sha256(identity.encode()).hexdigest()
     path = directory / ".batches" / f"{key}.json"
     if path.is_file() and not refresh:
         try:
@@ -56,7 +72,11 @@ def building_batch(client, endpoint, query, directory, refresh, sanitize):
                 return batch
         except (OSError, ValueError, KeyError, TypeError):
             print("Invalid saved building batch; requesting a verified replacement")
-    response = client.post(endpoint, data={"data": query})
+    response = (
+        client.get(endpoint, params={"data": query})
+        if method == "GET"
+        else client.post(endpoint, data={"data": query})
+    )
     response.raise_for_status()
     data = response.json()
     if data.get("remark") or "elements" not in data:
@@ -76,9 +96,25 @@ def building_batch(client, endpoint, query, directory, refresh, sanitize):
     return batch
 
 
-def acquire_buildings(endpoint, query, polygon, directory, *, sanitize, refresh=False):
+def acquire_buildings(
+    endpoint,
+    query,
+    polygon,
+    directory,
+    *,
+    sanitize,
+    refresh=False,
+    method="POST",
+    coverage_constraint=None,
+):
     """Publish a new checksum-named cache only after complete sanitized retrieval."""
     parsed = urlsplit(endpoint)
+    if method not in ("GET", "POST"):
+        raise ValueError("Building retrieval supports only GET or POST")
+    if parsed.hostname == "overpass.osm.ch" and coverage_constraint is None:
+        raise ValueError(
+            "Regional Swiss source requires a verified coverage constraint"
+        )
     if (
         parsed.scheme != "https"
         or not parsed.hostname
@@ -100,7 +136,9 @@ def acquire_buildings(endpoint, query, polygon, directory, *, sanitize, refresh=
             raise ValueError("At least one building query is required")
         collected, timestamps, retrievals = {}, [], []
         for index, part in enumerate(queries):
-            batch = building_batch(client, endpoint, part, directory, refresh, sanitize)
+            batch = building_batch(
+                client, endpoint, part, directory, refresh, sanitize, method
+            )
             for feature in batch["features"]:
                 if feature["id"] in collected and collected[feature["id"]] != feature:
                     raise ValueError("Building changed between acquisition batches")
@@ -111,6 +149,14 @@ def acquire_buildings(endpoint, query, polygon, directory, *, sanitize, refresh=
             retrievals.append(batch["retrieved_at"])
             print(f"Building batch {index + 1}/{len(queries)} complete", flush=True)
     features = [collected[key] for key in sorted(collected)]
+    valid_timestamps, unparsed_timestamps = [], []
+    for timestamp in timestamps:
+        try:
+            if datetime.fromisoformat(timestamp).utcoffset() is None:
+                raise ValueError("Unzoned provider timestamp")
+            valid_timestamps.append(timestamp)
+        except (ValueError, TypeError):
+            unparsed_timestamps.append(timestamp)
     content = json.dumps(features, separators=(",", ":")).encode()
     version = hashlib.sha256(content).hexdigest()
     directory.mkdir(parents=True, exist_ok=True)
@@ -125,7 +171,11 @@ def acquire_buildings(endpoint, query, polygon, directory, *, sanitize, refresh=
         "coverage": polygon,
         "retrieved_at": min(retrievals),
         "prepared_at": datetime.now(UTC).isoformat(),
-        "provider_timestamp": min(timestamps) if timestamps else None,
+        "provider_timestamp": (
+            min(valid_timestamps)
+            if valid_timestamps and not unparsed_timestamps
+            else None
+        ),
         "provider_timestamps": sorted(set(timestamps)),
         "query_count": len(queries),
         "attribution": (
@@ -139,6 +189,17 @@ def acquire_buildings(endpoint, query, polygon, directory, *, sanitize, refresh=
             "relief, measured cooling or verified walking ground"
         ),
     }
+    if unparsed_timestamps:
+        metadata["unparsed_provider_timestamps"] = sorted(set(unparsed_timestamps))
+        metadata["attribution"] += "; Provider source date is unknown."
+    if method != "POST":
+        metadata["request_method"] = method
+    if coverage_constraint is not None:
+        metadata["coverage_constraint"] = coverage_constraint
+        metadata["attribution"] += (
+            "; Regional source: admitted only inside the verified Basel-Stadt "
+            "boundary and requested halo. Cross-boundary rays remain unknown."
+        )
     partial = directory / "manifest.json.part"
     partial.write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
     partial.replace(directory / "manifest.json")

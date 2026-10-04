@@ -59,10 +59,26 @@ All route calculation and rescoring use local inputs in every mode. Online mode
 refreshes provider layers independently; offline mode makes no external requests.
 No transit service is admitted. The prepared local offline journey has been
 validated; the online external-server journey remains unverified. Each target
-machine still needs its own prepared datasets. See the
+machine needs the prepared datasets; the committed shade snapshot supplies the
+building footprints and compact survey inputs without provider downloads. See the
 [T6 acceptance record](handoff/t6-integration.md) for evidence and the remaining check.
 
 ## Download data before offline use
+
+For building shade and the saved route comparison, first install the committed
+**41.9MB prepared snapshot** without internet access:
+
+```sh
+python scripts/install_shade_snapshot.py
+python scripts/prepare_building_shade.py --offline
+```
+
+This restores the existing local loader paths from checksum-verified data included
+in the Git checkout. It preserves differing local data unless `--replace` is
+explicitly requested. Stop the server before replacement and restart afterward.
+See the [snapshot notes and licences](data/prepared/README.md). This replaces the
+building/survey downloads for the saved demo; browser libraries, basemaps and
+observation/fountain caches still need their separate preparation below.
 
 With the project environment active and internet available, run from the repository root:
 
@@ -75,7 +91,7 @@ python scripts/verify_prepared_data.py
 
 Geometry preparation downloads all available pinned city/buffer assets, verifies catalogue SHA-256 checksums, and writes compressed 1m grids with 2m height steps into ignored `data/geometry/`. It keeps native 0.5m surface detail until max aggregation and uses the smaller native 2m terrain sources. Verified temporary source downloads are discarded after conversion. The local manifest records source URLs/checksums, preparation version, output checksums and coverage gaps. Run the same command again to resume; `--limit 2` is a small validation batch, not full preparation. Encoding and accuracy limitations live in [the source register](docs/SOURCES.md#compact-geometry-and-offline-preparation).
 
-Offline preparation saves sanitized observation/fountain layers, any available route PET class summary, and all basemap tiles in the finite advertised Basel rectangle at zooms 12–17. Saved PET route summaries are labelled stale; the PET map overlay itself requires internet. It retains source attribution and saved timestamps. Basemap downloads resume from checksum-verified files. Inspect .cache/basemap/manifest.json (generated locally by offline preparation) for `complete: true` and data/geometry/manifest.json (generated locally by geometry preparation) for `complete_available_inventory: true`; the latter means all available assets, not that the buffer gaps disappeared. Large downloads stay on this computer and are not included in a Git clone.
+Offline preparation saves sanitized observation/fountain layers, any available route PET class summary, and all basemap tiles in the finite advertised Basel rectangle at zooms 12–17. Saved PET route summaries are labelled stale; the PET map overlay itself requires internet. It retains source attribution and saved timestamps. Basemap downloads resume from checksum-verified files. Inspect .cache/basemap/manifest.json (generated locally by offline preparation) for `complete: true` and data/geometry/manifest.json (generated locally by geometry preparation) for `complete_available_inventory: true`; the latter means all available assets, not that the buffer gaps disappeared. Basemap and observation/fountain caches remain local; the versioned compact shade snapshot is included in a Git clone.
 
 ## Use offline
 
@@ -85,7 +101,7 @@ Keep the local server running with the Run locally command and open [offline mod
 
 Open [online mode](http://127.0.0.1:8000/?mode=online) to request provider observations, fountain locations, the two checked walking routes, and PET-class distances through the API. The historical PET map is served by the canton WMS. PET is modelled for a clear summer high-pressure day at 14:00; it is not current weather. Source attribution, route class distances and unknown coverage remain visible. The first provider load may take longer; later requests follow the observation/fountain adapters' hourly/daily caches.
 
-To run on an external server, install the same pinned environment and browser assets there. Prepare geometry there for the local shade API checkpoint, or copy the prepared geometry together with its manifest and config. Run:
+To run on an external server, install the same pinned environment and browser assets there. Run `python scripts/install_shade_snapshot.py` there for the saved shade demo, or prepare geometry and buildings for a different admitted dataset. Run:
 
 ```sh
 python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 0.0.0.0 --port 8000
@@ -136,7 +152,15 @@ python scripts/prepare_building_shade.py --offline
 
 This validates buildings only; prepared survey grids/flags must already be present for the offline shade API. Use `--refresh` to acquire fresh footprints, or `--endpoint` with a public HTTPS Overpass mirror if the configured endpoint is unavailable. The actual endpoint, earliest batch retrieval time and provider timestamps are recorded in the manifest. Endpoint URLs containing credentials or query parameters are rejected. Offline validation cannot be combined with download options. A failed acquisition retains the previous complete cache; an incomplete cache cannot produce a shadow layer.
 
-The sanitized footprint cache stays local under `.cache/buildings`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
+Bounded queries can use `--request-method GET` when a mirror's POST transport is unavailable. For the regional Swiss service:
+
+```sh
+python scripts/prepare_building_shade.py --endpoint https://overpass.osm.ch/api/interpreter --request-method GET
+```
+
+This source is admitted only within the verified Basel-Stadt boundary and requested halo. Cross-boundary receiver/ray coverage stays unknown; it cannot establish clear sunlight beyond that area. GET batches have distinct resumable identities. Unparseable provider date markers are retained separately and labelled unknown, never replaced with retrieval time. Source constraints and transport are recorded in the local manifest and cache identity.
+
+The active footprint cache lives under `.cache/buildings`; grids and flags live under `data/geometry/`. These runtime directories remain ignored. The committed [prepared snapshot](data/prepared/README.md) restores their verified contents without provider requests. Its geometry manifest includes the locally prepared survey assets; the building workflow selects the 25 survey tile pairs intersecting the two routes and their halo. Footprint provenance, original source dates and coverage constraints are preserved. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
 
 Reproduce full-polyline, cold/warm, concurrent, seam, night and offline API checks:
 
