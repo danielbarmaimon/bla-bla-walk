@@ -5,6 +5,13 @@
   "layer_z_index": 8,
   "icon_scale": 1,
   "known_places_checked_at": "2026-10-03",
-  "coverage_note": "Three saved OSM square/building centres plus named real saved stop candidates when supplied. Limited coverage; nearby does not mean visible or familiar.",
-  "source_note": "Reuse src/wayfinding-places.js and admitted RouteAmenities. The 150 m corridor is a display filter, not a verified turn, entrance or diversion. No provider downloads."
+  "coverage_note": "Daily citywide named OSM landmarks, with checked saved places as fallback. Nearby does not establish visibility or access.",
+  "source_note": "Only public mapped names, IDs, categories and centres are retained; no raw tags, contact fields or route queries are stored.",
+  "endpoint": "https://overpass.osm.ch/api/interpreter",
+  "timeout_seconds": 35,
+  "max_response_bytes": 8388608,
+  "max_records": 3000,
+  "browser_refresh_ms": 3600000,
+  "guide_buffer_metres": 50,
+  "guide_spacing_metres": 120
 }

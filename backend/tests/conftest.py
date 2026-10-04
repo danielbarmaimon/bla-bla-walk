@@ -97,6 +97,19 @@ def browser_page():
                     json={"detail": "Shade unavailable in basic browser fixture"},
                 ),
             )
+            page.route(
+                "**/api/landmarks?**",
+                lambda route: route.fulfill(
+                    json={
+                        "id": "city-landmarks",
+                        "label": "City landmarks",
+                        "kind": "landmark",
+                        "availability": "missing",
+                        "features": [],
+                        "explanation": "No city landmarks in this browser fixture.",
+                    }
+                ),
+            )
             yield page
             browser.close()
     finally:

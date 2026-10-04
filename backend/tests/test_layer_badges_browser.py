@@ -160,7 +160,11 @@ def test_more_badges_control_all_source_points_independently(browser_page):
     assert not fountain_ids.intersection(visible_ids())
     page.locator("#fountains-layer-toggle").click()
     assert station_ids | fountain_ids <= set(visible_ids())
+    assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "false"
+    page.locator("#landmark-toggle").click()
     assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "true"
+    assert "stadtcasino" not in visible_ids()
+    open_example(page)
     assert "stadtcasino" in visible_ids()
     page.locator("#weather-stations-toggle").click()
     assert not station_ids.intersection(visible_ids())

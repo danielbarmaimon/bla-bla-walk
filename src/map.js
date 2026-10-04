@@ -340,7 +340,7 @@ export function createMap(
       return new Style({
         stroke: new Stroke({
           color: theme.getPropertyValue(state === 2 ? '--shade' : state === 1 ? '--exposed' : '--unknown').trim(),
-          width: 12,
+          width: 18,
           lineDash: state === 2 ? undefined : state === 1 ? [12, 6] : [2, 6],
         })
       });

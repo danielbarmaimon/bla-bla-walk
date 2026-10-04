@@ -22,7 +22,9 @@ Longitude = Annotated[float, Field(ge=-180, le=180)]
 Latitude = Annotated[float, Field(ge=-90, le=90)]
 Position = tuple[Longitude, Latitude]
 Availability = Literal["current", "stale", "missing", "unknown", "unsupported"]
-LayerKind = Literal["observation", "fountain", "shade", "route", "rest", "construction"]
+LayerKind = Literal[
+    "observation", "fountain", "shade", "route", "rest", "construction", "landmark"
+]
 
 
 class ContractModel(BaseModel):

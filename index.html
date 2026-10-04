@@ -14,7 +14,13 @@
         <a class="brand" href="/" aria-label="Bla Bla Walk home">
           <span class="brand-mark" aria-hidden="true">B</span><span>Bla Bla Walk</span>
         </a>
-        <a id="show-information" href="#information-sources">Information</a>
+        <div class="header-actions">
+          <span id="mode-indicator" class="mode-indicator" data-mode="online" role="status" aria-live="polite">
+            <span class="mode-indicator-mark" aria-hidden="true"></span>
+            <span id="mode-indicator-label">Online mode</span>
+          </span>
+          <a id="show-information" href="#information-sources">Information</a>
+        </div>
       </header>
 
       <main class="route-layout">
@@ -107,10 +113,10 @@
             </div>
             <details id="more-layers"><summary>More</summary><div class="badge-grid">
               <button type="button" class="layer-badge" id="pet-layer-toggle" aria-pressed="false">Heatmap</button>
-              <button type="button" class="layer-badge" id="shade-samples-toggle" aria-pressed="false">Shading</button>
+              <button type="button" class="layer-badge" id="shade-samples-toggle" aria-pressed="true">Shading</button>
               <button type="button" class="layer-badge" id="weather-stations-toggle" aria-pressed="false">Weather stations</button>
               <button type="button" class="layer-badge" id="fountains-layer-toggle" aria-pressed="false">Fountains</button>
-              <button type="button" class="layer-badge" id="landmark-toggle" aria-pressed="true">Landmarks</button>
+              <button type="button" class="layer-badge" id="landmark-toggle" aria-pressed="false">Landmarks</button>
               <button type="button" class="layer-badge" id="construction-toggle" aria-pressed="true">Construction</button>
               <button type="button" class="layer-badge" id="cool-place-toggle" aria-pressed="false">Interior space</button>
             </div></details>
@@ -143,7 +149,7 @@
           </section>
 <section id="comparison-evidence" aria-label="Route calculation evidence"></section>
         <section><h3>Preparation advice</h3><div id="tip-sources"></div></section>
-        <p id="construction-status">Construction avoidance unavailable: current project records do not confirm pedestrian closures. Closed edges are not automatically avoided; access remains unknown.</p><p id="construction-source-status">Loading daily construction snapshot…</p>
+        <p id="construction-status">Construction avoidance unavailable: current project records do not confirm pedestrian closures. Closed edges are not automatically avoided; access remains unknown.</p><p id="construction-source-status">Loading daily construction snapshot…</p><p id="landmark-source-status">Loading saved city landmarks…</p>
         <details><summary>Advanced comparison settings</summary><button id="balanced-mode" type="button" aria-pressed="false">Balanced</button>              <div class="detour-control">
                 <label for="shade-detour-limit">More shade extra-time limit</label>
                 <select id="shade-detour-limit" aria-describedby="comparison-control-status">

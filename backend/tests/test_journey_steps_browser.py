@@ -30,8 +30,8 @@ def test_route_switch_missing_and_route_ordered_prompts(browser_page):
     }""",
         feature,
     )
-    rows = page.locator("#journey-harness li").all_text_contents()
-    assert rows[0].startswith("Start walking on First street. Walk 1000 m")
+    rows = page.locator("#journey-harness .walking-guide-list > li").all_text_contents()
+    assert rows[0] == "Start walking on First street"
     assert not any("public fountain" in row for row in rows)
     assert "15 minutes walking" in rows[1]
     assert "30 minutes walking" in rows[-2]
@@ -85,6 +85,7 @@ def test_named_references_are_near_the_maneuver_and_clear_on_route_change(browse
       const unsourced = {label:'Invented Migros', coordinates:near.coordinates};
       const items = journeyItems(feature, [], [near,far,unsourced]);
       const changed = structuredClone(feature);
+      changed.geometry.coordinates = [[7.7,47.6],[7.71,47.6]];
       changed.directions.steps.forEach(s => {
         s.location = changed.geometry.coordinates[0];
       });
@@ -93,7 +94,7 @@ def test_named_references_are_near_the_maneuver_and_clear_on_route_change(browse
         feature,
     )
     text = " ".join(item["text"] for item in result["items"])
-    assert "Near Test shop (mapped reference; visibility unverified)" in text
+    assert "by Test shop" in text
     assert "Distant church" not in text and "Invented Migros" not in text
     assert "Test shop" not in " ".join(item["text"] for item in result["changed"])
     assert "unnamed" not in text
@@ -104,14 +105,16 @@ def test_short_segments_show_seconds(browser_page):
     page = browser_page
     page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async () => {
-      const {journeyItems} = await import('/src/journey-steps.js');
-      return journeyItems({id:'short',geometry:{type:'LineString',
+      const {mountJourneySteps} = await import('/src/journey-steps.js');
+      const container=document.createElement('div');
+      mountJourneySteps(container).update({id:'short',geometry:{type:'LineString',
         coordinates:[[7.59,47.55],[7.591,47.55]]},
         route:{distance_m:6,duration_s:6},directions:{route_id:'short',steps:[{
           text:'Turn right on Test street',kind:'turn',location:[7.59,47.55],
-          at_metres:0,distance_m:6,duration_s:6}]}})[0].text;
+          at_metres:0,distance_m:6,duration_s:6}]}});
+      return container.querySelector('.walking-turn-list').textContent;
     }""")
-    assert "about 6 sec" in result and "1 min" not in result
+    assert "6 sec" in result and "1 min" not in result
 
 
 def test_named_saved_shops_can_be_references_but_illustrations_cannot(browser_page):
@@ -133,5 +136,5 @@ def test_named_saved_shops_can_be_references_but_illustrations_cannot(browser_pa
       const fixture = journeyItems(route,[candidate],[])[0].text;
       return {real,fixture};
     }""")
-    assert "Near Test named supermarket" in result["real"]
-    assert "Near Test named supermarket" not in result["fixture"]
+    assert "by Test named supermarket" in result["real"]
+    assert "by Test named supermarket" not in result["fixture"]

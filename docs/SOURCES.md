@@ -342,3 +342,5 @@ Route stop display coordinates are now projections onto the walking line. Source
 ### Route stop icons
 
 Lucide `droplets`, `rocking-chair` and `clock-fading` SVGs are served locally. The latter two were retrieved on 2026-10-04 from the [official Lucide icon repository](https://github.com/lucide-icons/lucide/tree/main/icons). Licence: ISC; retained in `src/icons/LICENSE.txt`. Icons and screen-distance grouping describe stop types and visual proximity, not verified accessibility.
+
+Daily landmark snapshot: named public OpenStreetMap places via Swiss Overpass, restricted to the Basel boundary (ODbL). Only public IDs, names, categories, coordinates and attribution are retained. Proximity does not establish access. Failed refreshes retain labelled saved data.

@@ -106,3 +106,5 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: Render sensor-temperature gradients on every visible walking route with one combined scale and palette, so equal temperatures have equal colours across Fast and Recommended. Unsupported sections retain dotted grey.
 
 - 2026-10-04: Add canonical ConstructionSite/ConstructionSnapshot models and the construction feature kind. Store only joined official IDs, date intervals and polygons in a daily SQLite snapshot with a cross-process refresh reservation. Use current snapshots for avoidance, saved snapshots for labelled map context, and icons within approximately 100 m of visible routes; no closure claim.
+
+- 2026-10-04: Cache sanitized named Basel landmarks daily through the shared SQLite snapshot helper. Add the landmark map-layer kind; default its badge off and show only nearby visible-route features. Use nearby landmarks for a concise guide while retaining every provider turn and the full collapsed directions.

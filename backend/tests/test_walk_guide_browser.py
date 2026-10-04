@@ -37,7 +37,7 @@ def test_completion_modal_default_and_left_guide(browser_page):
     assert page.locator("#planner-form").is_hidden()
     assert page.locator(".planner #step-list").is_visible()
     assert page.locator("#shade-mode").get_attribute("aria-pressed") == "true"
-    assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "true"
+    assert page.locator("#landmark-toggle").get_attribute("aria-pressed") == "false"
     assert page.locator("#steps-summary").inner_text()
     assert page.locator("#preparation-tips").is_hidden()
     page.locator("#fast-mode").click()

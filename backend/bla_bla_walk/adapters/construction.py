@@ -2,14 +2,14 @@
 
 import hashlib
 import json
-import sqlite3
-from datetime import UTC, date, datetime
+from datetime import date
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import httpx
 from shapely.geometry import mapping, shape
 
+from ..daily_cache import daily_snapshot
 from ..interfaces import ConstructionSite, ConstructionSnapshot, Provenance
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -123,77 +123,7 @@ def fetch_snapshot(now):
 
 
 def construction_snapshot(mode="online", path=PATH, now=None):
-    """One refresh attempt per Basel date, even across restarts and processes.
-
-    Offline reads only. A failed refresh preserves the last complete snapshot.
-    Refresh happens on first use each day; the browser also checks hourly.
-    """
-    now = now or datetime.now(UTC)
-    day = now.astimezone(ZoneInfo("Europe/Zurich")).date().isoformat()
-    if mode != "online" and not path.exists():
-        return ConstructionSnapshot()
-    if mode == "online":
-        path.parent.mkdir(parents=True, exist_ok=True)
-    try:
-        with sqlite3.connect(
-            path if mode == "online" else f"file:{path.as_posix()}?mode=ro",
-            uri=mode != "online",
-            timeout=5,
-        ) as db:
-            if mode == "online":
-                db.execute(
-                    "CREATE TABLE IF NOT EXISTS snapshot "
-                    "(id INTEGER PRIMARY KEY, attempted TEXT, payload TEXT)"
-                )
-                db.execute("BEGIN IMMEDIATE")
-            row = db.execute(
-                "SELECT attempted, payload FROM snapshot WHERE id=1"
-            ).fetchone()
-            saved = (
-                ConstructionSnapshot.model_validate_json(row[1])
-                if row and row[1]
-                else ConstructionSnapshot()
-            )
-            if mode == "online" and (not row or row[0] != day):
-                # Reserve before HTTP work; other workers use saved data.
-                db.execute(
-                    "INSERT INTO snapshot VALUES(1,?,?) ON CONFLICT(id) "
-                    "DO UPDATE SET attempted=excluded.attempted",
-                    (day, row[1] if row else None),
-                )
-                db.commit()
-                try:
-                    saved = fetch_snapshot(now)
-                    db.execute(
-                        "UPDATE snapshot SET payload=? WHERE id=1",
-                        (saved.model_dump_json(),),
-                    )
-                    db.commit()
-                except (
-                    httpx.HTTPError,
-                    OSError,
-                    ValueError,
-                    KeyError,
-                    TypeError,
-                    AttributeError,
-                ):
-                    pass
-            retrieved = saved.provenance.retrieved_at if saved.provenance else None
-            current = (
-                mode == "online"
-                and retrieved
-                and retrieved.astimezone(ZoneInfo("Europe/Zurich")).date().isoformat()
-                == day
-                and retrieved <= now
-            )
-            return saved.model_copy(
-                update={
-                    "availability": "current"
-                    if current
-                    else "stale"
-                    if saved.provenance
-                    else "missing"
-                }
-            )
-    except (sqlite3.Error, OSError, ValueError):
-        return ConstructionSnapshot()
+    """Reuse the typed daily cache; only valid full snapshots replace saved data."""
+    return daily_snapshot(
+        mode, path, fetch_snapshot, ConstructionSnapshot, ConstructionSnapshot, now
+    )

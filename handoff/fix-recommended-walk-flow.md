@@ -29,3 +29,5 @@ Refresh http://127.0.0.1:8001/?mode=online to use the guide. Review the verified
 
 ## Files
 backend/bla_bla_walk/walking_preferences.py, adapters/walking.py, shade_service.py, interfaces.py; src/main.js, journey-steps.js, route-amenities.js; index.html and route-planner.css. Design, source/run documentation and decisions explain approximation limits.
+
+Final update: daily landmark cache (410 live named places), default-off nearby-route markers and concise guide preserving provider turns implemented. Final 21 cache/badge/guide checks passed; latest main integrated. User explicitly approved pushing and merging PR #73.

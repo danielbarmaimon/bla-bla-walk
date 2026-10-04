@@ -58,7 +58,8 @@
             "shade",
             "route",
             "rest",
-            "construction"
+            "construction",
+            "landmark"
           ],
           "title": "Kind",
           "type": "string"
@@ -265,7 +266,8 @@
             "shade",
             "route",
             "rest",
-            "construction"
+            "construction",
+            "landmark"
           ],
           "title": "Kind",
           "type": "string"

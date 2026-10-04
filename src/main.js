@@ -2,7 +2,10 @@ import {
   constructionMarkers
 } from './route-construction.js';
 import {
-  savedLandmarkEvidence
+  savedLandmarkEvidence,
+  routeLandmarkCandidates,
+  landmarkSettings,
+  setCachedLandmarks
 } from './route-landmarks.js';
 import {
   mountJourneySteps
@@ -88,6 +91,13 @@ const state = {
   constructionSnapshot: null,
 };
 const $ = (selector) => document.querySelector(selector);
+const modeLabels = {
+  online: 'Online mode',
+  offline: 'Offline mode',
+  fixture: 'Example mode'
+};
+$('#mode-indicator').dataset.mode = modeLabels[mode] ? mode : 'online';
+$('#mode-indicator-label').textContent = modeLabels[mode] ?? modeLabels.online;
 let temperatureView = null;
 const journeySteps = mountJourneySteps($('#step-list'));
 const routes = () => !state.submitted ? [] : routePairSelected() ? state.snapshot?.layers.find((layer) => layer.kind === 'route')?.features ?? [] : state.walkingLayer?.features ?? [];
@@ -459,7 +469,9 @@ function renderJourney() {
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Recommended can take longer to favor modeled building shade and avoid mapped active construction sites. See route evidence in Information sources.';
   $('#steps-summary').textContent = route ? `${Math.round(route.route.distance_m)} m · ${Math.round(route.route.duration_s/60)} min walking` : 'Walking route unavailable for this selection.';
   journeySteps.update(route ?? null, {
-    amenities: visibleAmenities()
+    amenities: visibleAmenities(),
+    landmarks: savedLandmarkEvidence().places,
+    landmarkSettings
   });
   $('#source-status').textContent = `${state.amenitiesStatus} · ${fountainsNearRoute().length} real fountains within ${FOUNTAIN_BUFFER_M} m`;
   renderRouteOptions();
@@ -501,11 +513,13 @@ function renderJourney() {
     coordinates: feature.geometry.coordinates,
     sourceFeature: feature
   }));
-  if (badgeActive('#landmark-toggle')) savedLandmarkEvidence().places.forEach(place => markers.push({
+  const landmarks = new Map();
+  if (state.submitted && badgeActive('#landmark-toggle')) routes().filter(item => visible.includes(item.id)).forEach(item => routeLandmarkCandidates(item).candidates.forEach(place => landmarks.set(place.id, place)));
+  landmarks.forEach(place => markers.push({
     kind: 'landmark',
     label: place.label,
     coordinates: place.coordinates,
-    sourceFeature: {
+    sourceFeature: place.sourceFeature ?? {
       id: place.id,
       kind: 'landmark',
       label: place.label,
@@ -548,7 +562,11 @@ function renderJourney() {
     pointFractions,
     pixelForFraction: fraction => map.getRoutePointPixel(state.route, fraction)
   });
+  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
+  if (badgeActive('#shade-samples-toggle') && (!route || !routePairSelected() || state.comparisonJob?.status !== 'ready')) {
+    $('#route-display-info').textContent = 'Shading appears only after calculating SBB → Marktplatz.';
+  }
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
   $('#route-display-info').textContent = 'Fast uses the lowest walking-time estimate. Recommended prefers mapped construction avoidance and available building-shade evidence; unknown shade is not guaranteed.';
@@ -926,6 +944,21 @@ async function refreshConstruction() {
   if (mode === 'online') setTimeout(refreshConstruction, constructionSettings?.browser_refresh_ms ?? 3600000);
 }
 void refreshConstruction();
+
+async function refreshLandmarks() {
+  try {
+    const reply = await fetch(`/api/landmarks?mode=${encodeURIComponent(mode)}`);
+    if (!reply.ok) throw new Error('Landmarks unavailable');
+    const layer = await reply.json();
+    setCachedLandmarks(layer);
+    $('#landmark-source-status').textContent = `${layer.availability} landmark cache · ${layer.features.length} mapped places across Basel-Stadt · refreshed ${layer.features[0]?.provenance.retrieved_at ?? 'unavailable'}. The guide uses nearby landmarks independently of the map badge.`;
+    renderJourney();
+  } catch {
+    $('#landmark-source-status').textContent = 'Landmark cache unavailable; checked saved references remain available.';
+  }
+  if (mode === 'online') setTimeout(refreshLandmarks, landmarkSettings?.browser_refresh_ms ?? 3600000);
+}
+void refreshLandmarks();
 $('#try-example').addEventListener('click', () => {
   setOrigin(FALLBACK_START, 'Example start selected');
   selectDestination(MARKTPLATZ);
