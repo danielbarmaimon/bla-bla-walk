@@ -6,9 +6,6 @@ from datetime import datetime
 import numpy as np
 import pytest
 import rasterio
-from fastapi.testclient import TestClient
-from rasterio.transform import from_origin
-
 from bla_bla_walk import main
 from bla_bla_walk.adapters.routes import load_demo_routes
 from bla_bla_walk.comparison_service import ComparisonService
@@ -17,6 +14,8 @@ from bla_bla_walk.geometry import sha256_file
 from bla_bla_walk.interfaces import ShadeRequest, ShadeResponse, ShadeState
 from bla_bla_walk.route_shade import calculate_walking_evidence
 from bla_bla_walk.shade_service import ROOT, ShadeService
+from fastapi.testclient import TestClient
+from rasterio.transform import from_origin
 
 BOUNDS = (2611490, 1266490, 2611520, 1266520)
 DAYLIGHT = ("2026-06-21T08:00:00+02:00", "2026-06-21T14:00:00+02:00")

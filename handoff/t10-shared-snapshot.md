@@ -20,7 +20,8 @@ match their recorded hashes. A cache-free checkout installed the snapshot,
 passed offline building preparation and real full-polyline shade API validation
 with zero external HTTP requests, consistent seams, concurrent requests and night
 states. Cold p95 4.351007s; warm p95 0.148067s; peak process 584,613,888 bytes
-(one repeat, engineering smoke measurements). 69 focused/contract tests passed;
+(one repeat, engineering smoke measurements). After incorporating the latest
+main's walking-directions changes, 84 focused/contract/instruction tests passed;
 changed-file Ruff checks pass. Existing missing local demo/rest-stop outputs
 remain outside this task, as recorded by the preparation-fix handoff.
 
