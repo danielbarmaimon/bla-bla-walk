@@ -22,6 +22,7 @@ export interface MapFeature {
   pet?: PetRouteMetrics | null;
   rest_type?: "bench" | "park" | "indoor" | null;
   opening_hours?: string | null;
+  directions?: WalkingDirections | null;
 }
 
 export interface MapLayer {
@@ -73,6 +74,24 @@ export interface ShadeMetadata {
   effective_time: string;
   geometry_version: string;
   resolution_m: number;
+}
+
+export interface WalkingDirections {
+  route_id: string;
+  steps: (WalkingInstruction)[];
+}
+
+export interface WalkingInstruction {
+  kind: "start" | "turn" | "continue" | "arrive";
+  text: string;
+  location: [number, number];
+  at_metres: number;
+  distance_m: number;
+  duration_s: number;
+  maneuver_type: string;
+  modifier?: string | null;
+  street_name?: string | null;
+  exit?: number | null;
 }
 
 export interface MapSnapshot {

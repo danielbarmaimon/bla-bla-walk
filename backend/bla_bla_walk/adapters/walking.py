@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 
 import httpx
 
+from ..instructions import provider_directions
 from ..interfaces import LineGeometry, MapFeature, MapLayer, Provenance, RouteMetrics
 from .addresses import ROOT, inside_basel, search_settings
 
@@ -44,6 +45,7 @@ def fetch_routes(request, settings):
                 "alternatives": "true",
                 "geometries": "geojson",
                 "overview": "full",
+                "steps": "true",
             },
         ) as response:
             response.raise_for_status()
@@ -79,6 +81,7 @@ def route_feature(route, index, settings, provenance, speed):
         availability="unknown",
         provenance=provenance,
         route=RouteMetrics(distance_m=distance, duration_s=distance / speed),
+        directions=provider_directions(route, f"walking-{identity}", speed),
         explanation=(
             f"OSM walking estimate assumes {speed:g} m/s. "
             "Endpoints snap to the pedestrian network, "
