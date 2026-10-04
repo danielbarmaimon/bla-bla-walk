@@ -43,9 +43,6 @@ import {
   nearbyFeatures,
   coordinateAtFraction
 } from './route-planner-data.js';
-import {
-  WAYFINDING_PLACES
-} from './wayfinding-places.js';
 
 const FALLBACK_START = {
   id: 'sbb',
@@ -297,34 +294,33 @@ function setOrigin(place, message) {
   map.focusCoordinates(tripCoordinates());
 }
 
+function recommendedRouteId() {
+  const winner = state.comparisonJob?.status === 'ready' ? state.comparisonJob.choices.more_shade?.winner : null;
+  return routes().some(route => route.id === winner) ? winner : null;
+}
+
+function fastestRoute() {
+  return [...routes()].sort((a, b) => a.route.duration_s - b.route.duration_s)[0];
+}
+
 function selectPreference(preference) {
+  const routeId = preference === 'fast' ? fastestRoute()?.id : preference === 'shade' ? recommendedRouteId() : activeComparison()?.winner;
+  if (!routeId && preference !== 'balanced') return;
   state.preference = preference;
-  $('#fast-mode').setAttribute('aria-pressed', String(preference === 'fast'));
-  $('#shade-mode').setAttribute('aria-pressed', String(preference === 'shade'));
-  $('#balanced-mode').setAttribute('aria-pressed', String(preference === 'balanced'));
-  const winner = activeComparison()?.winner;
-  if (winner) state.selectedRouteId = winner;
+  if (routeId) state.selectedRouteId = routeId;
   renderJourney();
+  if (preference !== 'balanced') {
+    showMap(selectedRoute());
+  }
 }
 
 function routeSteps() {
-  const route = selectedRoute();
-  if (!route) return [];
-  if (!routePairSelected()) return [
-    ['Walking network route', 'Inspect the calculated street route on the map.', 'Turn-by-turn guidance, shade and temporary access remain unverified.']
+  if (!selectedRoute()) return [];
+  return [
+    ['Walking route', 'Turn-by-turn directions unavailable. Inspect the selected street route on the map.',
+      'Provider maneuvers are not integrated yet. Turn-by-turn directions remain unavailable.'
+    ]
   ];
-  const water = fountainsNearRoute().find((point) => point.distance <= 25);
-  const steps = [
-    ['Start', 'Begin at Basel SBB / Centralbahnplatz.', 'Checked route snapshot start; local access is not verified.'],
-    ['Walk', `Follow the highlighted walking option${route.label ? `, ${route.label}` : ''}.`, 'Street directions beyond the named path are not separately audited.'],
-  ];
-  if (route.id === 'demo-route-a') {
-    steps.push(['Wayfinding', 'Barfüsserplatz is a named point on this route.', 'Nearby landmarks and visibility are unverified.']);
-
-  }
-  if (water) steps.push(['Water', `${water.feature.label} is near the route.`, 'Location only; drinking water and operation are unknown.']);
-  steps.push(['Arrive', 'Finish at Marktplatz.', 'Checked route snapshot destination; local access is not verified.']);
-  return steps;
 }
 
 function appendStep([type, instruction, note]) {
@@ -357,10 +353,12 @@ function renderRouteOptions() {
   const focused = list.contains(document.activeElement) ? document.activeElement.dataset : null;
   if (!routes().length) {
     list.replaceChildren();
+    $('#comparison-evidence').replaceChildren();
     return;
   }
   renderTripComparison(list, {
     routes: routes(),
+    detailsContainer: $('#comparison-evidence'),
     comparison: state.comparisonJob?.status === 'ready' ? state.comparisonJob.choices : null,
     chosenRouteId: state.chosenRouteId,
     selectedRouteId: state.selectedRouteId,
@@ -375,8 +373,7 @@ function renderRouteOptions() {
     onShow: (route) => {
       state.selectedRouteId = route.id;
       renderJourney();
-      showMap();
-      map.focus(route);
+      showMap(route);
     }
   });
   if (focused?.routeId) list.querySelector(`[data-route-id="${CSS.escape(focused.routeId)}"][data-action="${focused.action}"]`)?.focus();
@@ -441,7 +438,16 @@ function renderJourney() {
   $('#selected-journey').hidden = !state.submitted || !route;
   $('#map-title').textContent = destination?.name ?? 'Explore Basel';
   $('#step-list').replaceChildren();
-  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fastest overall' : state.preference === 'shade' ? 'More shade' : 'Balanced';
+  $('#journey-mode').textContent = state.preference === 'fast' ? 'Fast' : state.preference === 'shade' ? 'Recommended' : 'Balanced';
+  const fast = fastestRoute();
+  const recommended = recommendedRouteId();
+  $('#fast-mode').disabled = !fast;
+  $('#shade-mode').disabled = !recommended;
+  $('#fast-mode').setAttribute('aria-pressed', String(state.preference === 'fast' && state.selectedRouteId === fast?.id));
+  $('#shade-mode').setAttribute('aria-pressed', String(state.preference === 'shade' && state.selectedRouteId === recommended));
+  $('#balanced-mode').setAttribute('aria-pressed', String(state.preference === 'balanced'));
+  $('#route-role-status').textContent = recommended ? (fast?.id === recommended || JSON.stringify(fast?.geometry) === JSON.stringify(routes().find(route => route.id === recommended)?.geometry) ? 'Fast and Recommended use the same route.' : 'Fast and Recommended follow distinct routes.') : `${routes().length === 1 ? 'One walking route available. ' : ''}Recommended unavailable; inspect available routes manually.`;
+  $('#preparation-tips').hidden = !state.busy;
   $('#journey-title').textContent = destination?.name ?? '';
   $('#journey-summary').textContent = routePairSelected() && route ? `From Basel SBB. ${routes().length} checked walking alternatives are available.` : state.routingStatus;
   $('#preference-note').textContent = routePairSelected() ? activeComparison()?.explanation ?? 'Calculate this departure to inspect shade and eligibility. Transit is unavailable. Historical PET stays separate from current shade.' : 'Walking geometry and estimated time are available when routing succeeds. Shade, access and shade-based ranking are unknown for this pair.';
@@ -491,25 +497,17 @@ function renderJourney() {
     coordinates: feature.geometry.coordinates,
     sourceFeature: feature
   }));
-  if (routePairSelected() && state.route) {
-    if (selectedRoute().id === 'demo-route-a') {
-      if (badgeActive('#landmark-toggle')) WAYFINDING_PLACES.forEach((place) => markers.push({
-        kind: 'landmark',
-        label: place.label,
-        coordinates: place.coordinates
-      }));
-    }
-  }
   map.setContextMarkers(markers);
   const evidence = routePairSelected() && state.comparisonJob?.status === 'ready' ? state.comparisonJob.evidence : [];
   map.setShadeSamples(routes(), evidence);
-  const visible = visibleRouteIds(routes(), activeComparison()?.winner, badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
+  const visible = visibleRouteIds(routes(), recommendedRouteId(), badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
+  if (route && ![fastestRoute()?.id, recommendedRouteId()].includes(route.id)) visible.push(route.id);
   map.setRouteVisibility(visible);
   temperatureView?.render(state.route, visible.includes(route?.id));
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
-  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${activeComparison()?.winner ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
+  $('#route-display-info').textContent = `Fast route uses the lowest walking-time estimate. ${recommendedRouteId() ? 'Recommended uses the supported comparison winner.' : 'Recommended is unavailable until an eligible comparison winner exists.'}`;
   const notes = $('#route-step-notes');
   notes.replaceChildren();
   routeSteps().forEach(([type, instruction, note]) => {
@@ -547,6 +545,24 @@ const map = createMap($('#map'), showFeature, (message) => {
 }, (message) => {
   $('#pet-status').textContent = message;
 }, showRouteTemperature);
+fetch('/config/trip-tips.json').then(response => {
+  if (!response.ok) throw new Error('Preparation advice unavailable');
+  return response.json();
+}).then(config => {
+  config.tips.forEach(tip => {
+    const item = document.createElement('li');
+    item.textContent = tip;
+    $('#trip-tips').append(item);
+  });
+  const link = document.createElement('a');
+  link.href = config.source.url;
+  link.textContent = `${config.source.title} · checked ${config.source.checked_on}`;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  $('#tip-sources').append(link);
+}).catch(() => {
+  $('#trip-tips').textContent = 'Preparation advice unavailable.';
+});
 const stopSettings = await fetch('/config/route-stops.json').then(response => response.json());
 temperatureView = await routeTemperatureView(map, mode, renderJourney);
 
@@ -582,12 +598,17 @@ fetch(`/api/route-amenities?mode=${encodeURIComponent(mode)}`).then(response => 
 installLayerBadges(renderJourney);
 const calculation = journeyCalculation((job, message) => {
   state.comparisonJob = job;
+  if (state.preference === 'shade') {
+    if (recommendedRouteId()) state.selectedRouteId = recommendedRouteId();
+    else state.preference = 'fast';
+  }
   if (!activeComparison()?.manual_choices.includes(state.chosenRouteId)) state.chosenRouteId = null;
   if (state.calculationKind === 'comparison') {
-    $('#trip-status').textContent = message;
+    $('#trip-status').textContent = `${message}${job?.status === 'running' ? ` ${job.completed_samples} of ${job.total_samples} samples completed.` : ''}`;
     if (job && job.status !== 'running') state.busy = false;
     if (!job && !message.startsWith('Choose a departure') && !message.startsWith('Checking local')) state.busy = false;
   }
+  $('#comparison-control-status').hidden = true;
   $('#comparison-control-status').textContent = `${message}${job?.status === 'running' ? ` ${job.completed_samples} of ${job.total_samples} samples completed.` : ''}`;
   renderJourney();
 });
@@ -740,10 +761,11 @@ async function refresh() {
   }
 }
 
-function showMap() {
+function showMap(route = null) {
   document.body.dataset.view = 'map';
   map.updateSize();
-  map.focusCoordinates(tripCoordinates());
+  if (route) map.focus(route);
+  else map.focusCoordinates(tripCoordinates());
 }
 
 function showPlan() {

@@ -713,7 +713,7 @@
 
 .route-app .map-and-steps {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--poc-steps-width);
+  grid-template-columns: minmax(0, 1fr);
   min-height: var(--poc-map-height);
   flex: 1;
 }

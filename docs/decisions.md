@@ -83,3 +83,5 @@ Format: `- <date> · <decision> · @<github-username> · Affects: <tasks or area
 - 2026-10-04: T27 approved by @ltorrecilla: form beside map on desktop, form-first mobile, empty endpoints and explicit Find routes; full role selection and preparation tips remain T30.
 
 - 2026-10-04: T27 account D follow-up uses the requested Calculate label and invalidates results when switching departure mode; preserves the merged PR #51 layout, current APIs and arbitrary-route unknown shade/access. Shared browser entry points/CSS stay with D through T30.
+
+- 2026-10-04: T30 maps Fast to the lowest available walking estimate and Recommended to the eligible ready more_shade winner; selection reuses existing geometry and shade jobs, explains shared roles, and withholds unsupported recommendation. Move calculation details to Information sources, show actual sample counts and four sourced FOPH heat-preparation tips. Omit optional landmarks/shadow areas and withhold directions until A/T22 integrates; no new backend orchestrator.
