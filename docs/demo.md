@@ -1,122 +1,72 @@
-# Slot F — local demonstration runbook
+# Bla Bla Walk — five-minute pitch runbook
 
-English; 5:00 solution followed by 0:42 reflection. The team authorized a local
-presentation without an external deployment. T6's external-server criterion remains
-unverified; it does not block this local preparation checkpoint. T7 is not fully
-accepted until the presenters rehearse and the submission is confirmed.
+English: exactly 5:00 for the seven-beat solution pitch, followed by a separate 0:42 HackAmRhein reflection. No external deployment. Use the speaker script in [pitch.md](pitch.md); the demo plan below is based on what this checkout could actually load on 2026-10-04.
 
-## T31 joined-flow checkpoint — 2026-10-04
+## Verified local state — 2026-10-04
 
-The accepted local flow covers the saved SBB → Marktplatz pair, arbitrary online
-address pairs, route-specific steps, route switching, departure changes, source
-details, mapped stop candidates, keyboard/mobile controls, provider failure and
-missing shade preparation. A missing shade calculation keeps Recommended
-unavailable; it never becomes fake progress or a safety claim. Construction
-records remain dated cautions: current sources do not prove pedestrian edge
-closures and the router does not automatically avoid them.
+- The FastAPI root page returned HTTP 200 and contains the route form. This checks the app shell, not provider-backed operation.
+- The explicit fixture map endpoint returned HTTP 200 with two synthetic observation features and one synthetic fountain feature. It is useful only as a visibly synthetic UI check.
+- The offline map endpoint returned HTTP 503: the saved provider snapshot is missing in this checkout. Do not claim a working offline app on this machine.
+- The dated T31 fallback and T7 distribution were absent at session start; the original `.hack/t6-merged-real-journey.json` was also absent. A local-only saved-summary fallback was reconstructed from the exact figures in the merged `handoff/t6-integration.md`. It is labelled **SAVED FALLBACK SUMMARY · 3 October 2026 · departure 14:00 Basel time · not live**, states that the raw JSON is absent, and makes no requests.
+- Existing browser acceptance check for that fallback passed: two route rows, saved/not-live wording, zero external requests. A browser attempt before localhost permission failed at sandbox socket setup; the approved rerun passed. This is a page check, not a spoken rehearsal.
 
-The T31 fallback is local at `.hack/t31-fallback/index.html`. It is labelled
-`SAVED FALLBACK · 2026-10-04 · not live` and contains only committed saved route
-geometry and provenance. It has no scripts, remote assets or provider requests.
-Keep this local file and do not copy `.hack/` or private profiles into the
-repository or presentation package.
+## Guaranteed setup
 
-## Presentation and backup
+1. From the project root, open `.hack/t31-fallback/index.html` directly in a browser. It needs no server or internet. It is local-only and ignored by Git.
+2. Set browser zoom to 125% and size the window so both route rows and the saved/not-live notice fit. Keep the table visible before starting.
+3. Assign speaker and clicker. Use GitHub usernames in team records. One person may do both.
+4. Start the page timer with the first word. Reset only before a run. The page timer is a pacing aid, not proof of a timed human rehearsal.
+5. Keep the full source register in `docs/SOURCES.md` available locally. Credits and limits are summarized on the fallback page and in the script.
 
-Source script: [pitch.md](pitch.md). Generate the local distribution from the
-repository root with the existing project Python:
+The online app can be started with the existing Linux launcher `bash scripts/run-linux.sh` or Windows launcher `scripts\\run-windows.cmd`, as documented in `README.md`. These prepare dependencies and data and require internet. This checkout's offline snapshot is missing, so use the standalone fallback as the guaranteed presentation path. Do not switch to fixture mode as route evidence; fixtures are synthetic.
 
-```powershell
-.venv\Scripts\python.exe scripts/build_demo_distribution.py
-```
+## Exact five-minute actions
 
-Final presentation file: `dist/t7/index.html`; speaker notes: `dist/t7/pitch.md`;
-runbook: `dist/t7/demo.md`; source register: `dist/t7/SOURCES.md`.
-Backup: `dist/t7-backup/index.html` and its companion files. Both folders are
-local and ignored by Git. Copy the whole backup folder to the presenting team's
-chosen removable drive before leaving; do not copy private profiles or credentials.
-This is a presentation/fallback distribution, not a portable installation of the app.
-The local app continues to use this checkout, virtual environment and prepared caches.
+| Time | Beat / screen action |
+|---|---|
+| 0:00–0:45 | Create Curiosity. Start timer; keep the fallback title and saved label visible. No click. |
+| 0:45–1:30 | Create Tension. Hold the question; no result reveal and no click. |
+| 1:30–3:00 | Specific Moment. Point to the date and **not live** notice. Point to Route A, then Route B. End on **Access: Unknown** and the sentence explaining why no route is eligible. Allow 20–25 seconds for the audience to read; do not calculate or open another route. |
+| 3:00–3:30 | Change Pace. Keep the table still; pause on the unknown column. |
+| 3:30–4:00 | Unexpected Twist. No click. State that neither route is eligible because access is unknown. |
+| 4:00–4:30 | Personal Story. Use one true, non-identifying personal sentence only if the speaker supplies it. Otherwise use the explicitly illustrative line in `pitch.md`. |
+| 4:30–5:00 | Land Takeaway. Look up; deliver the final sentence. At 5:00 move to reflection. |
+| 5:00–5:42 | HackAmRhein reflection. Keep this separate from the solution timing. Stop at 5:42. |
 
-The standalone HTML contains the slide outline, real dated result table, source
-credits, limitations and an elapsed-time display. It opens directly from disk
-without a server or internet. It includes the original saved JSON and its checksum.
-No screenshots or recording are necessary for the primary fallback.
+Do not imply the fallback is the interactive app. It presents a summary of a saved run. The source values are exact in the merged T6 acceptance handoff: Route A 158.475 m modelled shade / 1,151.620 m unknown; Route B 107.680 m modelled shade / 1,196.889 m unknown; 248 exact-time samples; recorded runtime 827.833 s; zero outbound HTTP attempts; access unknown for both. The browser page transcribes the summary; it does not contain the missing raw JSON.
 
-## Before going on stage
+## Failure route
 
-1. Assign speaker and clicker using GitHub usernames; assignments are pending.
-2. Confirm the reflection describes the team's actual experience.
-3. Run the documented [local startup](../README.md), open the map, select offline
-   provider mode using the app's mode link, and use only SBB → Marktplatz.
-4. Pre-open `dist/t7/index.html` and backup. Set browser zoom to 125%; use the
-   projector resolution. Keep source times readable. Avoid historical PET's
-   online-only overlay in the disconnected demo.
-5. Precheck local geometry/buildings and saved provider/basemap resources. The
-   existing [T6 evidence](../handoff/t6-integration.md) records the real offline
-   journey. A new cold calculation cannot fit this presentation; do it before
-   the session if desired, and label its time accurately.
-   New-address street routing is online-only and has no current-departure shade
-   comparison. Keep the saved pair for this offline presentation.
-6. Start the presentation timer. Follow pitch.md's section boundaries; switch
-   from the local map to the saved fallback by 2:10. At 5:00 start reflection;
-   stop at 5:42. Manual slide switching remains possible after a timer boundary.
+There is no recovery delay: open the standalone page directly. Say: “The local offline snapshot is missing here, so this is a dated saved summary from the recorded 3 October run, not live output.” Use the table and proceed on the planned timing. If the local page cannot open, read its two route values from the speaker script and name the source as the merged T6 acceptance record. Never call the summary a fresh calculation, measured shade, live observation or verified safe route.
 
-## Failure procedure — spend at most ten seconds recovering
+## Word budget and rehearsal record
 
-If startup, map loading, a source, calculation or projector internet fails,
-open `dist/t7/index.html` directly. Say: “The local app is unavailable. This is
-saved output for 3 October 2026, 14:00 Basel time, not a live calculation.”
-Show the two route rows, large unknown distances and withheld recommendation.
-Keep the planned timing; replace app clicks with table inspection.
-If the primary file is unavailable, open the backup index file. If neither
-computer display works, read the saved-result numbers from the printed pitch
-and describe the outcome. Do not relabel saved or synthetic evidence as live.
-
-Saved calculation provenance: `.hack/t6-merged-real-journey.json`, departure
-2026-10-03 12:00 UTC (14:00 Europe/Paris); 248 samples; prior recorded runtime
-827.833 seconds; zero outbound HTTP attempts. “Saved 2026-10-03” describes the
-existing recorded artifact, not the moment a new calculation was run.
-Source observations retain their own timestamps in that JSON. No eligible route:
-access unknown. Water availability unknown. Original JSON stays local.
-
-## Two spoken rehearsals — required, not yet performed
-
-Technical fallback test on 2026-10-03: Chrome opened both primary and backup
-directly from disk, displayed the real route rows and opened only local resources.
-All companion links existed; no browser errors or external requests occurred.
-Timer start/reset and simulated elapsed-time boundaries at 5:00 and 5:42 passed.
-Both HTML copies matched byte for byte. These checks are not spoken rehearsals.
-
-Use the distribution timer and actual presenters, clicker and screen. A browser
-timer test is not a spoken rehearsal. Exact timing cannot be certified by word count.
+Word budgets, pause cues and beat order are in [pitch.md](pitch.md). The working estimate is about 474 spoken words plus 30–40 seconds for pauses and demo actions for the 300-second solution, and about 70 words for the 42-second reflection. The presenter’s speaking rate and click delays are not measured.
 
 | Run | Solution | Reflection | Full duration | Changes / confirmation |
 |---|---|---|---|---|
-| 1 | Pending: target 5:00 | Pending: target 0:42 | Pending: target 5:42 | Note slow clicks and overruns; trim after this run. |
-| 2 | Pending: target 5:00 | Pending: target 0:42 | Pending: target 5:42 | Verify the trimmed script and fallback with the same presenters. |
+| 1 | Pending — human timed run | Pending — human timed run | Pending | Record actual start/end times, speaker pace and slow clicks. Trim after this run while preserving beat order and 300 seconds. |
+| 2 | Pending — human timed run | Pending — human timed run | Pending | Rehearse the revised script with the same speaker/clicker and fallback. Record measured times; do not use simulated timing. |
 
-After run 1, remove about 20% of optional explanation if needed: shorten the
-workaround paragraph, remove the rescoring explanation and compress source speech
-while leaving the source slide visible. Never cut saved/live disclosure, unknown
-access, model limits or the reflection. Use regained time for clicks and pauses.
-Edit pitch.md, regenerate both folders, then run 2. Record measured times here
-and confirm exactly 5:00 + 0:42 before calling the presentation ready.
+No spoken human rehearsal has been completed. Browser acceptance and page-timer behavior do not count as rehearsals. The presenters must perform both full 5:42 runs before marking presentation acceptance complete.
+
+## Likely jury answers
+
+| Question | Short answer |
+|---|---|
+| Who is it for; what do they do today? | People planning walks around heat and caregivers are the intended users. Separate navigation and shade/water checks are an assumption awaiting user interviews. |
+| What is measured, estimated, saved or synthetic? | Station readings are measurements at stations; route temperature colours are interpolated estimates. The shown route comparison is a dated saved model output. Fixture data is synthetic. |
+| What did you fake? | Nothing in the shown summary is a live calculation. Physical shade, water operation, pedestrian access and safety are not verified. |
+| Where does the data come from, and may it be reused? | `docs/SOURCES.md` lists attribution and terms: Basel-Stadt/meteoblue CC BY 4.0, OSM ODbL 1.0, IWB noncommercial terms and swisstopo open-data terms. |
+| Why no winning route? | Access is unknown for both saved routes, so neither is eligible. A preference cannot turn unknown evidence into known access. |
+| Is more shade cooler or safer? | No such claim is validated. The model approximates building shadows on flat ground and omits trees and terrain relief. |
+| What would it take to run for real? | Field validation of shade/access, user testing, source operations and performance work. Cost and regulatory requirements have not been assessed. |
+| What broke or was hardest? | The cold route calculation is slow, and this checkout lacks the saved offline provider snapshot. We preserve those gaps instead of presenting synthetic or stale data as live. |
+| What did each person contribute? | Each person answers for themselves with their GitHub username and actual work. |
 
 ## Sources and limits on screen
 
-Concise credits appear in the distribution; [SOURCES.md](SOURCES.md) owns detailed
-terms and versions. Basel-Stadt/meteoblue: CC BY 4.0; IWB: noncommercial with
-attribution; OSM contributors: ODbL 1.0, routing by OSRM/FOSSGIS; survey heights:
-swisstopo open-data terms. OpenLayers BSD-2-Clause, FastAPI MIT, Rasterio BSD-3-Clause,
-AJV MIT; keep upstream notices. Codex assisted code, tests, documentation and pitch.
-Its assistance does not validate the data or assign team contributions.
-
-Distinguish measured observations, numerical model output, dated saved results,
-synthetic fixtures, unavailable transit and unvalidated physical behaviour.
-No cooling degrees, medical advice, overall safety or verified drinking water.
-Building-only flat-ground shadows omit tree casting and terrain relief; historical
-PET is a fixed summer scenario. See pitch.md for short jury answers.
+Keep the fallback's concise credits visible and point to `docs/SOURCES.md` for exact versions and licence obligations. Codex assisted with code, checks, documentation and the pitch. The prototype does not prove measured cooling, physical shade accuracy, verified water/access, route safety or a live closure detour. No transit service is available. Historical PET is a fixed summer scenario, not current weather. The shadow model is a building-only flat-ground approximation.
 
 ## Sunday 4 October 2026 — team action
 
@@ -129,14 +79,6 @@ building stops **14:59**; introduction **15:00–15:30**; presentations begin
 **15:30 in random order**. These are the event details supplied for this task.
 Keep the app and fallback ready throughout the presentation session.
 
-## Route-stop demonstration
+## Optional interactive app tour — only after the pitch
 
-On the local app, select an address, show the calculated route, and enable Route stops. WATER uses saved IWB fountains; BENCH and REST use saved OSM seating/park candidates, with optional sourced indoor candidates. Open Route stops or select a marker to show provenance. Describe these as mapped candidates within 50m, with drinking, operation, access and cooling unknown. A dated saved acquisition is never a live condition report. The static T7 fallback retains its labelled saved result and does not claim this new interactive feature.
-
-## Sensor route-temperature demonstration
-
-Use the local **Online** mode, select a route, and enable Sensor-based route temperature. The selected line uses real station-based estimates with an actual °C range, coverage and time/source details. Click a coloured section for its contributing observations. Summer is green–amber–rose; winter is cyan–indigo. Automatic uses current sensor temperature, then the departure day's city forecast to choose the palette. Forecast never fills route gaps. Disable temperature to inspect shade strokes. Example/offline uses saved readings and explicitly says SAVED / STALE. This feature is exploratory and does not establish street-level cooling or safety; the static T7 fallback remains its older labelled saved result.
-
-## Simplified map controls
-
-The local app now starts with Temperature, Fast route, Recommended, Water, Bench and Rest active. Tap badges to toggle them; open More for Heatmap, Shading, Weather stations, Fountains, Landmarks and Interior space. Recommended may have no supported route; do not call an arbitrary alternative recommended. Stops are displayed on the walking line, with rest planning prompts at 15 walking-minute intervals. Sources and actual off-route positions are under Information sources. Interior space filters mapped supermarkets by supported scheduled hours at the selected departure. Shading repair remains deferred. The static fallback still reflects its dated earlier saved output.
+The merged local app code supports online address search and walking geometry, route steps, sensor-based route estimates, route-stop candidates and a saved-pair shade comparison. Provider-dependent operation needs outbound HTTPS and prepared local data. This checkout's offline provider snapshot returned 503, so do not add these live actions to the guaranteed five-minute route. If an online source fails, show the saved summary and describe what it contains; do not use fixture values as real evidence.
