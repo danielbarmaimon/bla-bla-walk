@@ -85,7 +85,7 @@ case "$MODE" in
     while read -r lref lsha rref rsha; do
       [ -z "${lsha:-}" ] && continue
       case "$lsha" in *[!0]*) ;; *) continue ;; esac     # branch deletion
-      case "$rsha" in *[!0]*) RANGE="$rsha..$lsha" ;; *) RANGE="$lsha --not --remotes" ;; esac
+      case "$rsha" in *[!0]*) RANGE="$rsha..$lsha --not --remotes" ;; *) RANGE="$lsha --not --remotes" ;; esac
       PATHS="$PATHS"$'\n'"$(git log --name-only --format= $RANGE)"
       ADDED="$ADDED"$'\n'"$(git log -p -U0 --no-color --format= $RANGE | diff_to_added)"
       check_identities "$RANGE" 1

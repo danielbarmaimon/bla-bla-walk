@@ -2,6 +2,7 @@ import {
   routeGeometry,
   coordinateAtFraction
 } from './route-planner-data.js';
+import { MAX_VISIBLE_ROUTE_POINTS } from './route-node-details.js';
 const {
   Feature,
   Map,
@@ -535,6 +536,23 @@ export function createMap(
         feature.set('temperatureSample', sample.estimate);
         temperatureFeatures.addFeature(feature);
       });
+    },
+    setRoutePointDetails: (route, profile) => {
+      if (!route || !profile?.segments?.length) return [];
+      const step = Math.max(1, Math.ceil(profile.segments.length / MAX_VISIBLE_ROUTE_POINTS));
+      return profile.segments.flatMap((sample, index) =>
+        index % step === Math.floor(step / 2) % step || index === profile.segments.length - 1 ?
+          [(sample.start + sample.end) / 2] : []
+      );
+    },
+    getRoutePointPixel: (route, fraction) => {
+      if (!route) return null;
+      const point = coordinateAtFraction(route, fraction);
+      return map.getPixelFromCoordinate(fromLonLat(point));
+    },
+    onViewChange: (callback) => {
+      map.on(['moveend', 'change:size'], callback);
+      return () => map.un(['moveend', 'change:size'], callback);
     },
     setPicking: (kind, callback) => {
       picking = kind ? {

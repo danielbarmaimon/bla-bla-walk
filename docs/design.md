@@ -78,7 +78,7 @@ With limited next-session time, prioritize route-specific steps, the existing sh
 
 ## Follow-up: inspect a point on the selected route
 
-After M6 acceptance, let a person inspect a calculated route point using hover on desktop or tap/click on touch. Show its corresponding temperature, remaining distance and estimated time to the destination. Include the local route-segment shadow percentage only when supported data is available. Keep the detail card compact, dismissible and keyboard-accessible; missing evidence stays unavailable. T32 in [the plan](plan.md#t32-show-details-for-a-selected-route-point) owns the implementation.
+After M6 acceptance, let a person inspect a calculated route point using hover on desktop or tap/click on touch. Show the nearest hourly temperature forecast for the selected point's estimated arrival time, remaining distance and estimated time to the destination. The temperature value comes from the fixed Basel city forecast point, not a street-local forecast. Include the local route-segment shadow percentage only when supported data is available. Keep the detail card compact, dismissible and keyboard-accessible; missing evidence stays unavailable. T32 in [the plan](plan.md#t32-show-details-for-a-selected-route-point) owns the implementation.
 
 ## Map feature popups (2026-10-04)
 

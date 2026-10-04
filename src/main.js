@@ -21,6 +21,7 @@ import {
   routeTemperatureView,
   showRouteTemperature
 } from './route-temperature-view.js';
+import { mountRouteNodeDetails } from './route-node-details.js';
 import {
   addressSearch
 } from './address-search.js';
@@ -509,7 +510,18 @@ function renderJourney() {
   const visible = visibleRouteIds(routes(), recommendedRouteId(), badgeActive('#fast-route-toggle'), badgeActive('#recommended-route-toggle'));
   if (route && ![fastestRoute()?.id, recommendedRouteId()].includes(route.id)) visible.push(route.id);
   map.setRouteVisibility(visible);
-  temperatureView?.render(state.route, visible.includes(route?.id));
+  const temperatureProfile = temperatureView?.render(state.route, visible.includes(route?.id));
+  const pointFractions = map.setRoutePointDetails(state.route, temperatureProfile);
+  const routeEvidence = evidence.find(item => item.id === route?.id);
+  routeNodeDetails.update({
+    route,
+    profile: temperatureProfile,
+    evidence: routeEvidence,
+    departureTime: $('#departure-time').value,
+    forecastForArrival: date => temperatureView.forecastForArrival(date),
+    pointFractions,
+    pixelForFraction: fraction => map.getRoutePointPixel(state.route, fraction)
+  });
   map.setShadeVisible(badgeActive('#shade-samples-toggle'));
   map.setPetVisible(badgeActive('#pet-layer-toggle'));
   renderLayers();
@@ -539,13 +551,19 @@ function renderPetLegend() {
   });
 }
 
-const map = createMap($('#map'), showFeature, (message) => {
+const routeNodeSlider = document.createElement('div');
+routeNodeSlider.id = 'route-node-control';
+$('#steps-summary').after(routeNodeSlider);
+let map;
+const routeNodeDetails = mountRouteNodeDetails($('#map').parentElement, routeNodeSlider);
+map = createMap($('#map'), showFeature, (message) => {
   const unavailable = message.includes('unavailable');
   $('#basemap-status').textContent = unavailable ? message : '';
   $('#basemap-status').hidden = !unavailable;
 }, (message) => {
   $('#pet-status').textContent = message;
 }, showRouteTemperature);
+routeNodeDetails.attachMap(map);
 fetch('/config/trip-tips.json').then(response => {
   if (!response.ok) throw new Error('Preparation advice unavailable');
   return response.json();
