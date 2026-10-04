@@ -14,6 +14,11 @@ if not errorlevel 1 set "BOOTSTRAP_PYTHON=py -3"
 :environment_ready
 set "APP_PYTHON=%CD%\.venv\Scripts\python.exe"
 "%APP_PYTHON%" -c "import sys; assert sys.version_info >= (3, 12), 'Python 3.12 or newer is required'; assert 1 <= int(sys.argv[1]) <= 65535, 'Use a port from 1 to 65535'" "%APP_PORT%" || exit /b 1
+"%APP_PYTHON%" -m pip --version >nul 2>nul
+if not errorlevel 1 goto pip_ready
+echo Bootstrapping pip in the existing virtual environment...
+"%APP_PYTHON%" -m ensurepip --upgrade || exit /b 1
+:pip_ready
 echo Preparing the project environment and browser assets...
 "%APP_PYTHON%" -m pip install --disable-pip-version-check --quiet -r backend\requirements.txt || exit /b 1
 "%APP_PYTHON%" scripts/fetch_browser_assets.py || exit /b 1
