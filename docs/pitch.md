@@ -5,18 +5,24 @@ the local distribution described in [the runbook](demo.md). The timetable is a
 delivery target, not proof of spoken duration. Presenter rehearsals remain pending.
 Speaker and clicker: team to assign by GitHub username; one person may do both.
 
-## 0:00–0:45 — The moment it hurts
+## 0:00–0:55 — The moment it hurts
 
-Imagine planning a walk through Basel on a hot day. You want to reach the market,
-but the shortest route does not tell you how exposed the walk is, where you might
-refill water, or what information is missing. This matters particularly for people
-affected by heat and the people helping them plan.
+Let me start with Bjarki. He is 80 years old, and every year he drives from his
+home to Iceland. The journey takes two weeks. Not because he is slow, but because
+he chooses the alternative route: small villages, new places, and time to enjoy
+the journey.
 
-Our example is Basel SBB to Marktplatz. The assumed workaround is a normal walking
-navigator plus separate checks for shade and water. This is our demo scenario,
-not a claim that we interviewed users. Bla Bla Walk brings those tradeoffs together.
+That is a useful way to think about walking in summer. An older person going out
+to shop may not need the fastest route. They may prefer a path with shade, a bench
+and a fountain; a route that avoids a construction site and long stretches of
+direct sun. A standard navigator optimises arrival time. It does not explain those
+tradeoffs or tell us what remains unknown.
 
-## 0:45–1:25 — What we built
+Bla Bla Walk helps people choose the kind of journey they actually want. Bjarki's
+story is our framing story; the Basel SBB to Marktplatz walk is our checked demo
+scenario, not a claim that we interviewed him.
+
+## 0:55–1:35 — What we built
 
 We built a browser map served by a Python backend. It brings together timestamped
 temperature observations, fountain locations, two saved walking alternatives,
@@ -27,7 +33,7 @@ extra-time limit expresses a preference. It does not establish a health threshol
 We keep distance, time, shaded metres and unknown metres visible. The most useful
 result can be an honest refusal to recommend a route when the evidence is incomplete.
 
-## 1:25–3:05 — Demonstration
+## 1:35–3:15 — Demonstration
 
 Clicker: open the local offline map, already at 125% zoom. Show SBB to Marktplatz,
 inspect one source timestamp and one fountain's unknown operational status. Do not
@@ -53,7 +59,7 @@ local run, so this dated fallback protects the presentation from that delay.
 If the app fails: use the same saved page immediately and say, “The local app is
 unavailable. This is dated saved output, not a live calculation.”
 
-## 3:05–4:00 — How it works and what is interesting
+## 3:15–4:10 — How it works and what is interesting
 
 The backend samples the saved route at the time a walker is expected to reach each
 point. Local solar calculations and prepared building geometry estimate shadows.
@@ -69,7 +75,7 @@ an observed temperature, a historical summer heat scenario, an approximate shado
 and an unknown access condition are different things. Combining them on a map
 must not make them look equally certain.
 
-## 4:00–5:00 — Sources, limits and next step
+## 4:10–5:00 — Sources, limits and next step
 
 Basel-Stadt data uses CC BY attribution; observations credit meteoblue, and
 fountain locations credit IWB under noncommercial terms. Walking geometry and
