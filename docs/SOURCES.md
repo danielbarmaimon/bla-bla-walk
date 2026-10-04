@@ -154,6 +154,24 @@ The linked [100018 API metadata](https://data.bs.ch/api/explore/v2.1/catalog/dat
 
 The current route snapshot is [OSRM foot-profile geometry](../data/routes/demo.geojson) retrieved 2026-10-03. The adapter explicitly reports no temporary-closure feed and no per-segment access audit, and keeps route availability `unknown`. It cannot currently avoid newly closed edges; no blanket blockage or rerouting rule was added.
 
+## T31 joined-flow sources and limits — 2026-10-04
+
+The final flow reuses the source evidence already admitted above: GeoAdmin address
+search is © swisstopo; walking geometry is the FOSSGIS OSRM foot profile over ©
+OpenStreetMap contributors / ODbL 1.0; saved IWB fountains retain their
+noncommercial attribution and unknown operation/access; mapped OSM benches,
+parks and supermarkets retain ODbL and mapped-candidate limits. The four short
+preparation tips come from the [Swiss Federal Office of Public Health heat page](https://www.bag.admin.ch/en/heat),
+checked 2026-10-04; they are general preparation advice, not route safety or
+medical thresholds.
+
+T31 verification deliberately distinguishes replayed synthetic browser payloads,
+dated saved route geometry and live provider calls. The local fallback is saved
+output only and contains no remote assets or requests. Missing browser/provider
+caches and missing prepared shade inputs remain explicit unavailable states. The
+optional T21 landmark overlay and T24 area-shadow overlay were not included
+because they were not merged; no acceptance claim is made for them.
+
 ## Pinned city geometry and coverage
 
 Engineering extent: **Basel-Stadt canton, including Basel, Riehen and Bettingen**. Pin [swissBOUNDARIES3D 2026-01](https://www.swisstopo.admin.ch/en/landscape-model-swissboundaries3d) from the checksum-verified EPSG:2056/LN02 GeoPackage; the archive URL, SHA-256, feature UUID, original geometry hash and extracted 2D polygon are in the inventory. Area 36.95km². Dropped Z ordinates for planar selection; coordinates otherwise unchanged. Extent is a working interpretation of all Basel, recorded in decisions.

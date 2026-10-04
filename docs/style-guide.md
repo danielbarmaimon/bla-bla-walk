@@ -52,11 +52,12 @@ The root route screen now carries the reviewed planning flow into the main
 application. It uses `src/theme.css` tokens, large labelled controls, and
 Lucide icons. The SBB → Marktplatz options come from the saved pedestrian
 geometry and current route contract. Rest and pause are example cues; nearby
-fountains and sensors come from the selected provider snapshot. Wayfinding
-landmarks and the indoor-place candidate remain unverified. Historical PET
-classes are displayed with their source status. Synthetic temperature ramps
-and example shadows from `/poc` stay out of the main map so they cannot be
-mistaken for measured heat or calculated shade.
+fountains and sensors come from the selected provider snapshot. Route-specific
+steps may add source-backed mapped references, always marked visibility
+unverified; the optional landmark overlay is not part of the accepted flow.
+Historical PET classes are displayed with their source status. Synthetic
+temperature ramps and example shadows from `/poc` stay out of the main map so
+they cannot be mistaken for measured heat or calculated shade.
 
 ## Principles
 

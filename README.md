@@ -57,11 +57,13 @@ route geometry/provenance, speed, source-file stamps, policy and implementation.
 Changed prepared inputs invalidate results; missing inputs return a visible 503.
 All route calculation and rescoring use local inputs in every mode. Online mode
 refreshes provider layers independently; offline mode makes no external requests.
-No transit service is admitted. The prepared local offline journey has been
-validated; the online external-server journey remains unverified. Each target
-machine needs the prepared datasets; the committed shade snapshot supplies the
-building footprints and compact survey inputs without provider downloads. See the
-[T6 acceptance record](handoff/t6-integration.md) for evidence and the remaining check.
+No transit service is admitted. Offline mode makes no external requests, but each
+target machine still needs its saved provider/basemap caches and prepared shade
+inputs; missing downloads remain explicit. The committed shade snapshot supplies
+building inputs without provider downloads, while the dated local T31 fallback is
+saved output, never a live calculation. The online external-server journey remains
+unverified. See the [T31 acceptance record](handoff/T31.md) and [T6 acceptance
+record](handoff/t6-integration.md) for the checked scope and limits.
 
 ## Download data before offline use
 
@@ -259,7 +261,7 @@ Format Python with `python -m ruff format backend scripts/fetch_browser_assets.p
 
 Tap a title-only badge to toggle its layer (keyboard Enter/Space also works). Equal-size **Temperature**, **Fast route**, **Recommended**, **Water**, **Bench** and **Rest** badges start active. **More** starts collapsed with inactive **Heatmap**, **Shading**, **Weather stations**, **Fountains**, **Landmarks** and **Interior space** badges. All source descriptions, dates, licences, legends and method details are under collapsed **Information sources** at the end of the page.
 
-Fast route displays the shortest walking-time estimate. Recommended displays only a supported comparison winner; it can remain empty while its badge is active. The controls are independent even when both refer to the same path. Temperature follows the selected visible route. Shading repair is deferred; its existing display starts off. Landmarks remain limited to the saved example.
+Fast route displays the shortest walking-time estimate. Recommended displays only a supported comparison winner; it can remain empty while its badge is active. The controls are independent even when both refer to the same path. Temperature follows the selected visible route. Shading remains unavailable when prepared inputs are missing and unknown cells stay explicit. Route steps may include source-backed mapped references with visibility unverified; the optional landmark overlay is omitted until its separate task is merged.
 
 Rest prompts are planned every **15 minutes of walking** before arrival, using the route's estimated walking time. They are displayed on the route, separate from mapped benches and park candidates; a prompt does not establish seating at that point. No stop duration or unverified detour is added to the trip calculation. The source point behind a projected Water/Bench/Rest marker retains its original coordinates.
 
