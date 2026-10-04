@@ -151,3 +151,102 @@ def test_unusable_route_or_unsupported_evidence_clears_markers(browser_page):
         )
         assert result["availability"] == "missing"
         assert not result["candidates"]
+
+
+def test_landmark_search_selects_real_endpoints_without_address_provider(browser_page):
+    page = browser_page
+    requests = []
+    page.on(
+        "request",
+        lambda request: (
+            requests.append(request.url) if "/api/addresses" in request.url else None
+        ),
+    )
+    page.goto(page.base_url + "/?mode=offline")
+    origin = page.locator("#origin-input")
+    origin.fill("Barfusserkirche")
+    page.locator("#origin-suggestions button").first.wait_for()
+    assert (
+        "Saved mapped landmark"
+        in page.locator("#origin-suggestions button").first.inner_text()
+    )
+    origin.press("ArrowDown")
+    page.keyboard.press("Enter")
+    assert origin.input_value() == "Barfüsserkirche"
+    destination = page.locator("#destination-input")
+    destination.fill("Stadtcasino")
+    page.locator("#suggestions button").first.click()
+    assert destination.input_value() == "Stadtcasino Basel"
+    assert (
+        "Mapped landmark selected" in page.locator("#destination-status").inner_text()
+    )
+    assert page.locator("#calculate-journey").is_enabled()
+    assert not requests
+
+
+def test_saved_landmark_search_survives_address_failure_and_clear(browser_page):
+    page = browser_page
+    page.route("**/api/addresses", lambda route: route.fulfill(status=503))
+    try:
+        page.goto(page.base_url)
+        field = page.locator("#destination-input")
+        field.fill("Stadtcasino")
+        page.wait_for_function(
+            "document.querySelector('#destination-status').textContent"
+            ".includes('coverage limited')"
+        )
+        assert "Stadtcasino Basel" in page.locator("#suggestions").inner_text()
+        field.fill("No such landmark abcxyz")
+        page.wait_for_function(
+            "document.querySelector('#destination-status').textContent"
+            ".includes('Try again')"
+        )
+        assert page.locator("#suggestions").is_hidden()
+        field.fill("Barfu")
+        page.locator("#suggestions button").first.wait_for()
+        field.press("Escape")
+        assert page.locator("#suggestions").is_hidden()
+    finally:
+        page.unroute("**/api/addresses")
+
+
+def test_saved_landmark_search_preserves_shop_coordinates_and_dates(browser_page):
+    page = browser_page
+    initialize_harness(page)
+    result = page.evaluate("""() => {
+      const evidence = landmarksModule.savedLandmarkEvidence({rest_stops:{features:[{
+        id:'osm-node-1',label:'Migros',geometry:{type:'Point',coordinates:[7.59,47.55]},
+        provenance:{fixture:false,source_url:'https://www.openstreetmap.org/node/1',
+          retrieved_at:'2026-10-03T22:59:42.128381Z'}}]}});
+      return landmarksModule.searchSavedLandmarks('migros',evidence);
+    }""")
+    assert len(result) == 1
+    assert result[0]["name"] == "Migros"
+    assert (result[0]["lon"], result[0]["lat"]) == (7.59, 47.55)
+    assert result[0]["landmark"]["retrievedAt"] == "2026-10-03T22:59:42.128381Z"
+
+
+def test_landmark_selection_sends_source_coordinates_to_walking_router(browser_page):
+    page = browser_page
+    page.route(
+        "**/api/addresses",
+        lambda route: route.fulfill(json={"places": [], "status": "available"}),
+    )
+    page.route("**/api/walking-routes", lambda route: route.fulfill(status=422))
+    try:
+        page.goto(page.base_url)
+        page.locator("#origin-input").fill("Barfusserkirche")
+        page.locator("#origin-suggestions button").first.click()
+        page.locator("#destination-input").fill("Stadtcasino")
+        page.locator("#suggestions button").first.click()
+        with page.expect_request(
+            lambda request: (
+                "/api/walking-routes" in request.url and request.method == "POST"
+            )
+        ) as sent:
+            page.locator("#calculate-journey").click()
+        assert sent.value.post_data_json["start"] == [7.5905029, 47.5544915]
+        assert sent.value.post_data_json["end"] == [7.5901346, 47.5542438]
+    finally:
+        page.unroute("**/api/addresses")
+        page.unroute("**/api/walking-routes")
