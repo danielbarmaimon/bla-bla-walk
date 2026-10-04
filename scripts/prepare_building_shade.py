@@ -5,6 +5,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 from rasterio.warp import transform
@@ -139,7 +140,16 @@ def sanitized_features(elements):
     return features
 
 
-def download_buildings(endpoint, query, polygon, directory, *, refresh=False):
+def download_buildings(
+    endpoint,
+    query,
+    polygon,
+    directory,
+    *,
+    refresh=False,
+    method="POST",
+    coverage_constraint=None,
+):
     """Apply the caster-only parser to resumable acquisition."""
     return acquire_buildings(
         endpoint,
@@ -148,10 +158,14 @@ def download_buildings(endpoint, query, polygon, directory, *, refresh=False):
         directory,
         sanitize=sanitized_features,
         refresh=refresh,
+        method=method,
+        coverage_constraint=coverage_constraint,
     )
 
 
-def prepare(geometry=False, *, offline=False, refresh=False, endpoint=None):
+def prepare(
+    geometry=False, *, offline=False, refresh=False, endpoint=None, method="POST"
+):
     settings = json.loads((ROOT / "config/building-shade.json").read_text())
     routes = json.loads((ROOT / "data/routes/demo.geojson").read_text())
     points = [p for f in routes["features"] for p in f["geometry"]["coordinates"]]
@@ -181,8 +195,20 @@ def prepare(geometry=False, *, offline=False, refresh=False, endpoint=None):
             "No verified same-coverage building cache; prepare online first"
         )
     else:
+        selected_endpoint = endpoint or settings["endpoint"]
+        # This regional service cannot establish an empty international halo.
+        constraint = None
+        if urlsplit(selected_endpoint).hostname == "overpass.osm.ch":
+            inventory = json.loads((ROOT / "data/tile-inventory.json").read_text())
+            constraint = inventory["boundary"]["geometry"]
         metadata = download_buildings(
-            endpoint or settings["endpoint"], query, polygon, directory, refresh=refresh
+            selected_endpoint,
+            query,
+            polygon,
+            directory,
+            refresh=refresh,
+            method=method,
+            coverage_constraint=constraint,
         )
     print(
         f"Available {metadata['feature_count']} building footprints; "
@@ -225,8 +251,16 @@ if __name__ == "__main__":
     parser.add_argument(
         "--endpoint", help="Public HTTPS Overpass mirror; recorded as provenance"
     )
+    parser.add_argument(
+        "--request-method",
+        choices=("GET", "POST"),
+        default="POST",
+        help="HTTP transport for bounded Overpass queries; default POST",
+    )
     args = parser.parse_args()
-    if args.offline and (args.refresh or args.geometry or args.endpoint):
+    if args.offline and (
+        args.refresh or args.geometry or args.endpoint or args.request_method != "POST"
+    ):
         parser.error("--offline validates saved buildings only; omit download options")
     try:
         prepare(
@@ -234,6 +268,7 @@ if __name__ == "__main__":
             offline=args.offline,
             refresh=args.refresh,
             endpoint=args.endpoint,
+            method=args.request_method,
         )
     except (httpx.HTTPError, OSError, ValueError, RuntimeError) as error:
         print(

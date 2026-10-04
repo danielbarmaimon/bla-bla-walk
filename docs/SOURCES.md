@@ -86,6 +86,14 @@ README owns preparation and reproduction commands. T5/T6 integration is merged;
 the [T6 acceptance record](../handoff/t6-integration.md) tracks journey validation.
 Observed ground/shade accuracy and full-city coverage remain separate work.
 
+### Local building-cache restoration, 2026-10-04
+
+The configured global service was unavailable on this clone. The [Swiss Overpass service](https://overpass.osm.ch/) supplied 72 completed, sanitized GET batches containing 17,432 building/part footprints. The [OSM instance register](https://wiki.openstreetmap.org/wiki/Overpass_API#Instances_with_data_only_for_a_specific_region) declares Switzerland coverage; the [SOSM terms](https://sosm.ch/about/terms-of-service/) apply. Attribution remains © OpenStreetMap contributors / ODbL 1.0, with surveyed roof evidence © swisstopo.
+
+This restoration constrains model support to the official Basel-Stadt boundary already admitted in the tile inventory, intersected with the requested halo. A ray leaving that area remains unknown unless a known in-area blocker proves building shade. Complete batch retrieval does not claim international halo coverage, full-city receiver validation or current physical shade. One unresolved building extent remains unknown. The provider's raw source marker `117480` is not an interpretable date: provider source freshness is explicitly unknown; UTC retrieval times are separately retained. Footprints contain source ID, geometry, optional mapped metre height and unresolved flag only, with no raw name/address/contact tags.
+
+The earlier global-source validation above remains historical. New local validation and T23 readiness evidence are in [the cache-completion handoff](../handoff/t10-cache-completion.md); source and model constraints differ, so earlier measurements cannot be substituted for this setup's results.
+
 ## Slot E shade calculation checkpoint
 
 The offline [solar bearing implementation](../backend/bla_bla_walk/solar.py) uses the NOAA/Meeus Julian-century equations with geometric sun-centre elevation, without atmospheric refraction. [NOAA's calculation details](https://gml.noaa.gov/grad/solcalc/calcdetails.html) describe the approximation; this implementation restricts dates to 1800–2100. The independent [NREL SPA report, appendix A.5](https://www.nlr.gov/docs/fy08osti/34302.pdf) supplies the 2003-10-17 Colorado reference example. Geometric elevation and azimuth match that case within 0.01 degrees. SPA software is not bundled.

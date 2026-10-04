@@ -198,6 +198,7 @@ class ShadeService:
                 model["coverage"],
                 halo_bounds,
                 model_settings,
+                coverage_constraint=model.get("coverage_constraint"),
             )
             del buildings
             selection = np.zeros(receivers.shape, dtype=bool)
@@ -245,8 +246,14 @@ class ShadeService:
             model="building-shadow-approximation" if model else "survey-raytrace",
             explanation=(
                 (
-                    "Building-shadow approximation on flat ground, using dated "
-                    "OpenStreetMap footprints and mapped/survey-derived roof heights. "
+                    "Building-shadow approximation on flat ground, using "
+                    "OpenStreetMap footprints "
+                    + (
+                        f"(source date {model['provider_timestamp']}) "
+                        if model.get("provider_timestamp")
+                        else "(source date unknown) "
+                    )
+                    + "and mapped/survey-derived roof heights. "
                     "Sunlit means no modeled building shadow within "
                     f"{model_settings['maximum_ray_distance_metres']}m. "
                     "Tree shade and terrain relief are excluded; missing heights, "

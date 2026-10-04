@@ -136,6 +136,14 @@ python scripts/prepare_building_shade.py --offline
 
 This validates buildings only; prepared survey grids/flags must already be present for the offline shade API. Use `--refresh` to acquire fresh footprints, or `--endpoint` with a public HTTPS Overpass mirror if the configured endpoint is unavailable. The actual endpoint, earliest batch retrieval time and provider timestamps are recorded in the manifest. Endpoint URLs containing credentials or query parameters are rejected. Offline validation cannot be combined with download options. A failed acquisition retains the previous complete cache; an incomplete cache cannot produce a shadow layer.
 
+Bounded queries can use `--request-method GET` when a mirror's POST transport is unavailable. For the regional Swiss service:
+
+```sh
+python scripts/prepare_building_shade.py --endpoint https://overpass.osm.ch/api/interpreter --request-method GET
+```
+
+This source is admitted only within the verified Basel-Stadt boundary and requested halo. Cross-boundary receiver/ray coverage stays unknown; it cannot establish clear sunlight beyond that area. GET batches have distinct resumable identities. Unparseable provider date markers are retained separately and labelled unknown, never replaced with retrieval time. Source constraints and transport are recorded in the local manifest and cache identity.
+
 The sanitized footprint cache stays local under `.cache/buildings`; downloaded grids and flags stay under `data/geometry/`. The manifest records footprint provenance and checksums. Only the 25 survey tile pairs intersecting the two routes and their halo are selected, not the full city. To rebuild offline, retain those directories. To use the original strict survey policy, set receiver_policy in config/shade-service.json to unknown-until-compact-scene-validation; that policy still returns unknown until independently verified receivers are supplied.
 
 Reproduce full-polyline, cold/warm, concurrent, seam, night and offline API checks:

@@ -1,5 +1,7 @@
 # T10 · Offline preparation follow-up
 
+> Historical preparation-code checkpoint. This clone's subsequent data restoration and real API readiness are recorded in [T10 cache completion](t10-cache-completion.md); the missing-data state below is retained as history.
+
 Status: preparation-code fix complete and verified; publication in progress · Branch: fix/t10-offline-preparation · Owner: @danielbarmaimon
 
 ## State
