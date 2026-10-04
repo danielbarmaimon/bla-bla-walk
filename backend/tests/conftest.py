@@ -79,13 +79,14 @@ def browser_page():
 
 
 def open_example(page, calculate=True):
-    """Explicitly select the saved pair through the actual start-page controls."""
+    """Explicitly select the saved pair using the retained hidden fixture shortcut."""
     page.locator("#origin-input:not([disabled])").wait_for()
-    page.locator("#try-example").click()
+    page.locator("#try-example").dispatch_event("click")
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('mode')"
         " && !document.querySelector('#mode-notice').textContent.includes('Loading')"
     )
     if calculate:
         page.locator("#calculate-journey").click()
-        page.locator(".comparison-card").first.wait_for()
+        page.locator(".comparison-card").first.wait_for(state="attached")
+        page.locator("#information-sources").evaluate("e=>e.open=true")

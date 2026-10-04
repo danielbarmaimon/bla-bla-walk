@@ -136,7 +136,12 @@ export function createMap(
     source: contextFeatures,
     zIndex: 8,
     style: (marker) => new Style({
-      image: new CircleStyle({
+      image: marker.get('kind') === 'landmark' ? new Icon({
+        src: '/src/icons/landmark.svg',
+        color: theme.getPropertyValue('--poc-landmark').trim(),
+        width: 24,
+        height: 24,
+      }) : new CircleStyle({
         radius: marker.get('kind') === 'rest' || marker.get('kind') === 'pause' ? 8 : 6,
         fill: new Fill({
           color: theme.getPropertyValue('--poc-teal').trim()
@@ -266,7 +271,7 @@ export function createMap(
       return new Style({
         stroke: new Stroke({
           color: theme.getPropertyValue(state === 2 ? '--shade' : state === 1 ? '--exposed' : '--unknown').trim(),
-          width: 7,
+          width: 12,
           lineDash: state === 2 ? undefined : state === 1 ? [12, 6] : [2, 6],
         })
       });

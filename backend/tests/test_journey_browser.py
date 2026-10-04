@@ -90,6 +90,7 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         "document.querySelector('#comparison-control-status').textContent"
         ".includes('Synthetic browser validation')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert page.locator(".comparison-primary:disabled").count() == 1
     assert (
         "needs verification"
@@ -165,6 +166,7 @@ def test_offline_journey_uses_only_same_origin_even_with_missing_tiles(browser_p
         "document.querySelector('#comparison-control-status').textContent"
         ".includes('Synthetic browser validation')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     page.locator(".comparison-secondary").last.click()
     page.wait_for_function(
         "document.querySelector('#basemap-status').textContent"
@@ -253,7 +255,8 @@ def test_departure_change_discards_and_cancels_late_start_response(browser_page)
     page.wait_for_timeout(150)
     assert cancelled
     assert (
-        "Choose a departure" in page.locator("#comparison-control-status").inner_text()
+        "Choose a departure"
+        in page.locator("#comparison-control-status").text_content()
     )
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_enabled()

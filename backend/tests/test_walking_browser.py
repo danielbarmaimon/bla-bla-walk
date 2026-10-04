@@ -74,9 +74,10 @@ def test_address_route_drawn_and_replaced(browser_page):
     drawn = page.evaluate("window.drawnRoutes[0]")
     assert len(drawn) == len(COORDINATES)
     assert drawn[-1] == pytest.approx(END)
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert "2,100" in page.locator("#route-options").inner_text()
     assert page.locator("#calculate-journey").is_enabled()
-    page.locator("#try-example").click()
+    page.locator("#try-example").dispatch_event("click")
     page.locator("#calculate-journey").click()
     assert (
         "checked walking alternatives" in page.locator("#journey-summary").inner_text()

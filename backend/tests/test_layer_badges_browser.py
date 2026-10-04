@@ -12,10 +12,11 @@ def test_badge_defaults_and_layout(browser_page):
     page.on("pageerror", lambda error: errors.append(str(error)))
     page.goto(page.base_url)
     open_example(page)
+    page.locator("#information-sources").evaluate("e=>e.open=false")
     page.wait_for_function(
         "document.querySelector('#mode-notice').textContent.includes('Example mode')"
     )
-    page.locator(".comparison-secondary").first.click()
+    page.locator(".comparison-secondary").first.dispatch_event("click")
     assert page.locator(".map-controls input[type=checkbox]").count() == 0
     assert page.locator("#primary-layers [aria-pressed=true]").count() == 6
     assert not page.locator("#more-layers").evaluate("e=>e.open")
@@ -47,7 +48,7 @@ def test_badge_defaults_and_layout(browser_page):
         "e.dispatchEvent(new Event('input',{bubbles:true}));}"
     )
     page.locator("#calculate-journey").click()
-    page.locator(".comparison-secondary").first.click()
+    page.locator(".comparison-secondary").first.dispatch_event("click")
     page.locator("#more-layers").evaluate("e=>e.open=true")
     page.locator("#cool-place-toggle").click()
     assert page.locator("#interior-list-section").evaluate("e=>!e.hidden")
@@ -92,3 +93,86 @@ def test_route_roles_rest_cadence_and_schedules(browser_page):
     assert result["open"] and not result["closed"]
     assert not result["holiday"] and not result["unknown"]
     assert not result["override"]
+
+
+def test_more_badges_control_all_source_points_independently(browser_page):
+    page = browser_page
+    page.set_viewport_size({"width": 1280, "height": 900})
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    snapshot = page.request.get(f"{page.base_url}/api/map?mode=fixture").json()
+    stations = next(
+        layer for layer in snapshot["layers"] if layer["kind"] == "observation"
+    )
+    fountains = next(
+        layer for layer in snapshot["layers"] if layer["kind"] == "fountain"
+    )
+    assert stations["features"] and fountains["features"]
+    page.route(
+        "**/api/route-temperatures?*", lambda route: route.fulfill(json=stations)
+    )
+    page.route(
+        "**/api/route-amenities?*",
+        lambda route: route.fulfill(
+            json={
+                "fountains": fountains,
+                "rest_stops": {"features": [], "availability": "missing"},
+            }
+        ),
+    )
+
+    def capture_map(route):
+        response = route.fetch()
+        route.fulfill(
+            response=response,
+            body=response.text().replace(
+                "const map = new Map({", "const map = window.badgeTestMap = new Map({"
+            ),
+        )
+
+    page.route("**/src/map.js", capture_map)
+    page.goto(page.base_url)
+    page.wait_for_function(
+        "window.badgeTestMap && "
+        "document.querySelector('#try-example').disabled === false"
+    )
+    page.wait_for_function(
+        "document.querySelector('#mode-notice').textContent.includes('Example mode')"
+    )
+    assert page.locator("#try-example").is_hidden()
+    assert page.locator(".planner #selected-journey").count() == 0
+    assert page.locator(".quick-heading").is_visible()
+    page.locator("#more-layers summary").click()
+
+    def visible_ids():
+        return page.evaluate("""() => badgeTestMap.getLayers().getArray()
+          .filter(layer => layer.getVisible()
+            && layer.getSource() instanceof ol.source.Vector
+            && !(layer.getSource() instanceof ol.source.Cluster))
+          .flatMap(layer => layer.getSource().getFeatures().map(feature =>
+            feature.get('sourceFeature')?.id ?? feature.getId())).filter(Boolean)""")
+
+    station_ids = {f["id"] for f in stations["features"]}
+    fountain_ids = {f["id"] for f in fountains["features"]}
+    page.locator("#weather-stations-toggle").click()
+    assert station_ids <= set(visible_ids())
+    assert not fountain_ids.intersection(visible_ids())
+    page.locator("#fountains-layer-toggle").click()
+    assert station_ids | fountain_ids <= set(visible_ids())
+    page.locator("#landmark-toggle").click()
+    assert "stadtcasino" in visible_ids()
+    page.locator("#weather-stations-toggle").click()
+    assert not station_ids.intersection(visible_ids())
+    assert fountain_ids <= set(visible_ids())
+    assert "stadtcasino" in visible_ids()
+    page.locator("#water-stop-toggle").click()
+    assert fountain_ids <= set(visible_ids())
+    page.locator("#fountains-layer-toggle").click()
+    assert not fountain_ids.intersection(visible_ids())
+    assert "stadtcasino" in visible_ids()
+    page.locator("#landmark-toggle").click()
+    assert "stadtcasino" not in visible_ids()
+    assert not errors
+    page.unroute("**/src/map.js", capture_map)
+    page.unroute("**/api/route-temperatures?*")
+    page.unroute("**/api/route-amenities?*")

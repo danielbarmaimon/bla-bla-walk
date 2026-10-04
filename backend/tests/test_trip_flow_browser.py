@@ -252,6 +252,7 @@ def test_dated_real_provider_payload_in_joined_screen(browser_page, pair_index):
     page.locator("#destination-input").fill("Checked public destination")
     page.locator("#suggestions button").click()
     page.locator("#calculate-journey").click()
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     page.locator(".comparison-secondary").first.wait_for()
     assert requests[0]["start"] == endpoints[0]
     assert requests[0]["end"] == endpoints[1]

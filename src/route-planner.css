@@ -1174,10 +1174,6 @@
   color: var(--poc-muted);
 }
 
-.route-app[data-trip="start"] .map-controls {
-  display: none;
-}
-
 .route-app .route-mode {
   margin-top: var(--space-3);
 }
