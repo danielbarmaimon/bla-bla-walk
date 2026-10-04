@@ -5,6 +5,22 @@ presentation without an external deployment. T6's external-server criterion rema
 unverified; it does not block this local preparation checkpoint. T7 is not fully
 accepted until the presenters rehearse and the submission is confirmed.
 
+## T31 joined-flow checkpoint — 2026-10-04
+
+The accepted local flow covers the saved SBB → Marktplatz pair, arbitrary online
+address pairs, route-specific steps, route switching, departure changes, source
+details, mapped stop candidates, keyboard/mobile controls, provider failure and
+missing shade preparation. A missing shade calculation keeps Recommended
+unavailable; it never becomes fake progress or a safety claim. Construction
+records remain dated cautions: current sources do not prove pedestrian edge
+closures and the router does not automatically avoid them.
+
+The T31 fallback is local at `.hack/t31-fallback/index.html`. It is labelled
+`SAVED FALLBACK · 2026-10-04 · not live` and contains only committed saved route
+geometry and provenance. It has no scripts, remote assets or provider requests.
+Keep this local file and do not copy `.hack/` or private profiles into the
+repository or presentation package.
+
 ## Presentation and backup
 
 Source script: [pitch.md](pitch.md). Generate the local distribution from the
