@@ -80,7 +80,7 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
     page.on("pageerror", lambda error: errors.append(str(error)))
     _, requests = wire_calculation(page)
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#departure-later").click()
     page.locator("#departure-time").fill("2026-10-03T14:00")
@@ -90,6 +90,7 @@ def test_journey_polling_eligibility_preferences_and_time_invalidation(browser_p
         "document.querySelector('#comparison-control-status').textContent"
         ".includes('Synthetic browser validation')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     assert page.locator(".comparison-primary:disabled").count() == 1
     assert (
         "needs verification"
@@ -165,6 +166,7 @@ def test_offline_journey_uses_only_same_origin_even_with_missing_tiles(browser_p
         "document.querySelector('#comparison-control-status').textContent"
         ".includes('Synthetic browser validation')"
     )
+    page.locator("#information-sources").evaluate("e=>e.open=true")
     page.locator(".comparison-secondary").last.click()
     page.wait_for_function(
         "document.querySelector('#basemap-status').textContent"
@@ -204,7 +206,7 @@ def test_missing_preparation_and_unsupported_pair_are_visible(browser_page):
             },
         ),
     )
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
     page.wait_for_function(
@@ -237,7 +239,7 @@ def test_departure_change_discards_and_cancels_late_start_response(browser_page)
             pending.append(route)
 
     page.route("**/api/comparison**", hold)
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page, calculate=False)
     page.locator("#calculate-journey").click()
     page.locator("#departure-later").click()
@@ -253,7 +255,8 @@ def test_departure_change_discards_and_cancels_late_start_response(browser_page)
     page.wait_for_timeout(150)
     assert cancelled
     assert (
-        "Choose a departure" in page.locator("#comparison-control-status").inner_text()
+        "Choose a departure"
+        in page.locator("#comparison-control-status").text_content()
     )
     assert page.locator("#selected-journey").is_hidden()
     assert page.locator("#calculate-journey").is_enabled()

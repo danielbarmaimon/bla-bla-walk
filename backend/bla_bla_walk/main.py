@@ -81,7 +81,7 @@ def poc_route() -> FileResponse:
 
 @app.get("/api/map", response_model=MapSnapshot)
 def map_snapshot(
-    mode: Literal["fixture", "online", "offline"] = "fixture",
+    mode: Literal["fixture", "online", "offline"] = "online",
 ) -> MapSnapshot:
     """Serve explicit fixture/live/saved modes; offline never contacts providers."""
     if mode == "online":
@@ -129,7 +129,7 @@ def shade_snapshot(request: ShadeRequest, response: Response) -> ShadeResponse:
 
 
 @app.get("/api/route-amenities", response_model=RouteAmenities)
-def route_amenities(mode: Literal["fixture", "online", "offline"] = "offline"):
+def route_amenities(mode: Literal["fixture", "online", "offline"] = "online"):
     """Real stop evidence independently of illustrative sensor mode."""
     if mode == "online":
         fountains = FOUNTAINS.get_layer()
@@ -151,7 +151,7 @@ def route_amenities(mode: Literal["fixture", "online", "offline"] = "offline"):
 
 
 @app.get("/api/route-temperatures", response_model=MapLayer)
-def route_temperatures(mode: Literal["fixture", "online", "offline"] = "offline"):
+def route_temperatures(mode: Literal["fixture", "online", "offline"] = "online"):
     """Real station observations; illustrative mode uses explicitly saved data."""
     if mode == "online":
         return TEMPERATURE.get_layer()
@@ -171,7 +171,7 @@ def route_temperatures(mode: Literal["fixture", "online", "offline"] = "offline"
 
 
 @app.get("/api/palette-forecast", response_model=PaletteForecast)
-def forecast_palette(mode: Literal["fixture", "online", "offline"] = "offline"):
+def forecast_palette(mode: Literal["fixture", "online", "offline"] = "online"):
     return palette_forecast(mode)
 
 

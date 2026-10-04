@@ -7,7 +7,7 @@ pytestmark = pytest.mark.browser
 
 def test_stop_icons_clusters_and_inspection(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     result = page.evaluate("""async()=>{
       const NativeMap=ol.Map;
       let actual;

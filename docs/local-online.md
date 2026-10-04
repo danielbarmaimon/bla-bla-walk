@@ -1,72 +1,54 @@
 # Run locally with external sources
 
-Run the Python server on your computer and open **http://127.0.0.1:8000/?mode=online**.
-The `mode=online` part enables provider sensor readings and online data adapters.
-Opening the plain root URL uses synthetic example layers. Keep internet connected
-and the server terminal open while using the app.
+The plain root URL defaults to online mode. Use Python 3.12 or newer and keep
+internet connected. No Node.js, API key, account or `.env` configuration is
+required for the currently integrated public sources.
 
-## First-time setup
+## Start with one command
 
-Use Python 3.12 or newer. Run these commands from the repository root.
-No Node.js, npm build, API key, account or `.env` configuration is required for
-the currently integrated public sources.
-
-On Windows, in PowerShell:
+From the repository root, on Windows (PowerShell or Command Prompt):
 
 ```powershell
-python -m venv .venv
-& ./.venv/Scripts/python.exe -m pip install -r backend/requirements.txt
-& ./.venv/Scripts/python.exe scripts/fetch_browser_assets.py
-& ./.venv/Scripts/python.exe backend/export_contract.py
-& ./.venv/Scripts/python.exe scripts/install_shade_snapshot.py
-& ./.venv/Scripts/python.exe scripts/prepare_building_shade.py --offline
-& ./.venv/Scripts/python.exe scripts/prepare_rest_stops.py --download
+.\scripts\run-windows.cmd
 ```
 
-These commands use the environment's Python directly, so PowerShell activation
-and execution-policy changes are unnecessary. Reuse an existing `.venv` if it
-already contains the project dependencies.
-
-On macOS/Linux:
+On Linux:
 
 ```sh
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r backend/requirements.txt
-python scripts/fetch_browser_assets.py
-python backend/export_contract.py
-python scripts/install_shade_snapshot.py
-python scripts/prepare_building_shade.py --offline
-python scripts/prepare_rest_stops.py --download
+bash scripts/run-linux.sh
 ```
 
-Dependency installation, browser-library downloads and rest-stop acquisition
-need internet. Shade installation restores the committed, checksum-verified
-prepared data locally. The `--offline` command validates the building cache;
-it does not switch the webapp to offline mode. Do this preparation before
-starting the server. If installation reports differing local shade inputs,
-it preserves them; see [snapshot replacement instructions](../data/prepared/README.md).
+Open [the online app](http://127.0.0.1:8000/). Keep the terminal open and press
+Ctrl+C to stop. Both commands create or reuse the project `.venv`, install the
+pinned requirements, verify/download browser assets, install missing committed
+shade inputs, validate the saved building cache and download missing rest stops.
+Prepared local inputs are preserved. Later runs reuse cached browser/data files;
+requirements are checked again to pick up repository updates. Generated shared
+contracts are committed and do not need regeneration to start the app.
 
-## Start and open the app
+To use another port, append it: `.\scripts\run-windows.cmd 8001` or
+`bash scripts/run-linux.sh 8001`. FastAPI serves the page and API from that same
+address. Do not open the HTML file directly. Explicit `?mode=offline` and
+`?mode=fixture` URLs remain available for their separate use cases.
 
-Windows PowerShell, from the repository root:
+Run the launcher/server with outbound network access. A server started in a
+network-restricted coding-tool sandbox can return 503 for address search and
+walking routes even when your browser has internet. If asked, allow network
+access for this session, then restart the server using the same launcher. The
+launcher reports preparation failures and stops before starting a partial setup.
 
-```powershell
-& ./.venv/Scripts/python.exe -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --port 8000
-```
+## Refresh or recover prepared data
 
-macOS/Linux, with the project environment active:
+The launchers download rest stops only when their cache is absent. For a newer
+acquisition, stop the server and run the project Python with
+`scripts/prepare_rest_stops.py --download`, then restart the launcher. The Python
+path is `.venv/Scripts/python.exe` on Windows and `.venv/bin/python` on Linux.
 
-```sh
-python -m uvicorn bla_bla_walk.main:app --app-dir backend --host 127.0.0.1 --port 8000
-```
-
-Open [the local online app](http://127.0.0.1:8000/?mode=online).
-FastAPI serves both the page and API; no separate frontend server, API URL or
-CORS configuration is needed. Do not open the HTML file directly. Press Ctrl+C
-in the terminal to stop the server. On subsequent runs, just start the server
-and open the same online URL; repeat rest-stop preparation when you want a newer
-saved acquisition.
+If shade installation reports differing local inputs, it preserves them. Review
+[snapshot replacement instructions](../data/prepared/README.md) before choosing
+to replace them. Validate existing buildings with the project Python and
+`scripts/prepare_building_shade.py --offline`; this does not change the webapp's
+online mode. Preparation happens before the server starts.
 
 ## Which connections are used
 
@@ -89,7 +71,7 @@ and limitations are recorded in [the source register](SOURCES.md).
 
 ## Check that the data is showing
 
-1. Confirm the address bar ends in `/?mode=online`. The first provider load can
+1. Open the root URL or explicitly use `/?mode=online`. The first provider load can
    take longer than later loads.
 2. Under **More**, enable **Weather stations**. Select a station to inspect its
    reading, observation time, age and source. Open **Information sources** for
@@ -98,9 +80,10 @@ and limitations are recorded in [the source register](SOURCES.md).
    **Temperature** route layer estimates temperatures from nearby admitted sensor
    readings; unsupported sections stay unknown. Enable **Fountains** or **Water**
    to inspect provider water locations and route stops.
-4. Enable **Heatmap** to check the historical WMS layer. To inspect prepared
-   shade, use **Try SBB → Marktplatz example**, choose a departure and Calculate,
-   then enable **Shading**. A cold saved-route comparison can take around
+4. Enable **Heatmap** to check the historical WMS layer. The old saved-pair example
+   shortcut is hidden. Prepared shade for the saved
+   pair remains available through the comparison API and its validation tools.
+   **Shading** shows calculated evidence when supported. A cold saved-route comparison can take around
    20 minutes; the screen shows background progress.
 
 The saved SBB → Marktplatz pair has shade comparison support. Newly selected
@@ -128,8 +111,8 @@ returned data. Additional checks:
 | No benches or interior-space candidates | Run rest-stop preparation, then reload. Candidates may also be outside the route buffer or withheld because their schedules cannot be interpreted. |
 | Shade/comparison returns 503 | Stop the server, install and validate the shade snapshot, then restart. Check the server error and snapshot notes if validation fails. |
 | Map tiles or Heatmap are blank | Check browser access to the WMTS/WMS hosts, including any browser/network blocking. |
-| Address or walking-route provider fails | Check server internet access. Retry Calculate or use the saved example; map pins can replace address search. |
-| Port 8000 is already in use | Stop the previous app server, or choose another port and use that port in the browser URL. |
+| Address or walking-route provider fails | Restart the launcher with outbound HTTPS allowed, then retry. Map pins can replace address search; new routes still require the routing provider. |
+| Port 8000 is already in use | Stop the previous app server, or append another port to the launcher command and use that port in the browser URL. |
 
 Full basemap downloads and city-wide geometry preparation are not prerequisites
 for this local online setup. For disconnected use, follow

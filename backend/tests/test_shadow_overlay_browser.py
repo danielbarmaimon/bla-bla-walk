@@ -7,12 +7,11 @@ import shutil
 from datetime import datetime
 
 import pytest
-from fastapi import Response
-from rasterio.warp import transform
-
 from bla_bla_walk import main
 from bla_bla_walk.interfaces import ShadeRequest
 from bla_bla_walk.shade_service import ROOT, ShadeService
+from fastapi import Response
+from rasterio.warp import transform
 
 pytestmark = pytest.mark.browser
 

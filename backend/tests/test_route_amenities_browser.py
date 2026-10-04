@@ -8,7 +8,7 @@ pytestmark = pytest.mark.browser
 
 def test_proximity_and_marker_labels(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     page.wait_for_function("!document.querySelector('#destination-input').disabled")
     result = page.evaluate("""async () => {
       const {routeAmenities, amenityLabel} = await import('/src/route-amenities.js');
@@ -34,7 +34,7 @@ def test_proximity_and_marker_labels(browser_page):
 
 def test_real_saved_candidates_visible_and_toggle(browser_page):
     page = browser_page
-    page.goto(page.base_url)
+    page.goto(page.base_url + "/?mode=fixture")
     open_example(page)
     page.wait_for_function(
         "document.querySelector('#nearby-summary').textContent.includes('Route stops')"
